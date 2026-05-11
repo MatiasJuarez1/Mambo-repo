@@ -216,3 +216,14 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Node / frontend
+node_modules/
+*.log
+
+# Vite / React build output
+frontend/dist/
+frontend/.vite/
+
+# TypeScript caches
+*.tsbuildinfo
