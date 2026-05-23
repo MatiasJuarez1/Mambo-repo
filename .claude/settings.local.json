@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dir \"C:\\\\Users\\\\agust\\\\Mambo-repo\")",
+      "Bash(dir \"C:\\\\Users\\\\agust\\\\Mambo-repo\\\\src\")",
+      "Bash(dir \"C:\\\\Users\\\\agust\\\\Mambo-repo\\\\client\")",
+      "Bash(dir \"C:\\\\Users\\\\agust\\\\Mambo-repo\\\\src\\\\app\")",
+      "Bash(dir \"C:\\\\Users\\\\agust\\\\Mambo-repo\\\\client\\\\src\")"
+    ]
+  }
+}
