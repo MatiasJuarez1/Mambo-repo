@@ -8,12 +8,13 @@ from app.modules.propiedades.schemas import PropiedadListItem
 from app.modules.publicaciones.models import EstadoPublicacion
 
 
-# ── Publicación ───────────────────────────────────────────────────────────────
-
 class PublicacionBase(BaseModel):
     titulo: str
     descripcion: Optional[str] = None
     estado: EstadoPublicacion = EstadoPublicacion.activa
+    precio_publicado: Optional[Decimal] = None
+    moneda_publicada: str = "ARS"
+    slug: Optional[str] = None
 
 
 class PublicacionCreate(PublicacionBase):
@@ -24,6 +25,9 @@ class PublicacionUpdate(BaseModel):
     titulo: Optional[str] = None
     descripcion: Optional[str] = None
     estado: Optional[EstadoPublicacion] = None
+    precio_publicado: Optional[Decimal] = None
+    moneda_publicada: Optional[str] = None
+    slug: Optional[str] = None
 
 
 class PublicacionResponse(PublicacionBase):
@@ -43,6 +47,9 @@ class PublicacionListItem(BaseModel):
     propiedad_id: int
     titulo: str
     estado: EstadoPublicacion
+    precio_publicado: Optional[Decimal] = None
+    moneda_publicada: str = "ARS"
+    slug: Optional[str] = None
     publicada_en: Optional[datetime] = None
     creado_en: datetime
     propiedad: Optional[PropiedadListItem] = None

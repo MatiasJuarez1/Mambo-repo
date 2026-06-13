@@ -1,7 +1,7 @@
 import enum
 from datetime import datetime
 
-from sqlalchemy import Column, BigInteger, String, Text, DateTime, ForeignKey
+from sqlalchemy import Column, BigInteger, String, Text, Numeric, DateTime, ForeignKey
 from sqlalchemy import Enum as SAEnum
 from sqlalchemy.orm import relationship
 
@@ -23,7 +23,16 @@ class Publicacion(Base):
     )
     titulo = Column(String(255), nullable=False)
     descripcion = Column(Text, nullable=True)
-    estado = Column(SAEnum(EstadoPublicacion), nullable=False, default=EstadoPublicacion.activa)
+    estado = Column(
+        SAEnum(EstadoPublicacion, name="estado_publicacion", create_type=False),
+        nullable=False,
+        default=EstadoPublicacion.activa,
+    )
+    # Precio público (puede diferir del precio interno de la propiedad)
+    precio_publicado = Column(Numeric(14, 2), nullable=True)
+    moneda_publicada = Column(String(3), nullable=False, default="ARS")
+    # Slug para URLs amigables
+    slug = Column(String(300), nullable=True, unique=True)
     publicada_en = Column(DateTime, nullable=True)
     creado_por_usuario_id = Column(BigInteger, ForeignKey("usuarios.id"), nullable=True)
     creado_en = Column(DateTime, nullable=False, default=datetime.utcnow)

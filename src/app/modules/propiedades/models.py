@@ -1,7 +1,7 @@
 import enum
 from datetime import datetime
 
-from sqlalchemy import Column, BigInteger, String, Text, DECIMAL, Integer, DateTime, ForeignKey
+from sqlalchemy import Boolean, Column, BigInteger, String, Text, Numeric, Integer, DateTime, ForeignKey
 from sqlalchemy import Enum as SAEnum
 from sqlalchemy.orm import relationship
 
@@ -44,15 +44,27 @@ class Propiedad(Base):
     propietario_persona_id = Column(BigInteger, ForeignKey("personas.id"), nullable=True)
     titulo = Column(String(255), nullable=False)
     descripcion = Column(Text, nullable=True)
-    tipo_propiedad = Column(SAEnum(TipoPropiedad), nullable=False, default=TipoPropiedad.otro)
-    tipo_operacion = Column(SAEnum(TipoOperacion), nullable=False, default=TipoOperacion.venta)
-    estado_comercial = Column(SAEnum(EstadoComercial), nullable=False, default=EstadoComercial.disponible)
+    tipo_propiedad = Column(
+        SAEnum(TipoPropiedad, name="tipo_propiedad", create_type=False),
+        nullable=False,
+        default=TipoPropiedad.otro,
+    )
+    tipo_operacion = Column(
+        SAEnum(TipoOperacion, name="tipo_operacion", create_type=False),
+        nullable=False,
+        default=TipoOperacion.venta,
+    )
+    estado_comercial = Column(
+        SAEnum(EstadoComercial, name="estado_comercial", create_type=False),
+        nullable=False,
+        default=EstadoComercial.disponible,
+    )
     moneda = Column(String(3), nullable=False, default="ARS")
-    precio = Column(DECIMAL(14, 2), nullable=True)
+    precio = Column(Numeric(14, 2), nullable=True)
     dormitorios = Column(Integer, nullable=True)
     banos = Column(Integer, nullable=True)
-    m2_cubiertos = Column(DECIMAL(10, 2), nullable=True)
-    m2_totales = Column(DECIMAL(10, 2), nullable=True)
+    m2_cubiertos = Column(Numeric(10, 2), nullable=True)
+    m2_totales = Column(Numeric(10, 2), nullable=True)
     creado_por_usuario_id = Column(BigInteger, ForeignKey("usuarios.id"), nullable=True)
     creado_en = Column(DateTime, nullable=False, default=datetime.utcnow)
     actualizado_en = Column(DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -85,8 +97,8 @@ class PropiedadUbicacion(Base):
     provincia = Column(String(120), nullable=True)
     pais = Column(String(120), nullable=True, default="AR")
     codigo_postal = Column(String(20), nullable=True)
-    lat = Column(DECIMAL(10, 7), nullable=True)
-    lng = Column(DECIMAL(10, 7), nullable=True)
+    lat = Column(Numeric(10, 7), nullable=True)
+    lng = Column(Numeric(10, 7), nullable=True)
     creado_en = Column(DateTime, nullable=False, default=datetime.utcnow)
 
     propiedad = relationship("Propiedad", back_populates="ubicacion")
@@ -99,11 +111,15 @@ class PropiedadMedio(Base):
     propiedad_id = Column(
         BigInteger, ForeignKey("propiedades.id", ondelete="CASCADE"), nullable=False
     )
-    tipo_medio = Column(SAEnum(TipoMedio), nullable=False, default=TipoMedio.imagen)
+    tipo_medio = Column(
+        SAEnum(TipoMedio, name="tipo_medio", create_type=False),
+        nullable=False,
+        default=TipoMedio.imagen,
+    )
     url = Column(String(1024), nullable=False)
     descripcion = Column(String(255), nullable=True)
     orden = Column(Integer, nullable=False, default=0)
-    es_principal = Column(Integer, nullable=False, default=0)
+    es_principal = Column(Boolean, nullable=False, default=False)
     creado_en = Column(DateTime, nullable=False, default=datetime.utcnow)
 
     propiedad = relationship("Propiedad", back_populates="medios")

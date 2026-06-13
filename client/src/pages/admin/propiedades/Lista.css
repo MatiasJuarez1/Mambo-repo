@@ -1,0 +1,107 @@
+.filtros-bar {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.25rem;
+  padding: 1rem 1.25rem;
+}
+
+.filtros-bar select,
+.filtros-bar input {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.85rem;
+  font-family: var(--font-sans);
+  border: 1px solid var(--gray);
+  background: var(--white);
+  color: var(--text);
+  outline: none;
+  min-width: 160px;
+  transition: border-color 0.2s;
+}
+
+.filtros-bar select:focus,
+.filtros-bar input:focus {
+  border-color: var(--teal);
+}
+
+.lista-estado {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  padding: 2rem 0;
+  text-align: center;
+}
+
+.lista-error { color: #dc2626; }
+
+.tabla-wrapper { padding: 0; overflow-x: auto; }
+
+.tabla {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.tabla thead {
+  background: #f8f9fb;
+  border-bottom: 2px solid var(--gray);
+}
+
+.tabla th {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.tabla td {
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid var(--gray);
+  color: var(--text);
+  vertical-align: middle;
+}
+
+.tabla tbody tr:last-child td { border-bottom: none; }
+
+.tabla tbody tr:hover { background: #f8f9fb; }
+
+.tabla-propiedad {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.tabla-thumb {
+  width: 48px;
+  height: 48px;
+  object-fit: cover;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.tabla-thumb-empty {
+  background: var(--gray);
+  border-radius: 4px;
+}
+
+.tabla-titulo {
+  font-weight: 500;
+  color: var(--text);
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tabla-precio {
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.tabla-acciones {
+  display: flex;
+  gap: 0.5rem;
+}

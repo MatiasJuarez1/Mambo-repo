@@ -53,6 +53,9 @@ def crear_publicacion(db: Session, data: PublicacionCreate) -> Publicacion:
         titulo=data.titulo,
         descripcion=data.descripcion,
         estado=data.estado,
+        precio_publicado=data.precio_publicado,
+        moneda_publicada=data.moneda_publicada,
+        slug=data.slug,
         publicada_en=datetime.utcnow() if data.estado == EstadoPublicacion.activa else None,
     )
     db.add(pub)

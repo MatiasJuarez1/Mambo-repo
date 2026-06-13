@@ -5,7 +5,13 @@
       "Bash(dir \"C:\\\\Users\\\\agust\\\\Mambo-repo\\\\src\")",
       "Bash(dir \"C:\\\\Users\\\\agust\\\\Mambo-repo\\\\client\")",
       "Bash(dir \"C:\\\\Users\\\\agust\\\\Mambo-repo\\\\src\\\\app\")",
-      "Bash(dir \"C:\\\\Users\\\\agust\\\\Mambo-repo\\\\client\\\\src\")"
+      "Bash(dir \"C:\\\\Users\\\\agust\\\\Mambo-repo\\\\client\\\\src\")",
+      "Bash(ls \"C:\\\\Users\\\\agust\\\\Mambo-repo\\\\\" | grep env)",
+      "Bash(python -c ' *)",
+      "Bash(npm install *)",
+      "Bash(python seed.py)",
+      "Bash(python -c \"from app.database import SessionLocal; from sqlalchemy import text; db=SessionLocal\\(\\); r=db.execute\\(text\\(\\\\\"SELECT column_name FROM information_schema.columns WHERE table_name='propiedades_caracteristicas' ORDER BY ordinal_position\\\\\"\\)\\); [print\\(row[0]\\) for row in r]; db.close\\(\\)\")",
+      "Bash(python -c \"from app.database import SessionLocal; from sqlalchemy import text; db=SessionLocal\\(\\); r=db.execute\\(text\\(\\\\\"SELECT unnest\\(enum_range\\(NULL::tipo_medio\\)\\)\\\\\"\\)\\); [print\\(row[0]\\) for row in r]; db.close\\(\\)\")"
     ]
   }
 }

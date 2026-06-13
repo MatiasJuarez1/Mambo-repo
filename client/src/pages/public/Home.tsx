@@ -1,33 +1,15 @@
-import Navbar from '../components/Navbar'
+import { Link } from 'react-router-dom'
 
 const categorias = [
-  {
-    num: '01',
-    label: 'Lotes',
-    desc: 'Terrenos estratégicamente ubicados en las mejores zonas de Tucumán.',
-  },
-  {
-    num: '02',
-    label: 'Casas',
-    desc: 'Residencias diseñadas para adaptarse a tu estilo de vida y presupuesto.',
-  },
-  {
-    num: '03',
-    label: 'Inversiones',
-    desc: 'Opciones de alto rendimiento para hacer crecer tu capital inmobiliario.',
-  },
-  {
-    num: '04',
-    label: 'Oportunidades',
-    desc: 'Ofertas exclusivas del mercado local con condiciones únicas.',
-  },
+  { num: '01', label: 'Lotes',         desc: 'Terrenos estratégicamente ubicados en las mejores zonas de Tucumán.' },
+  { num: '02', label: 'Casas',         desc: 'Residencias diseñadas para adaptarse a tu estilo de vida y presupuesto.' },
+  { num: '03', label: 'Inversiones',   desc: 'Opciones de alto rendimiento para hacer crecer tu capital inmobiliario.' },
+  { num: '04', label: 'Oportunidades', desc: 'Ofertas exclusivas del mercado local con condiciones únicas.' },
 ]
 
 export default function Home() {
   return (
     <>
-      <Navbar />
-
       {/* ── Hero ── */}
       <section className="hero">
         <div className="hero-content">
@@ -40,9 +22,9 @@ export default function Home() {
           <p className="hero-sub">
             Lotes&nbsp;·&nbsp;Casas&nbsp;·&nbsp;Inversiones&nbsp;·&nbsp;Oportunidades
           </p>
-          <a href="#propiedades" className="btn-primary">
+          <Link to="/propiedades" className="btn-primary">
             Ver propiedades
-          </a>
+          </Link>
         </div>
       </section>
 
@@ -81,12 +63,6 @@ export default function Home() {
           Contactanos
         </a>
       </section>
-
-      {/* ── Footer ── */}
-      <footer className="footer">
-        <span className="footer-logo">Mambo Groups</span>
-        <p>© {new Date().getFullYear()} — Tucumán, Argentina</p>
-      </footer>
     </>
   )
 }

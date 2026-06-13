@@ -91,6 +91,24 @@ body {
 
 .navbar-links a:hover { color: var(--pink); }
 
+.navbar-admin-btn {
+  display: inline-block;
+  padding: 0.4rem 1rem;
+  background: var(--teal);
+  color: var(--white) !important;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  border-radius: 2px;
+  transition: background 0.2s !important;
+}
+
+.navbar-admin-btn:hover {
+  background: var(--teal-dark) !important;
+  color: var(--white) !important;
+}
+
 /* ── Hero ───────────────────────────────────────────────── */
 
 .hero {
