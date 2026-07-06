@@ -1,29 +1,10 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { propiedadesApi } from '../../api/propiedades'
-import type { Propiedad, TipoPropiedad, TipoOperacion } from '../../types/propiedad'
+import type { Propiedad } from '../../types/propiedad'
+import { formatPrecio, LABEL_OPERACION, LABEL_TIPO } from '../../lib/propiedad'
+import { EMAIL_CONTACTO, linkWhatsApp } from '../../config/contacto'
 import './Detalle.css'
-
-// ── Helpers ────────────────────────────────────────────────────────────────
-
-function formatPrecio(precio: number | null, moneda: string) {
-  if (precio === null) return 'Consultar precio'
-  const n = precio.toLocaleString('es-AR')
-  return moneda === 'USD' ? `U$D ${n}` : `$ ${n}`
-}
-
-const LABEL_OPERACION: Record<TipoOperacion, string> = {
-  venta: 'Venta',
-  alquiler: 'Alquiler',
-  temporal: 'Temporal',
-}
-
-const LABEL_TIPO: Record<TipoPropiedad, string> = {
-  casa: 'Casa', depto: 'Departamento', local: 'Local',
-  terreno: 'Terreno', oficina: 'Oficina', otro: 'Otro',
-}
-
-// ── Componente ─────────────────────────────────────────────────────────────
 
 export default function Detalle() {
   const { id } = useParams()
@@ -31,13 +12,13 @@ export default function Detalle() {
   const [loading, setLoading] = useState(true)
   const [error, setError]     = useState<string | null>(null)
   const [imgIdx, setImgIdx]   = useState(0)
+  const [mostrarForm, setMostrarForm] = useState(false)
 
   useEffect(() => {
     if (!id) return
     setLoading(true)
     propiedadesApi.obtener(Number(id))
       .then(p => {
-        // ordenar imágenes: principal primero
         p.medios.sort((a, b) => {
           if (a.es_principal && !b.es_principal) return -1
           if (!a.es_principal && b.es_principal) return 1
@@ -50,19 +31,13 @@ export default function Detalle() {
   }, [id])
 
   if (loading) {
-    return (
-      <main className="detalle-page">
-        <p className="detalle-estado">Cargando...</p>
-      </main>
-    )
+    return <main className="detalle-page"><p className="detalle-estado">Cargando...</p></main>
   }
 
   if (error || !prop) {
     return (
       <main className="detalle-page">
-        <p className="detalle-estado detalle-error">
-          {error ?? 'Propiedad no encontrada.'}
-        </p>
+        <p className="detalle-estado detalle-error">{error ?? 'Propiedad no encontrada.'}</p>
         <div style={{ textAlign: 'center' }}>
           <Link to="/propiedades" className="btn-primary">← Volver al listado</Link>
         </div>
@@ -71,108 +46,80 @@ export default function Detalle() {
   }
 
   const imagenes = prop.medios.filter(m => m.tipo_medio === 'imagen')
-  const imgActual = imagenes[imgIdx]
-  const ubicStr = [
-    prop.ubicacion?.direccion,
-    prop.ubicacion?.ciudad,
-    prop.ubicacion?.provincia,
-  ].filter(Boolean).join(' · ')
+  const ubicStr = [prop.ubicacion?.direccion, prop.ubicacion?.ciudad, prop.ubicacion?.provincia]
+    .filter(Boolean).join(' · ')
+  const mensajeWsp = `Hola! Me interesa la propiedad "${prop.titulo}" (${window.location.href})`
 
   return (
     <main className="detalle-page">
-      {/* ── Breadcrumb ── */}
+      {/* Breadcrumb */}
       <div className="detalle-breadcrumb">
         <div className="section-container">
-          <Link to="/propiedades">← Propiedades</Link>
-          <span>/</span>
+          <Link to="/propiedades">Propiedades</Link>
+          <span>›</span>
           <span>{LABEL_TIPO[prop.tipo_propiedad]}</span>
+          <span>›</span>
+          <span className="detalle-breadcrumb-actual">{prop.titulo}</span>
         </div>
       </div>
 
-      <div className="section-container detalle-layout">
-        {/* ── Columna izquierda: galería ── */}
-        <div className="detalle-galeria">
-          {imagenes.length > 0 ? (
-            <>
-              <div className="detalle-img-principal">
-                <img src={imgActual.url} alt={imgActual.descripcion ?? prop.titulo} />
-                <span className={`detalle-badge badge-${prop.tipo_operacion}`}>
-                  {LABEL_OPERACION[prop.tipo_operacion]}
-                </span>
-              </div>
-              {imagenes.length > 1 && (
-                <div className="detalle-thumbnails">
-                  {imagenes.map((m, i) => (
-                    <button
-                      key={m.id}
-                      className={`detalle-thumb${i === imgIdx ? ' active' : ''}`}
-                      onClick={() => setImgIdx(i)}
-                    >
-                      <img src={m.url} alt={m.descripcion ?? `Foto ${i + 1}`} />
-                    </button>
-                  ))}
-                </div>
-              )}
-            </>
-          ) : (
-            <div className="detalle-img-empty" />
-          )}
-        </div>
+      {/* Galería mosaico */}
+      <div className="section-container">
+        {imagenes.length > 0 ? (
+          <div className="detalle-galeria">
+            <button
+              className="detalle-gal-principal"
+              onClick={() => setImgIdx(0)}
+              style={{ backgroundImage: `url(${imagenes[imgIdx]?.url ?? imagenes[0].url})` }}
+            >
+              <span className="detalle-badge">{LABEL_OPERACION[prop.tipo_operacion]}</span>
+            </button>
+            <div className="detalle-gal-thumbs">
+              {imagenes.slice(1, 5).map((m, i) => {
+                const esUltima = i === 3 && imagenes.length > 5
+                return (
+                  <button
+                    key={m.id}
+                    className="detalle-gal-thumb"
+                    onClick={() => setImgIdx(i + 1)}
+                    style={{ backgroundImage: `url(${m.url})` }}
+                  >
+                    {esUltima && <span className="detalle-gal-mas">+{imagenes.length - 5} fotos</span>}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        ) : (
+          <div className="detalle-galeria"><div className="detalle-img-empty" /></div>
+        )}
+      </div>
 
-        {/* ── Columna derecha: info ── */}
-        <div className="detalle-info">
-          {/* Tipo + título */}
-          <p className="detalle-tipo">
-            {LABEL_TIPO[prop.tipo_propiedad]}
-          </p>
+      {/* Cuerpo 2 columnas */}
+      <div className="section-container detalle-layout">
+        <div className="detalle-main">
+          <span className="detalle-badge-inline">{LABEL_OPERACION[prop.tipo_operacion]}</span>
           <h1 className="detalle-titulo">{prop.titulo}</h1>
           {ubicStr && <p className="detalle-ubicacion">{ubicStr}</p>}
 
-          {/* Precio */}
-          <div className="detalle-precio-wrap">
-            <p className="detalle-precio">
-              {formatPrecio(prop.precio, prop.moneda)}
-            </p>
-            {prop.tipo_operacion === 'alquiler' && (
-              <span className="detalle-precio-sub">/mes</span>
-            )}
-            {prop.tipo_operacion === 'temporal' && (
-              <span className="detalle-precio-sub">/semana</span>
-            )}
-          </div>
-
-          {/* Stats rápidos */}
           {(prop.dormitorios != null || prop.banos != null ||
             prop.m2_cubiertos != null || prop.m2_totales != null) && (
-            <div className="detalle-stats">
+            <div className="detalle-specs">
               {prop.dormitorios != null && (
-                <div className="detalle-stat">
-                  <span className="detalle-stat-val">{prop.dormitorios}</span>
-                  <span className="detalle-stat-lbl">Dormitorios</span>
-                </div>
+                <div className="detalle-spec"><span className="v">{prop.dormitorios}</span><span className="k">Dormitorios</span></div>
               )}
               {prop.banos != null && (
-                <div className="detalle-stat">
-                  <span className="detalle-stat-val">{prop.banos}</span>
-                  <span className="detalle-stat-lbl">Baños</span>
-                </div>
+                <div className="detalle-spec"><span className="v">{prop.banos}</span><span className="k">Baños</span></div>
               )}
               {prop.m2_cubiertos != null && (
-                <div className="detalle-stat">
-                  <span className="detalle-stat-val">{prop.m2_cubiertos}</span>
-                  <span className="detalle-stat-lbl">m² cubiertos</span>
-                </div>
+                <div className="detalle-spec"><span className="v">{prop.m2_cubiertos}</span><span className="k">m² cubiertos</span></div>
               )}
               {prop.m2_totales != null && (
-                <div className="detalle-stat">
-                  <span className="detalle-stat-val">{prop.m2_totales}</span>
-                  <span className="detalle-stat-lbl">m² totales</span>
-                </div>
+                <div className="detalle-spec"><span className="v">{prop.m2_totales}</span><span className="k">m² totales</span></div>
               )}
             </div>
           )}
 
-          {/* Descripción */}
           {prop.descripcion && (
             <div className="detalle-seccion">
               <h2 className="detalle-seccion-titulo">Descripción</h2>
@@ -180,26 +127,48 @@ export default function Detalle() {
             </div>
           )}
 
-          {/* Características */}
           {prop.caracteristicas.length > 0 && (
             <div className="detalle-seccion">
               <h2 className="detalle-seccion-titulo">Características</h2>
               <div className="detalle-caract-grid">
                 {prop.caracteristicas.map(c => (
-                  <div key={c.id} className="detalle-caract-item">
-                    <span className="detalle-caract-clave">{c.clave}</span>
-                    <span className="detalle-caract-valor">{c.valor}</span>
-                  </div>
+                  <span key={c.id} className="detalle-caract-item">{c.clave}: {c.valor}</span>
                 ))}
               </div>
             </div>
           )}
-
-          {/* CTA */}
-          <div className="detalle-cta">
-            <a href="#contacto" className="btn-primary">Consultar por esta propiedad</a>
-          </div>
         </div>
+
+        {/* Aside sticky */}
+        <aside className="detalle-aside">
+          <p className="detalle-precio">{formatPrecio(prop.precio, prop.moneda)}</p>
+          <p className="detalle-precio-k">Precio de {LABEL_OPERACION[prop.tipo_operacion].toLowerCase()}</p>
+
+          <a className="detalle-btn-wsp" href={linkWhatsApp(mensajeWsp)} target="_blank" rel="noopener noreferrer">
+            Consultar por WhatsApp
+          </a>
+          <button className="detalle-btn-visita" onClick={() => setMostrarForm(v => !v)}>
+            Solicitar visita
+          </button>
+
+          {mostrarForm && (
+            <form
+              className="detalle-form"
+              onSubmit={e => {
+                e.preventDefault()
+                const fd = new FormData(e.currentTarget)
+                const cuerpo = `Nombre: ${fd.get('nombre')}\nTeléfono: ${fd.get('telefono')}\nMensaje: ${fd.get('mensaje')}\n\nPropiedad: ${prop.titulo} (${window.location.href})`
+                window.location.href =
+                  `mailto:${EMAIL_CONTACTO}?subject=${encodeURIComponent('Solicitud de visita: ' + prop.titulo)}&body=${encodeURIComponent(cuerpo)}`
+              }}
+            >
+              <input name="nombre" placeholder="Tu nombre" required />
+              <input name="telefono" placeholder="Teléfono" required />
+              <textarea name="mensaje" placeholder="¿Cuándo te gustaría visitarla?" rows={3} />
+              <button type="submit" className="detalle-btn-enviar">Enviar solicitud</button>
+            </form>
+          )}
+        </aside>
       </div>
     </main>
   )
