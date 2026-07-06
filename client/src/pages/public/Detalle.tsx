@@ -71,6 +71,7 @@ export default function Detalle() {
               className="detalle-gal-principal"
               onClick={() => setImgIdx(0)}
               style={{ backgroundImage: `url(${imagenes[imgIdx]?.url ?? imagenes[0].url})` }}
+              aria-label={`Foto principal de ${prop.titulo}`}
             >
               <span className="detalle-badge">{LABEL_OPERACION[prop.tipo_operacion]}</span>
             </button>
@@ -83,6 +84,7 @@ export default function Detalle() {
                     className="detalle-gal-thumb"
                     onClick={() => setImgIdx(i + 1)}
                     style={{ backgroundImage: `url(${m.url})` }}
+                    aria-label={`Foto ${i + 2} de ${prop.titulo}`}
                   >
                     {esUltima && <span className="detalle-gal-mas">+{imagenes.length - 5} fotos</span>}
                   </button>

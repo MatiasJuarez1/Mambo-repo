@@ -140,6 +140,8 @@ export default function PropiedadesLista() {
       {!loading && !error && (
         propiedades.length === 0
           ? <p className="lista-estado">No se encontraron propiedades.</p>
+          : visibles.length === 0
+          ? <p className="lista-estado">No hay propiedades que coincidan con la búsqueda.</p>
           : (
             <div className="admin-card tabla-wrapper">
               <table className="tabla">

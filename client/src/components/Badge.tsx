@@ -5,7 +5,7 @@ type Color = 'teal' | 'pink' | 'yellow' | 'gray' | 'red' | 'blue'
 const colorMap: Record<string, Color> = {
   // estado_comercial
   disponible: 'teal',
-  reservada:  'yellow',
+  reservada:  'pink',
   cerrada:    'gray',
   baja:       'red',
   // tipo_operacion
