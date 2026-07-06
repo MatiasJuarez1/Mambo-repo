@@ -1,22 +1,37 @@
- services:
-   backend:
-     build:
-       context: ./backend
-     ports:
-       - "8000:8000"
-     volumes:
-       - ./backend:/app
-     command: ["uvicorn", "app.main:app", "--reload", "--host", "0.0.0.0", "--port", "8000"]
- 
-   frontend:
-     build:
-       context: ./frontend
-     ports:
-       - "5173:5173"
-     environment:
-       - VITE_API_URL=http://localhost:8000
-     volumes:
-       - ./frontend:/app
-       - /app/node_modules
-     command: ["npm", "run", "dev", "--", "--host", "0.0.0.0", "--port", "5173"]
- 
+services:
+  backend:
+    build:
+      context: ./src
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./src:/app
+    env_file:
+      - .env
+    command: ["uvicorn", "app.main:app", "--reload", "--host", "0.0.0.0", "--port", "8000"]
+
+  frontend:
+    build:
+      context: ./client
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_URL=http://localhost:8000
+    volumes:
+      - ./client:/app
+      - /app/node_modules
+    command: ["npm", "run", "dev", "--", "--host", "0.0.0.0", "--port", "5173"]
+
+  # Descomentar si querés usar MySQL via Docker en vez de MySQL Workbench local
+  # db:
+  #   image: mysql:8
+  #   ports:
+  #     - "3306:3306"
+  #   environment:
+  #     MYSQL_ROOT_PASSWORD: root
+  #     MYSQL_DATABASE: inmobiliaria_crm
+  #   volumes:
+  #     - mysql_data:/var/lib/mysql
+  #
+  # volumes:
+  #   mysql_data:

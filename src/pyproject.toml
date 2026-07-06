@@ -7,10 +7,11 @@ requires-python = ">=3.11"
 dependencies = [
   "fastapi>=0.115",
   "uvicorn[standard]>=0.30",
-  "pydantic>=2.8",
+  "pydantic[email]>=2.8",
   "pydantic-settings>=2.4",
-  "pymysql>=1.1",
   "sqlalchemy>=2.0",
+  "psycopg2-binary>=2.9",
+  "alembic>=1.13",
   "bcrypt>=4.1",
   "python-multipart>=0.0.9",
 ]
@@ -19,6 +20,9 @@ dependencies = [
 dev = [
   "ruff>=0.5",
 ]
+
+[tool.setuptools.packages.find]
+include = ["app*"]
 
 [tool.ruff]
 line-length = 100

@@ -16,11 +16,11 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
-    mysql_host: str = Field(default="127.0.0.1", validation_alias="MYSQL_HOST")
-    mysql_port: int = Field(default=3306, validation_alias="MYSQL_PORT")
-    mysql_user: str = Field(default="root", validation_alias="MYSQL_USER")
-    mysql_password: str = Field(default="", validation_alias="MYSQL_PASSWORD")
-    mysql_database: str = Field(default="mambodb", validation_alias="MYSQL_DATABASE")
+    postgres_host: str = Field(default="localhost", validation_alias="POSTGRES_HOST")
+    postgres_port: int = Field(default=5432, validation_alias="POSTGRES_PORT")
+    postgres_user: str = Field(default="postgres", validation_alias="POSTGRES_USER")
+    postgres_password: str = Field(default="postgres", validation_alias="POSTGRES_PASSWORD")
+    postgres_database: str = Field(default="mamboDB", validation_alias="POSTGRES_DB")
 
     database_url: str | None = Field(default=None, validation_alias="DATABASE_URL")
 
@@ -31,14 +31,18 @@ class Settings(BaseSettings):
             return self.database_url
         from urllib.parse import quote_plus
 
-        user = quote_plus(self.mysql_user)
-        password = quote_plus(self.mysql_password)
-        host = self.mysql_host
-        port = self.mysql_port
-        db = self.mysql_database
-        return f"mysql+pymysql://{user}:{password}@{host}:{port}/{db}"
+        user = quote_plus(self.postgres_user)
+        password = quote_plus(self.postgres_password)
+        host = self.postgres_host
+        port = self.postgres_port
+        db = self.postgres_database
+        return f"postgresql+psycopg2://{user}:{password}@{host}:{port}/{db}"
 
 
 @lru_cache
 def get_settings() -> Settings:
     return Settings()
+
+
+# Compatibilidad: parte del código (p. ej. alembic/env.py) importa `settings` directo.
+settings = get_settings()
