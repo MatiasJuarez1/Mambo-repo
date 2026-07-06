@@ -57,6 +57,40 @@ Objetivo: **ABM de viviendas** y **listado en la página principal** sin depende
 
 ---
 
+## Recomendaciones del proyecto
+
+Lineamientos prácticos para avanzar sin reescribir todo cuando sumes CRM o sitio público.
+
+### Orden de trabajo
+
+Implementá primero el **inventario** (`properties` + ubicación + al menos fotos en `property_media`) con API CRUD y el **frontend** (listado en home, detalle, formulario crear/editar). En paralelo, un **auth mínimo** (un rol staff) para que solo personal autorizado pueda mutar datos. Eso entrega un producto usable rápido.
+
+### Listings vs propiedades
+
+Si el sitio público debe mostrar solo lo publicado a la venta/alquiler, introducí **`listings` pronto** y que el home consuma *listings activos* enlazados a propiedades. Si el home es solo un panel interno, podés posponer `listings` un poco. Para una **web real de inmobiliaria**, conviene **separar inventario y publicación desde el principio** para no mezclar borrador con lo que ve el cliente.
+
+### Backend (FastAPI)
+
+Organizá el código por **módulos de dominio** (por ejemplo `properties/`, `listings/`, `auth/`) con routers, servicios y acceso a datos, aunque al inicio sea SQL directo o un ORM liviano. Así, cuando sumes CRM, no reescribís toda la estructura.
+
+### Base de datos
+
+Mantené el esquema “CRM-ready” pero **no implementes pipelines, deals ni actividades** hasta tener el ABM y el listado público estables. Los `ENUM` sirven para arrancar; cuando haga falta configuración por cliente o multi-idioma, pasá eso a **tablas catálogo**.
+
+### Frontend
+
+Definí **tipos TypeScript** alineados a los DTOs del API y una sola fuente de verdad para la URL del backend (`VITE_API_URL`). Validaciones básicas en la UI; **reglas de negocio fuertes en el backend**.
+
+### Infraestructura
+
+Seguí con **Docker Compose** para desarrollo homogéneo. Cuando agregues MySQL, sumalo como servicio en compose y versioná los cambios de esquema (**Alembic** o scripts SQL) desde el primer cambio real del modelo.
+
+### Resumen en una frase
+
+**MVP = inventario + auth staff + (listings si hay sitio público) + home / detalle / ABM.** El resto del CRM queda preparado en el modelo de datos pero fuera del camino crítico hasta que el flujo de propiedades esté cerrado.
+
+---
+
 ## Correr local (sin Docker)
 
 **Frontend**
