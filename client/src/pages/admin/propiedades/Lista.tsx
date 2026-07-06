@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { propiedadesApi, type ListarParams } from '../../../api/propiedades'
 import type { PropiedadListItem, TipoOperacion, EstadoComercial } from '../../../types/propiedad'
 import Badge from '../../../components/Badge'
+import StatTile from '../../../components/StatTile'
 import './Lista.css'
 
 const TIPO_OPTIONS   = ['', 'casa', 'depto', 'local', 'terreno', 'oficina', 'otro']
@@ -27,6 +28,8 @@ export default function PropiedadesLista() {
     estado_comercial: undefined,
     ciudad:          '',
   })
+
+  const [busqueda, setBusqueda] = useState('')
 
   const cargar = (params: ListarParams = filtros) => {
     setLoading(true)
@@ -56,6 +59,15 @@ export default function PropiedadesLista() {
     }
   }
 
+  const total       = propiedades.length
+  const disponibles = propiedades.filter(p => p.estado_comercial === 'disponible').length
+  const reservadas  = propiedades.filter(p => p.estado_comercial === 'reservada').length
+
+  const visibles = propiedades.filter(p =>
+    p.titulo.toLowerCase().includes(busqueda.toLowerCase()) ||
+    (p.ubicacion?.ciudad ?? '').toLowerCase().includes(busqueda.toLowerCase())
+  )
+
   return (
     <div>
       {/* Header */}
@@ -66,8 +78,22 @@ export default function PropiedadesLista() {
         </Link>
       </div>
 
+      <div className="admin-stats-grid">
+        <StatTile label="Total" valor={total} />
+        <StatTile label="Disponibles" valor={disponibles} tono="teal" />
+        <StatTile label="Reservadas" valor={reservadas} tono="pink" />
+      </div>
+
       {/* Filtros */}
       <div className="admin-card filtros-bar">
+        <input
+          type="text"
+          className="filtros-buscar"
+          placeholder="Buscar por título o ciudad..."
+          value={busqueda}
+          onChange={e => setBusqueda(e.target.value)}
+        />
+
         <select
           value={filtros.tipo_propiedad ?? ''}
           onChange={e => handleFiltro('tipo_propiedad', e.target.value)}
@@ -129,7 +155,7 @@ export default function PropiedadesLista() {
                   </tr>
                 </thead>
                 <tbody>
-                  {propiedades.map(p => {
+                  {visibles.map(p => {
                     const img = p.medios.find(m => m.es_principal) ?? p.medios[0]
                     return (
                       <tr key={p.id}>
