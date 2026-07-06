@@ -1,4 +1,9 @@
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { propiedadesApi } from '../../api/propiedades'
+import type { PropiedadListItem } from '../../types/propiedad'
+import PropiedadCard from '../../components/PropiedadCard'
+import hero from '../../assets/hero.png'
 
 const categorias = [
   { num: '01', label: 'Lotes',         desc: 'Terrenos estratégicamente ubicados en las mejores zonas de Tucumán.' },
@@ -8,30 +13,64 @@ const categorias = [
 ]
 
 export default function Home() {
+  const [destacadas, setDestacadas] = useState<PropiedadListItem[]>([])
+  const [cargando, setCargando]     = useState(true)
+
+  useEffect(() => {
+    propiedadesApi
+      .listar({ estado_comercial: 'disponible', limit: 3 })
+      .then(setDestacadas)
+      .catch(() => setDestacadas([]))
+      .finally(() => setCargando(false))
+  }, [])
+
   return (
     <>
-      {/* ── Hero ── */}
+      {/* ── Hero split editorial ── */}
       <section className="hero">
-        <div className="hero-content">
-          <span className="hero-eyebrow">Tucumán, Argentina</span>
+        <div className="hero-col-text">
+          <span className="eyebrow">Tucumán, Argentina</span>
           <h1>
             Oportunidades<br />
-            <em>inmobiliarias</em><br />
-            en Tucumán
+            <em>inmobiliarias</em>
           </h1>
           <p className="hero-sub">
-            Lotes&nbsp;·&nbsp;Casas&nbsp;·&nbsp;Inversiones&nbsp;·&nbsp;Oportunidades
+            Lotes&nbsp;·&nbsp;Casas&nbsp;·&nbsp;Inversiones
           </p>
           <Link to="/propiedades" className="btn-primary">
             Ver propiedades
           </Link>
         </div>
+        <div className="hero-col-photo" style={{ backgroundImage: `url(${hero})` }} />
       </section>
 
       {/* ── Values strip ── */}
       <div className="values">
         <p>Decisión &nbsp;·&nbsp; Orden &nbsp;·&nbsp; Claridad</p>
       </div>
+
+      {/* ── Propiedades destacadas ── */}
+      <section className="destacadas">
+        <div className="section-container">
+          <div className="destacadas-header">
+            <div>
+              <span className="section-label">Selección</span>
+              <h2>Propiedades destacadas</h2>
+            </div>
+            <Link to="/propiedades" className="destacadas-link">Ver todas →</Link>
+          </div>
+
+          {cargando && <p className="destacadas-estado">Cargando propiedades...</p>}
+          {!cargando && destacadas.length === 0 && (
+            <p className="destacadas-estado">Pronto vas a ver acá nuestras propiedades destacadas.</p>
+          )}
+          {!cargando && destacadas.length > 0 && (
+            <div className="destacadas-grid">
+              {destacadas.map(p => <PropiedadCard key={p.id} propiedad={p} />)}
+            </div>
+          )}
+        </div>
+      </section>
 
       {/* ── Categorías ── */}
       <section className="categorias" id="propiedades">
