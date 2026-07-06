@@ -221,6 +221,9 @@ __marimo__/
 node_modules/
 *.log
 
+# client/src/lib es código fuente del frontend, no un directorio de build de Python
+!client/src/lib/
+
 # Vite / React build output
 frontend/dist/
 frontend/.vite/

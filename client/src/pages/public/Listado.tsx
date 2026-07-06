@@ -1,32 +1,9 @@
 import { useEffect, useState } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
+import { useSearchParams } from 'react-router-dom'
 import { propiedadesApi } from '../../api/propiedades'
-import type { PropiedadListItem, TipoPropiedad, TipoOperacion } from '../../types/propiedad'
+import type { PropiedadListItem } from '../../types/propiedad'
+import PropiedadCard from '../../components/PropiedadCard'
 import './Listado.css'
-
-// ── Helpers ────────────────────────────────────────────────────────────────
-
-function formatPrecio(precio: number | null, moneda: string) {
-  if (precio === null) return 'Consultar'
-  const n = precio.toLocaleString('es-AR')
-  return moneda === 'USD' ? `U$D ${n}` : `$ ${n}`
-}
-
-function imagenPrincipal(p: PropiedadListItem) {
-  const m = p.medios.find(m => m.es_principal) ?? p.medios[0]
-  return m?.url ?? null
-}
-
-const LABEL_OPERACION: Record<TipoOperacion, string> = {
-  venta: 'Venta',
-  alquiler: 'Alquiler',
-  temporal: 'Temporal',
-}
-
-const LABEL_TIPO: Record<TipoPropiedad, string> = {
-  casa: 'Casa', depto: 'Departamento', local: 'Local',
-  terreno: 'Terreno', oficina: 'Oficina', otro: 'Otro',
-}
 
 // ── Componente ─────────────────────────────────────────────────────────────
 
@@ -138,56 +115,5 @@ export default function Listado() {
         </div>
       </div>
     </main>
-  )
-}
-
-// ── Card ───────────────────────────────────────────────────────────────────
-
-function PropiedadCard({ propiedad: p }: { propiedad: PropiedadListItem }) {
-  const img = imagenPrincipal(p)
-  const loc = [p.ubicacion?.ciudad, p.ubicacion?.provincia]
-    .filter(Boolean).join(', ')
-
-  return (
-    <Link to={`/propiedades/${p.id}`} className="prop-card">
-      {/* Imagen */}
-      <div className="prop-card-img">
-        {img
-          ? <img src={img} alt={p.titulo} loading="lazy" />
-          : <div className="prop-card-img-empty" />
-        }
-        <span className={`prop-card-badge badge-${p.tipo_operacion}`}>
-          {LABEL_OPERACION[p.tipo_operacion]}
-        </span>
-      </div>
-
-      {/* Info */}
-      <div className="prop-card-body">
-        <p className="prop-card-tipo">{LABEL_TIPO[p.tipo_propiedad]}</p>
-        <h3 className="prop-card-titulo">{p.titulo}</h3>
-        {loc && <p className="prop-card-loc">{loc}</p>}
-
-        {/* Stats */}
-        <div className="prop-card-stats">
-          {p.dormitorios != null && (
-            <span>{p.dormitorios} dorm.</span>
-          )}
-          {p.banos != null && (
-            <span>{p.banos} baño{p.banos !== 1 ? 's' : ''}</span>
-          )}
-          {p.m2_cubiertos != null && (
-            <span>{p.m2_cubiertos} m²</span>
-          )}
-          {p.m2_totales != null && p.m2_cubiertos == null && (
-            <span>{p.m2_totales} m² tot.</span>
-          )}
-        </div>
-
-        {/* Precio */}
-        <p className="prop-card-precio">
-          {formatPrecio(p.precio, p.moneda)}
-        </p>
-      </div>
-    </Link>
   )
 }

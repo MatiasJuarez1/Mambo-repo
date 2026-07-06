@@ -1,0 +1,103 @@
+.prop-card {
+  background: var(--white);
+  text-decoration: none;
+  color: inherit;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--gray);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  transition: box-shadow 0.25s, transform 0.25s;
+}
+
+.prop-card:hover {
+  box-shadow: var(--shadow-hover);
+  transform: translateY(-4px);
+}
+
+.prop-card-img {
+  position: relative;
+  height: 190px;
+  overflow: hidden;
+  background: var(--gray);
+}
+
+.prop-card-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.prop-card:hover .prop-card-img img { transform: scale(1.04); }
+
+.prop-card-img-empty {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, var(--gray) 0%, #d1d5db 100%);
+}
+
+.prop-card-badge {
+  position: absolute;
+  top: 0.75rem;
+  left: 0.75rem;
+  padding: 0.35rem 0.7rem;
+  font-family: var(--font-sans);
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--white);
+  border-radius: var(--radius-sm);
+  background: var(--pink);
+}
+
+.prop-card-body {
+  padding: 1.15rem 1.25rem 1.4rem;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.prop-card-tipo {
+  font-size: 0.6rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.prop-card-titulo {
+  font-family: var(--font-serif);
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.15;
+  margin: 0.35rem 0 0.2rem;
+}
+
+.prop-card-loc {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.prop-card-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--text);
+  margin: 1rem 0;
+  padding: 0.9rem 0;
+  border-top: 1px solid var(--gray);
+  border-bottom: 1px solid var(--gray);
+}
+
+.prop-card-precio {
+  font-family: var(--font-serif);
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: var(--teal);
+  margin-top: auto;
+}
