@@ -41,7 +41,8 @@ class Propiedad(Base):
     __tablename__ = "propiedades"
 
     id = Column(BigInteger, primary_key=True, autoincrement=True)
-    propietario_persona_id = Column(BigInteger, ForeignKey("personas.id"), nullable=True)
+    # Sin FK: la tabla de personas (people) usa BIGINT UNSIGNED. Referencia lógica.
+    propietario_persona_id = Column(BigInteger, nullable=True)
     titulo = Column(String(255), nullable=False)
     descripcion = Column(Text, nullable=True)
     tipo_propiedad = Column(
@@ -65,7 +66,9 @@ class Propiedad(Base):
     banos = Column(Integer, nullable=True)
     m2_cubiertos = Column(Numeric(10, 2), nullable=True)
     m2_totales = Column(Numeric(10, 2), nullable=True)
-    creado_por_usuario_id = Column(BigInteger, ForeignKey("usuarios.id"), nullable=True)
+    # Sin FK: la tabla de usuarios (users) usa BIGINT UNSIGNED y MySQL no permite
+    # FK entre tipos signed/unsigned. Se deja como referencia lógica nullable.
+    creado_por_usuario_id = Column(BigInteger, nullable=True)
     creado_en = Column(DateTime, nullable=False, default=datetime.utcnow)
     actualizado_en = Column(DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
     eliminado_en = Column(DateTime, nullable=True)

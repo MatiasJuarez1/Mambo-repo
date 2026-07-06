@@ -34,7 +34,8 @@ class Publicacion(Base):
     # Slug para URLs amigables
     slug = Column(String(300), nullable=True, unique=True)
     publicada_en = Column(DateTime, nullable=True)
-    creado_por_usuario_id = Column(BigInteger, ForeignKey("usuarios.id"), nullable=True)
+    # Sin FK (ver nota en propiedades.models): users usa BIGINT UNSIGNED.
+    creado_por_usuario_id = Column(BigInteger, nullable=True)
     creado_en = Column(DateTime, nullable=False, default=datetime.utcnow)
     actualizado_en = Column(DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
     eliminado_en = Column(DateTime, nullable=True)
