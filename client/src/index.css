@@ -17,6 +17,25 @@
   --text-muted: #6b7280;
   --font-serif: 'Cormorant Garamond', Georgia, serif;
   --font-sans:  'Inter', system-ui, sans-serif;
+
+  /* Escala de espaciado */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+
+  /* Radios */
+  --radius-sm: 4px;
+  --radius-md: 10px;
+  --radius-pill: 999px;
+
+  /* Sombras del sistema */
+  --shadow-card:  0 2px 14px rgba(17, 24, 39, 0.06);
+  --shadow-hover: 0 14px 38px rgba(7, 103, 102, 0.13);
 }
 
 html { scroll-behavior: smooth; }
@@ -396,3 +415,36 @@ body {
   color: rgba(255,255,255,0.4);
   letter-spacing: 0.04em;
 }
+
+/* ── Utilidades del sistema ──────────────────────────────── */
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-family: var(--font-sans);
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.eyebrow::before {
+  content: '';
+  display: block;
+  width: 2px;
+  height: 1.1em;
+  background: var(--pink);
+}
+
+.section-label {
+  font-family: var(--font-sans);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--pink);
+}
+
+.u-serif { font-family: var(--font-serif); }
