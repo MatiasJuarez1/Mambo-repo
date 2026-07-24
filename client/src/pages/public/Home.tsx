@@ -3,7 +3,8 @@ import { Link } from 'react-router-dom'
 import { propiedadesApi } from '../../api/propiedades'
 import type { PropiedadListItem } from '../../types/propiedad'
 import PropiedadCard from '../../components/PropiedadCard'
-import hero from '../../assets/hero.png'
+
+const hero = '/imagen-mambo.jpg'
 
 const categorias = [
   { num: '01', label: 'Lotes',         desc: 'Terrenos estratégicamente ubicados en las mejores zonas de Tucumán.' },
@@ -26,7 +27,7 @@ export default function Home() {
 
   return (
     <>
-      {/* ── Hero split editorial ── */}
+      {/* ── Hero ── */}
       <section className="hero">
         <div className="hero-col-text">
           <span className="eyebrow">Tucumán, Argentina</span>
@@ -37,11 +38,73 @@ export default function Home() {
           <p className="hero-sub">
             Lotes&nbsp;·&nbsp;Casas&nbsp;·&nbsp;Inversiones
           </p>
-          <Link to="/propiedades" className="btn-primary">
+          <Link to="/propiedades" className="btn-hero">
             Ver propiedades
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor"
+                 strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M5 12h14M13 6l6 6-6 6" />
+            </svg>
           </Link>
         </div>
         <div className="hero-col-photo" style={{ backgroundImage: `url(${hero})` }} />
+
+        {/* Buscador flotante (maquetado — el filtrado real llega en un paso siguiente) */}
+        <div className="hero-search">
+          <span className="hero-search__label">Quick Search</span>
+
+          <label className="qs-field">
+            <svg className="qs-ico" viewBox="0 0 24 24" width="20" height="20" fill="none"
+                 stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"
+                 aria-hidden="true">
+              <path d="M7 7h11l-3-3M17 17H6l3 3" />
+            </svg>
+            <span className="qs-text">
+              <span className="qs-cap">Operación</span>
+              <select className="qs-select" defaultValue="" aria-label="Operación">
+                <option value="">Venta/Alquiler</option>
+                <option>Venta</option>
+                <option>Alquiler</option>
+              </select>
+            </span>
+          </label>
+
+          <label className="qs-field">
+            <svg className="qs-ico" viewBox="0 0 24 24" width="20" height="20" fill="none"
+                 stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"
+                 aria-hidden="true">
+              <path d="M4 11l8-6 8 6M6 10v9h12v-9" />
+            </svg>
+            <span className="qs-text">
+              <span className="qs-cap">Tipo</span>
+              <select className="qs-select" defaultValue="" aria-label="Tipo">
+                <option value="">Lotes/Casas/Comercial</option>
+                <option>Lotes</option>
+                <option>Casas</option>
+                <option>Comercial</option>
+              </select>
+            </span>
+          </label>
+
+          <label className="qs-field">
+            <svg className="qs-ico" viewBox="0 0 24 24" width="20" height="20" fill="none"
+                 stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"
+                 aria-hidden="true">
+              <path d="M12 21s7-6.3 7-11a7 7 0 1 0-14 0c0 4.7 7 11 7 11z" />
+              <circle cx="12" cy="10" r="2.4" />
+            </svg>
+            <span className="qs-text">
+              <span className="qs-cap">Zona</span>
+              <select className="qs-select" defaultValue="" aria-label="Zona">
+                <option value="">Tucumán</option>
+                <option>San Miguel de Tucumán</option>
+                <option>Yerba Buena</option>
+                <option>Tafí Viejo</option>
+              </select>
+            </span>
+          </label>
+
+          <Link to="/propiedades" className="qs-buscar">Buscar</Link>
+        </div>
       </section>
 
       {/* ── Values strip ── */}

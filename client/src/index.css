@@ -7,10 +7,20 @@
 }
 
 :root {
-  --pink:       #DE1267;
-  --pink-dark:  #b80f54;
-  --teal:       #076766;
-  --teal-dark:  #054e4e;
+  /* Identidad: verde bosque + dorado (rediseño 2026) */
+  --green:      #1f3d34;
+  --green-dark: #152a24;
+  --gold:       #c2a878;
+  --gold-dark:  #a98c5f;
+  --cream:      #ece4d3;
+
+  /* Alias de compatibilidad: el sitio se rediseñó de teal/rosa a verde/dorado.
+     Se conservan los nombres para no reescribir cada regla del sistema. */
+  --pink:       var(--gold);
+  --pink-dark:  var(--gold-dark);
+  --teal:       var(--green);
+  --teal-dark:  var(--green-dark);
+
   --gray:       #E3E5EA;
   --white:      #ffffff;
   --text:       #111827;
@@ -27,6 +37,9 @@
   --space-6: 32px;
   --space-7: 48px;
   --space-8: 64px;
+
+  /* Alto de la navbar fija: las páginas lo usan como padding-top */
+  --navbar-h: 72px;
 
   /* Radios */
   --radius-sm: 4px;
@@ -62,24 +75,54 @@ body {
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 2rem;
-  height: 72px;
+  height: var(--navbar-h);
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
 
+/* Bloque izquierdo: logo + enlace institucional, separados por una fina línea */
+.navbar-left {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
 .navbar-logo {
   display: flex;
-  flex-direction: column;
+  align-items: center;
   line-height: 1;
   text-decoration: none;
+}
+
+.navbar-logo-img {
+  height: 32px;
+  width: auto;
+  display: block;
+}
+
+.navbar-quienes {
+  padding-left: 1.5rem;
+  border-left: 1px solid var(--gray);
+  text-decoration: none;
+  color: var(--text);
+  white-space: nowrap;
+  transition: color 0.2s;
+}
+
+.navbar-quienes:hover { color: var(--pink); }
+
+@media (max-width: 860px) {
+  .navbar-logo-img { height: 26px; }
+  .navbar-left { gap: 1rem; }
+  .navbar-quienes { padding-left: 1rem; }
 }
 
 .logo-mambo {
   font-family: var(--font-serif);
   font-size: 1.5rem;
   font-weight: 700;
-  color: var(--teal);
+  color: var(--gold);
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
@@ -88,7 +131,7 @@ body {
   font-family: var(--font-sans);
   font-size: 0.58rem;
   font-weight: 500;
-  color: var(--text-muted);
+  color: var(--gold-dark);
   letter-spacing: 0.28em;
   text-transform: uppercase;
 }
@@ -96,44 +139,122 @@ body {
 .navbar-links {
   list-style: none;
   display: flex;
-  gap: 2.5rem;
+  align-items: center;
+  gap: 2.25rem;
+}
+
+/* Tipografía común de la navegación: versalita fina y espaciada, al tono
+   editorial del resto del sitio (.eyebrow, .section-label). */
+.navbar-links a,
+.navbar-dropdown-toggle,
+.navbar-quienes {
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
 }
 
 .navbar-links a {
   text-decoration: none;
   color: var(--text);
-  font-size: 0.875rem;
-  font-weight: 500;
-  letter-spacing: 0.03em;
   transition: color 0.2s;
 }
 
 .navbar-links a:hover { color: var(--pink); }
 
+/* Botón admin: pastilla de contorno, más discreta que el bloque sólido */
 .navbar-admin-btn {
   display: inline-block;
-  padding: 0.4rem 1rem;
-  background: var(--teal);
-  color: var(--white) !important;
-  font-size: 0.8rem;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  border-radius: 2px;
-  transition: background 0.2s !important;
+  padding: 0.45rem 1.1rem;
+  border: 1px solid var(--teal);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--teal) !important;
+  transition: background 0.2s, color 0.2s !important;
 }
 
 .navbar-admin-btn:hover {
-  background: var(--teal-dark) !important;
+  background: var(--teal) !important;
   color: var(--white) !important;
 }
+
+.navbar-links li { display: flex; align-items: center; }
+
+/* ── Desplegables (Venta / Alquiler) ── */
+
+.navbar-dropdown { position: relative; }
+
+.navbar-dropdown-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text);
+  padding: 0;
+  transition: color 0.2s;
+}
+
+.navbar-dropdown-toggle:hover,
+.navbar-dropdown-toggle[aria-expanded='true'] { color: var(--pink); }
+
+.navbar-caret { transition: transform 0.2s; }
+.navbar-caret.is-open { transform: rotate(180deg); }
+
+.navbar-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 0.75rem);
+  left: 50%;
+  transform: translateX(-50%);
+  min-width: 210px;
+  list-style: none;
+  background: var(--white);
+  border: 1px solid var(--gray);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  padding: 0.4rem 0;
+  z-index: 200;
+}
+
+.navbar-dropdown-menu li { display: block; }
+
+/* Los ítems del desplegable van en caja baja: no heredan la versalita del menú */
+.navbar-dropdown-menu a {
+  display: block;
+  padding: 0.6rem 1.2rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  text-transform: none;
+  color: var(--text);
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s;
+}
+
+.navbar-dropdown-menu a:hover {
+  background: var(--cream);
+  color: var(--green);
+}
+
+.navbar-account {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--green);
+  transition: color 0.2s;
+}
+
+.navbar-account:hover { color: var(--gold-dark); }
 
 /* ── Hero (split editorial) ─────────────────────────────── */
 
 .hero {
   display: flex;
+  position: relative;
   min-height: 88vh;
-  padding-top: 72px; /* navbar fija */
+  padding-top: var(--navbar-h); /* navbar fija */
 }
 
 .hero-col-text {
@@ -155,13 +276,28 @@ body {
   width: 420px;
   height: 420px;
   border-radius: 50%;
-  background: rgba(222, 18, 103, 0.10);
+  background: rgba(194, 168, 120, 0.12);
   pointer-events: none;
 }
 
 .hero-col-photo {
   width: 42%;
   background: var(--gray) center / cover no-repeat;
+  position: relative;
+}
+
+/* Degradado sutil que funde la foto con la columna teal */
+.hero-col-photo::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    rgba(7, 103, 102, 0.38) 0%,
+    rgba(7, 103, 102, 0.10) 22%,
+    transparent 45%
+  );
+  pointer-events: none;
 }
 
 .hero .eyebrow { color: rgba(255, 255, 255, 0.55); margin-bottom: 1.75rem; }
@@ -180,19 +316,157 @@ body {
 
 .hero-sub {
   font-size: 0.8rem;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--gold);
   letter-spacing: 0.16em;
   text-transform: uppercase;
   margin-bottom: 2.5rem;
   position: relative;
 }
 
+/* Botón outline crema del hero (píldora) */
+.btn-hero {
+  position: relative;
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.85rem 2rem;
+  border: 1px solid rgba(236, 228, 211, 0.55);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--cream);
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: background 0.25s, color 0.25s, transform 0.25s, border-color 0.25s;
+}
+
+.btn-hero:hover {
+  background: var(--cream);
+  color: var(--green);
+  border-color: var(--cream);
+  transform: translateY(-2px);
+}
+
+.btn-hero svg { transition: transform 0.25s; }
+.btn-hero:hover svg { transform: translateX(3px); }
+
+/* ── Buscador flotante ──────────────────────────────────── */
+
+.hero-search {
+  position: absolute;
+  left: 50%;
+  bottom: -44px;
+  transform: translateX(-50%);
+  z-index: 5;
+  width: min(1120px, calc(100% - 3rem));
+  display: flex;
+  align-items: stretch;
+  gap: 0.6rem;
+  padding: 0.75rem;
+  background: var(--cream);
+  border-radius: var(--radius-pill);
+  box-shadow: 0 18px 44px rgba(21, 42, 36, 0.22);
+}
+
+.hero-search__label {
+  display: flex;
+  align-items: center;
+  padding: 0 1.35rem 0 1.6rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--green);
+  white-space: nowrap;
+}
+
+.qs-field {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.75rem 1.35rem;
+  background: var(--white);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+}
+
+.qs-field::after {
+  content: '';
+  margin-left: auto;
+  flex-shrink: 0;
+  width: 0;
+  height: 0;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 5px solid var(--text-muted);
+}
+
+.qs-ico { color: var(--green); flex-shrink: 0; }
+
+.qs-text { display: flex; flex-direction: column; min-width: 0; line-height: 1.15; }
+
+.qs-cap {
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.qs-select {
+  border: none;
+  background: transparent;
+  padding: 0;
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--text);
+  cursor: pointer;
+  appearance: none;
+  outline: none;
+  max-width: 100%;
+}
+
+.qs-buscar {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 2.6rem;
+  background: var(--green);
+  color: var(--white);
+  border-radius: var(--radius-pill);
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-decoration: none;
+  transition: background 0.2s;
+}
+
+.qs-buscar:hover { background: var(--green-dark); }
+
 .hero .btn-primary { position: relative; align-self: flex-start; }
 
 @media (max-width: 860px) {
-  .hero { flex-direction: column; min-height: auto; }
+  .hero { flex-direction: column; min-height: auto; padding-bottom: 0; }
   .hero-col-photo { width: 100%; height: 260px; order: 2; }
   .hero-col-text { order: 1; padding: var(--space-7) var(--space-5); }
+
+  .hero-search {
+    position: static;
+    transform: none;
+    order: 3;
+    width: auto;
+    margin: var(--space-5);
+    flex-direction: column;
+    border-radius: var(--radius-md);
+  }
+  .hero-search__label { padding: 0.3rem 0.5rem; }
+  .qs-field { border-radius: var(--radius-md); }
+  .qs-buscar { justify-content: center; padding: 0.8rem; border-radius: var(--radius-md); }
 }
 
 .btn-primary {
@@ -218,7 +492,7 @@ body {
 
 .values {
   background: var(--gray);
-  padding: 1.1rem 2rem;
+  padding: 3.4rem 2rem 1.1rem;
   text-align: center;
 }
 
@@ -264,8 +538,12 @@ body {
 
 .destacadas-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: var(--space-5);
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-6);
+}
+
+@media (max-width: 860px) {
+  .destacadas-grid { grid-template-columns: 1fr; }
 }
 
 .destacadas-estado { color: var(--text-muted); font-size: 0.9rem; padding: 2rem 0; }
@@ -358,7 +636,7 @@ body {
 /* ── CTA ────────────────────────────────────────────────── */
 
 .cta-section {
-  background: var(--pink);
+  background: var(--green);
   padding: 7rem 2rem;
   text-align: center;
   position: relative;
@@ -396,7 +674,7 @@ body {
 .btn-white {
   display: inline-block;
   background: var(--white);
-  color: var(--pink);
+  color: var(--green);
   text-decoration: none;
   padding: 0.9rem 2.5rem;
   font-size: 0.8rem;

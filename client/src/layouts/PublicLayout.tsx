@@ -7,7 +7,7 @@ export default function PublicLayout() {
       <Navbar />
       <Outlet />
       <footer className="footer">
-        <span className="footer-logo">Mambo Groups</span>
+        <span className="footer-logo">Mambo Group</span>
         <p>© {new Date().getFullYear()} — Tucumán, Argentina</p>
       </footer>
     </>

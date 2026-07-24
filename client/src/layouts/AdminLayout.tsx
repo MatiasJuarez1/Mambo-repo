@@ -19,7 +19,7 @@ export default function AdminLayout() {
       <aside className="admin-sidebar">
         <div className="admin-sidebar-logo" onClick={() => navigate('/admin')}>
           <span className="logo-mambo">Mambo</span>
-          <span className="logo-groups">Groups · Admin</span>
+          <span className="logo-groups">Group · Admin</span>
         </div>
 
         <nav className="admin-nav">

@@ -1,4 +1,4 @@
-.detalle-page { padding-top: 72px; min-height: 100vh; background: #f8f9fb; padding-bottom: var(--space-8); }
+.detalle-page { padding-top: var(--navbar-h); min-height: 100vh; background: #f8f9fb; padding-bottom: var(--space-8); }
 .detalle-estado { text-align: center; color: var(--text-muted); font-size: 0.9rem; padding: 4rem 0; }
 .detalle-error { color: #dc2626; }
 

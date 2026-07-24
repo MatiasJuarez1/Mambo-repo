@@ -1,7 +1,7 @@
 /* ── Hero del listado ─────────────────────────────────────────── */
 
 .listado-page {
-  padding-top: 72px; /* navbar height */
+  padding-top: var(--navbar-h); /* navbar height */
 }
 
 .listado-hero {
