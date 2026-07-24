@@ -15,16 +15,43 @@
   --cream:      #ece4d3;
 
   /* Alias de compatibilidad: el sitio se rediseñó de teal/rosa a verde/dorado.
-     Se conservan los nombres para no reescribir cada regla del sistema. */
+     Se conservan los nombres para no reescribir cada regla del sistema.
+     TEMPORAL: se eliminan en la última tarea de la migración de paleta. */
   --pink:       var(--gold);
   --pink-dark:  var(--gold-dark);
   --teal:       var(--green);
   --teal-dark:  var(--green-dark);
-
   --gray:       #E3E5EA;
+
+  /* ── Paleta "Petróleo y tinta" ──────────────────────────────
+     Derivada del logo de Mambo Group. Ver
+     docs/superpowers/specs/2026-07-24-paleta-de-color-design.md */
+
+  /* Neutros */
   --white:      #ffffff;
-  --text:       #111827;
-  --text-muted: #6b7280;
+  --text:       #121212;  /* no es negro puro: el #000 sobre blanco vibra */
+  --text-muted: #6A6969;  /* gris del logo (#747373) oscurecido 4% para pasar AA sobre --bone */
+  --line:       #E2E1DF;
+  --bone:       #F7F6F4;
+
+  /* Campo oscuro */
+  --petrol:      #0E3A3B;
+  --petrol-deep: #071F20;
+  --petrol-soft: #E8EFEF;
+
+  /* Acento de marca — solo 5 usos en todo el sitio (spec §4.1) */
+  --magenta:      #EE016A;
+  --magenta-deep: #C10154;  /* obligatorio sobre texto < 18px: el puro da 4.33 */
+
+  /* Escala semántica de estados del dato — nunca se mezcla con el acento */
+  --estado-ok:         #0F7A5A;
+  --estado-ok-bg:      #E4F2EC;
+  --estado-espera:     #8A5A00;
+  --estado-espera-bg:  #FBF0DC;
+  --estado-neutro:     #5C5C5C;
+  --estado-neutro-bg:  #EFEFEF;
+  --estado-baja:       #B3261E;
+  --estado-baja-bg:    #FBE9E7;
   --font-serif: 'Cormorant Garamond', Georgia, serif;
   --font-sans:  'Inter', system-ui, sans-serif;
 
@@ -48,7 +75,7 @@
 
   /* Sombras del sistema */
   --shadow-card:  0 2px 14px rgba(17, 24, 39, 0.06);
-  --shadow-hover: 0 14px 38px rgba(7, 103, 102, 0.13);
+  --shadow-hover: 0 14px 38px rgba(14, 58, 59, 0.13);
 }
 
 html { scroll-behavior: smooth; }
