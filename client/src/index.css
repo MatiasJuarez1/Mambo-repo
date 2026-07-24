@@ -498,7 +498,7 @@ body {
 
 .btn-primary {
   display: inline-block;
-  background: var(--pink);
+  background: var(--magenta);
   color: var(--white);
   text-decoration: none;
   padding: 0.9rem 2.25rem;
@@ -511,14 +511,14 @@ body {
 }
 
 .btn-primary:hover {
-  background: var(--pink-dark);
+  background: var(--magenta-deep);
   transform: translateY(-2px);
 }
 
 /* ── Values strip ───────────────────────────────────────── */
 
 .values {
-  background: var(--gray);
+  background: var(--bone);
   padding: 3.4rem 2rem 1.1rem;
   text-align: center;
 }
@@ -528,7 +528,7 @@ body {
   font-weight: 500;
   letter-spacing: 0.3em;
   text-transform: uppercase;
-  color: var(--teal);
+  color: var(--petrol);
 }
 
 /* ── Propiedades destacadas ─────────────────────────────── */
@@ -547,7 +547,7 @@ body {
   font-family: var(--font-serif);
   font-size: clamp(1.9rem, 3.5vw, 2.6rem);
   font-weight: 600;
-  color: var(--teal);
+  color: var(--petrol);
   line-height: 1.1;
   margin-top: 0.4rem;
 }
@@ -558,7 +558,7 @@ body {
   font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--pink);
+  color: var(--petrol);
   text-decoration: none;
   white-space: nowrap;
 }
@@ -595,7 +595,7 @@ body {
   font-family: var(--font-serif);
   font-size: clamp(2rem, 4vw, 3rem);
   font-weight: 600;
-  color: var(--teal);
+  color: var(--petrol);
   line-height: 1.1;
 }
 
@@ -613,7 +613,7 @@ body {
 }
 
 .categoria-card {
-  border: 1px solid var(--gray);
+  border: 1px solid var(--line);
   padding: 2rem 1.75rem;
   position: relative;
   transition: box-shadow 0.25s, transform 0.25s, border-color 0.25s;
@@ -625,23 +625,23 @@ body {
   position: absolute;
   top: 0; left: 0; right: 0;
   height: 3px;
-  background: var(--teal);
+  background: var(--petrol);
   transition: background 0.25s;
 }
 
 .categoria-card:hover {
   border-color: transparent;
-  box-shadow: 0 10px 36px rgba(7,103,102,0.1);
+  box-shadow: 0 10px 36px rgba(14, 58, 59, 0.1);
   transform: translateY(-4px);
 }
 
-.categoria-card:hover::before { background: var(--pink); }
+.categoria-card:hover::before { background: var(--magenta); }
 
 .cat-num {
   font-family: var(--font-serif);
   font-size: 2.25rem;
   font-weight: 700;
-  color: var(--gray);
+  color: var(--line);
   line-height: 1;
   margin-bottom: 1.25rem;
 }
@@ -663,7 +663,7 @@ body {
 /* ── CTA ────────────────────────────────────────────────── */
 
 .cta-section {
-  background: var(--green);
+  background: var(--petrol);
   padding: 7rem 2rem;
   text-align: center;
   position: relative;
@@ -701,7 +701,7 @@ body {
 .btn-white {
   display: inline-block;
   background: var(--white);
-  color: var(--green);
+  color: var(--petrol);
   text-decoration: none;
   padding: 0.9rem 2.5rem;
   font-size: 0.8rem;
@@ -719,7 +719,7 @@ body {
 /* ── Footer ─────────────────────────────────────────────── */
 
 .footer {
-  background: var(--teal-dark);
+  background: var(--petrol-deep);
   padding: 2.5rem 2rem;
   display: flex;
   align-items: center;
@@ -762,7 +762,7 @@ body {
   display: block;
   width: 2px;
   height: 1.1em;
-  background: var(--pink);
+  background: var(--magenta);
 }
 
 .section-label {
@@ -771,7 +771,7 @@ body {
   font-weight: 600;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: var(--pink);
+  color: var(--petrol);
 }
 
 .u-serif { font-family: var(--font-serif); }
