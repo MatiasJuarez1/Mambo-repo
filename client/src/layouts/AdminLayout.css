@@ -8,7 +8,7 @@
 .admin-sidebar {
   width: 220px;
   flex-shrink: 0;
-  background: var(--teal-dark);
+  background: var(--petrol-deep);
   display: flex;
   flex-direction: column;
   position: fixed;
@@ -68,7 +68,7 @@
 }
 
 .admin-nav-item.active {
-  background: var(--pink);
+  background: var(--magenta);
   color: var(--white);
 }
 
@@ -98,7 +98,7 @@
 .admin-main {
   margin-left: 220px;
   flex: 1;
-  background: #f8f9fb;
+  background: var(--bone);
   min-height: 100vh;
   padding: 2.5rem;
 }
@@ -116,12 +116,12 @@
   font-family: var(--font-serif);
   font-size: 1.75rem;
   font-weight: 600;
-  color: var(--teal);
+  color: var(--petrol);
 }
 
 .admin-card {
   background: var(--white);
-  border: 1px solid var(--gray);
+  border: 1px solid var(--line);
   border-radius: 8px;
   padding: 1.5rem;
 }
@@ -139,38 +139,32 @@
   transition: all 0.2s;
 }
 
-.btn-teal {
-  background: var(--teal);
+/* Acción primaria del admin — uno de los 5 usos de magenta del sistema. */
+.btn-magenta {
+  background: var(--magenta);
   color: var(--white);
 }
 
-.btn-teal:hover { background: var(--teal-dark); }
-
-.btn-pink {
-  background: var(--pink);
-  color: var(--white);
-}
-
-.btn-pink:hover { background: var(--pink-dark); }
+.btn-magenta:hover { background: var(--magenta-deep); }
 
 .btn-outline {
   background: transparent;
-  color: var(--teal);
-  border: 1px solid var(--teal);
+  color: var(--petrol);
+  border: 1px solid var(--petrol);
 }
 
 .btn-outline:hover {
-  background: var(--teal);
+  background: var(--petrol);
   color: var(--white);
 }
 
 .btn-danger {
   background: transparent;
-  color: #dc2626;
-  border: 1px solid #dc2626;
+  color: var(--estado-baja);
+  border: 1px solid var(--estado-baja);
 }
 
 .btn-danger:hover {
-  background: #dc2626;
+  background: var(--estado-baja);
   color: var(--white);
 }

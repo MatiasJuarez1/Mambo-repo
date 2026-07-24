@@ -74,7 +74,7 @@ export default function PropiedadesLista() {
       {/* Header */}
       <div className="admin-page-header">
         <h1>Propiedades</h1>
-        <Link to="/admin/propiedades/nueva" className="btn btn-pink">
+        <Link to="/admin/propiedades/nueva" className="btn btn-magenta">
           + Nueva propiedad
         </Link>
       </div>

@@ -351,7 +351,7 @@ export default function PropiedadFormulario() {
           <button type="button" className="btn btn-outline" onClick={() => navigate('/admin/propiedades')}>
             Cancelar
           </button>
-          <button type="submit" className="btn btn-pink" disabled={saving}>
+          <button type="submit" className="btn btn-magenta" disabled={saving}>
             {saving ? 'Guardando...' : esEdicion ? 'Guardar cambios' : 'Crear propiedad'}
           </button>
         </div>

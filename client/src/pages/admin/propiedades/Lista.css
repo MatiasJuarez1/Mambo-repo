@@ -23,7 +23,7 @@
   padding: 0.5rem 0.75rem;
   font-size: 0.85rem;
   font-family: var(--font-sans);
-  border: 1px solid var(--gray);
+  border: 1px solid var(--line);
   background: var(--white);
   color: var(--text);
   outline: none;
@@ -33,7 +33,7 @@
 
 .filtros-bar select:focus,
 .filtros-bar input:focus {
-  border-color: var(--teal);
+  border-color: var(--petrol);
 }
 
 .lista-estado {
@@ -43,7 +43,7 @@
   text-align: center;
 }
 
-.lista-error { color: #dc2626; }
+.lista-error { color: var(--estado-baja); }
 
 .tabla-wrapper { padding: 0; overflow-x: auto; }
 
@@ -54,8 +54,8 @@
 }
 
 .tabla thead {
-  background: #f8f9fb;
-  border-bottom: 2px solid var(--gray);
+  background: var(--bone);
+  border-bottom: 2px solid var(--line);
 }
 
 .tabla th {
@@ -71,14 +71,14 @@
 
 .tabla td {
   padding: 0.85rem 1rem;
-  border-bottom: 1px solid var(--gray);
+  border-bottom: 1px solid var(--line);
   color: var(--text);
   vertical-align: middle;
 }
 
 .tabla tbody tr:last-child td { border-bottom: none; }
 
-.tabla tbody tr:hover { background: #f8f9fb; }
+.tabla tbody tr:hover { background: var(--petrol-soft); }
 
 .tabla-propiedad {
   display: flex;
@@ -95,7 +95,7 @@
 }
 
 .tabla-thumb-empty {
-  background: var(--gray);
+  background: var(--bone);
   border-radius: 4px;
 }
 

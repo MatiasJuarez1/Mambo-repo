@@ -10,9 +10,9 @@
   font-family: var(--font-serif);
   font-size: 1.1rem;
   font-weight: 600;
-  color: var(--teal);
+  color: var(--petrol);
   padding-bottom: 0.75rem;
-  border-bottom: 1px solid var(--gray);
+  border-bottom: 1px solid var(--line);
   margin-bottom: 0.25rem;
 }
 
@@ -47,7 +47,7 @@
   font-size: 0.9rem;
   font-family: var(--font-sans);
   color: var(--text);
-  border: 1px solid var(--gray);
+  border: 1px solid var(--line);
   background: var(--white);
   outline: none;
   width: 100%;
@@ -58,7 +58,7 @@
 .form-field input:focus,
 .form-field select:focus,
 .form-field textarea:focus {
-  border-color: var(--teal);
+  border-color: var(--petrol);
 }
 
 .form-field textarea { resize: vertical; }
@@ -71,8 +71,8 @@
 }
 
 .form-error {
-  background: #fee2e2;
-  color: #991b1b;
+  background: var(--estado-baja-bg);
+  color: var(--estado-baja);
   padding: 0.75rem 1rem;
   font-size: 0.875rem;
   border-radius: 4px;
@@ -98,8 +98,8 @@
   aspect-ratio: 4 / 3;
   border-radius: 6px;
   overflow: hidden;
-  border: 1px solid var(--gray);
-  background: var(--gray);
+  border: 1px solid var(--line);
+  background: var(--bone);
 }
 
 .foto-item img {
@@ -120,7 +120,7 @@
   padding: 0.2rem 0.45rem;
   border-radius: 4px;
   color: var(--white);
-  background: var(--teal);
+  background: var(--petrol);
 }
 
 .foto-quitar {
@@ -135,7 +135,7 @@
   border: none;
   border-radius: 50%;
   background: rgba(0, 0, 0, 0.55);
-  color: #fff;
+  color: var(--white);
   font-size: 1.05rem;
   line-height: 1;
   cursor: pointer;
@@ -151,7 +151,7 @@
   justify-content: center;
   gap: 0.35rem;
   aspect-ratio: 4 / 3;
-  border: 1.5px dashed var(--gray);
+  border: 1.5px dashed var(--line);
   border-radius: 6px;
   color: var(--text-muted);
   font-size: 0.78rem;
@@ -160,8 +160,8 @@
 }
 
 .foto-agregar:hover {
-  border-color: var(--teal);
-  color: var(--teal);
+  border-color: var(--petrol);
+  color: var(--petrol);
 }
 
 .foto-agregar-icono {
