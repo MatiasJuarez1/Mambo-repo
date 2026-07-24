@@ -15,6 +15,8 @@ dependencies = [
   "alembic>=1.13",
   "bcrypt>=4.1",
   "python-multipart>=0.0.9",
+  "pillow>=10.4",          # procesamiento de imágenes (validación, EXIF, resize)
+  "pillow-heif>=0.18",     # decodifica HEIC/HEIF (fotos de iPhone) en Pillow
 ]
 
 [project.optional-dependencies]

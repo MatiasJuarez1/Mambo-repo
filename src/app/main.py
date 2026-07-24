@@ -1,7 +1,9 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from sqlalchemy import text
 
+from app.config import get_settings
 from app.database import engine
 
 # Módulos de inventario / publicaciones (rama agustin)
@@ -21,10 +23,23 @@ app = FastAPI(title="Mambo API", version="1.0.0")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    # En dev el frontend de Vite corre en localhost; si el 5173 está ocupado, Vite
+    # cae a 5174/5175/... Se acepta cualquier puerto local para que la app no se
+    # rompa por ese corrimiento (en producción se restringe al dominio real).
+    allow_origin_regex=r"http://(localhost|127\.0\.0\.1):\d+",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+)
+
+# Archivos subidos (fotos de propiedades) servidos de forma local.
+# La carpeta se crea si no existe para que StaticFiles no falle en un entorno limpio.
+_settings = get_settings()
+_settings.media_root.mkdir(parents=True, exist_ok=True)
+app.mount(
+    _settings.media_url_prefix,
+    StaticFiles(directory=_settings.media_root),
+    name="media",
 )
 
 # Inventario y publicaciones (bajo /api/v1)

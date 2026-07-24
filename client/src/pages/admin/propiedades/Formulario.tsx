@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { propiedadesApi } from '../../../api/propiedades'
-import type { TipoPropiedad, TipoOperacion, EstadoComercial } from '../../../types/propiedad'
+import type { TipoPropiedad, TipoOperacion, EstadoComercial, Medio } from '../../../types/propiedad'
+import { mediaUrl } from '../../../lib/propiedad'
 import './Formulario.css'
 
 interface FormState {
@@ -47,6 +48,11 @@ export default function PropiedadFormulario() {
   const [saving, setSaving]   = useState(false)
   const [error, setError]     = useState<string | null>(null)
 
+  // Fotos ya guardadas de la propiedad. Las nuevas se suben al instante al
+  // backend (que las procesa) y se agregan acá con la URL que devuelve.
+  const [medios, setMedios]     = useState<Medio[]>([])
+  const [subiendo, setSubiendo] = useState(false)
+
   // ── Cargar datos en modo edición ──
   useEffect(() => {
     if (!esEdicion) return
@@ -71,6 +77,7 @@ export default function PropiedadFormulario() {
           pais:             p.ubicacion?.pais ?? 'AR',
           codigo_postal:    p.ubicacion?.codigo_postal ?? '',
         })
+        setMedios([...p.medios].sort((a, b) => a.orden - b.orden))
       })
       .catch(e => setError(e.message))
       .finally(() => setLoading(false))
@@ -78,6 +85,35 @@ export default function PropiedadFormulario() {
 
   const set = (key: keyof FormState, value: string) =>
     setForm(prev => ({ ...prev, [key]: value }))
+
+  // ── Fotos ──
+  // Se suben una por una al backend apenas se seleccionan; el servidor las
+  // valida, procesa y devuelve la URL ya lista para mostrar.
+  const subirArchivos = async (files: FileList | null) => {
+    if (!files || !id) return
+    setSubiendo(true)
+    setError(null)
+    try {
+      for (const archivo of Array.from(files)) {
+        const medio = await propiedadesApi.subirMedio(Number(id), archivo)
+        setMedios(prev => [...prev, medio])
+      }
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'No se pudo subir la foto')
+    } finally {
+      setSubiendo(false)
+    }
+  }
+
+  const borrarMedio = async (medioId: number) => {
+    if (!id) return
+    try {
+      await propiedadesApi.eliminarMedio(Number(id), medioId)
+      setMedios(prev => prev.filter(m => m.id !== medioId))
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'No se pudo borrar la foto')
+    }
+  }
 
   // ── Submit ──
   const handleSubmit = async (e: React.FormEvent) => {
@@ -109,10 +145,13 @@ export default function PropiedadFormulario() {
     try {
       if (esEdicion) {
         await propiedadesApi.actualizar(Number(id), payload)
+        navigate('/admin/propiedades')
       } else {
-        await propiedadesApi.crear(payload)
+        // Al crear vamos a la edición: las fotos necesitan el id recién asignado
+        // por el backend, así que se agregan en el paso siguiente.
+        const prop = await propiedadesApi.crear(payload)
+        navigate(`/admin/propiedades/${prop.id}/editar`)
       }
-      navigate('/admin/propiedades')
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Error al guardar')
     } finally {
@@ -254,6 +293,57 @@ export default function PropiedadFormulario() {
               <input value={form.codigo_postal} onChange={e => set('codigo_postal', e.target.value)} placeholder="4000" />
             </div>
           </div>
+        </div>
+
+        {/* ── Fotos ── */}
+        <div className="admin-card form-section">
+          <h2 className="form-section-title">Fotos</h2>
+          {esEdicion ? (
+            <p className="form-hint">
+              La primera foto se usa como principal. Se suben al instante al seleccionarlas.
+            </p>
+          ) : (
+            <p className="form-hint">
+              Guardá la propiedad para poder agregar fotos.
+            </p>
+          )}
+
+          {esEdicion && (
+            <div className="fotos-grid">
+              {/* Fotos ya guardadas, servidas por el backend */}
+              {medios.map(m => (
+                <div key={m.id} className="foto-item">
+                  <img src={mediaUrl(m.url)} alt={m.descripcion ?? 'Foto de la propiedad'} />
+                  {m.es_principal && <span className="foto-principal">Principal</span>}
+                  <button
+                    type="button"
+                    className="foto-quitar"
+                    onClick={() => borrarMedio(m.id)}
+                    aria-label="Borrar foto"
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+
+              {/* Selector: sube al instante al backend */}
+              <label className="foto-agregar">
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  hidden
+                  disabled={subiendo}
+                  onChange={e => {
+                    subirArchivos(e.target.files)
+                    e.target.value = ''
+                  }}
+                />
+                <span className="foto-agregar-icono">+</span>
+                <span>{subiendo ? 'Subiendo...' : 'Agregar fotos'}</span>
+              </label>
+            </div>
+          )}
         </div>
 
         {/* ── Acciones ── */}

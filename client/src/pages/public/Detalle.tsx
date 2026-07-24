@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { propiedadesApi } from '../../api/propiedades'
 import type { Propiedad } from '../../types/propiedad'
-import { formatPrecio, LABEL_OPERACION, LABEL_TIPO } from '../../lib/propiedad'
+import { formatPrecio, LABEL_OPERACION, LABEL_TIPO, mediaUrl } from '../../lib/propiedad'
 import { EMAIL_CONTACTO, linkWhatsApp } from '../../config/contacto'
 import './Detalle.css'
 
@@ -70,7 +70,7 @@ export default function Detalle() {
             <button
               className="detalle-gal-principal"
               onClick={() => setImgIdx(0)}
-              style={{ backgroundImage: `url(${imagenes[imgIdx]?.url ?? imagenes[0].url})` }}
+              style={{ backgroundImage: `url(${mediaUrl(imagenes[imgIdx]?.url ?? imagenes[0].url)})` }}
               aria-label={`Foto principal de ${prop.titulo}`}
             >
               <span className="detalle-badge">{LABEL_OPERACION[prop.tipo_operacion]}</span>
@@ -83,7 +83,7 @@ export default function Detalle() {
                     key={m.id}
                     className="detalle-gal-thumb"
                     onClick={() => setImgIdx(i + 1)}
-                    style={{ backgroundImage: `url(${m.url})` }}
+                    style={{ backgroundImage: `url(${mediaUrl(m.url)})` }}
                     aria-label={`Foto ${i + 2} de ${prop.titulo}`}
                   >
                     {esUltima && <span className="detalle-gal-mas">+{imagenes.length - 5} fotos</span>}

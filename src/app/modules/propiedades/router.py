@@ -1,7 +1,7 @@
 from decimal import Decimal
 from typing import List, Optional
 
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import APIRouter, Depends, File, Form, Query, UploadFile, status
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -30,7 +30,7 @@ def listar_propiedades(
     precio_min: Optional[Decimal] = None,
     precio_max: Optional[Decimal] = None,
     skip: int = Query(0, ge=0),
-    limit: int = Query(20, ge=1, le=100),
+    limit: int = Query(20, ge=1, le=500),
     db: Session = Depends(get_db),
 ):
     return service.listar_propiedades(
@@ -67,6 +67,22 @@ def eliminar_propiedad(propiedad_id: int, db: Session = Depends(get_db)):
 )
 def agregar_medio(propiedad_id: int, data: MedioCreate, db: Session = Depends(get_db)):
     return service.agregar_medio(db, propiedad_id, data)
+
+
+@router.post(
+    "/{propiedad_id}/medios/upload",
+    response_model=MedioResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+def subir_medio(
+    propiedad_id: int,
+    archivo: UploadFile = File(...),
+    descripcion: Optional[str] = Form(None),
+    es_principal: bool = Form(False),
+    db: Session = Depends(get_db),
+):
+    """Sube un archivo de imagen (multipart) y lo asocia a la propiedad."""
+    return service.subir_medio(db, propiedad_id, archivo, descripcion, es_principal)
 
 
 @router.delete("/{propiedad_id}/medios/{medio_id}", status_code=status.HTTP_204_NO_CONTENT)

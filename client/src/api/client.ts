@@ -1,4 +1,4 @@
-const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8000'
+export const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8000'
 
 type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE'
 
@@ -7,10 +7,14 @@ async function request<T>(
   path: string,
   body?: unknown,
 ): Promise<T> {
+  // Con FormData dejamos que el navegador ponga el Content-Type (incluye el boundary
+  // del multipart); con JSON lo seteamos y serializamos nosotros.
+  const esFormData = body instanceof FormData
+
   const res = await fetch(`${BASE_URL}${path}`, {
     method,
-    headers: { 'Content-Type': 'application/json' },
-    body: body !== undefined ? JSON.stringify(body) : undefined,
+    headers: esFormData ? undefined : { 'Content-Type': 'application/json' },
+    body: body === undefined ? undefined : esFormData ? body : JSON.stringify(body),
   })
 
   if (res.status === 204) return undefined as T

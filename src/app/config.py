@@ -24,6 +24,13 @@ class Settings(BaseSettings):
 
     database_url: str | None = Field(default=None, validation_alias="DATABASE_URL")
 
+    # ── Almacenamiento de archivos (fotos de propiedades) ──
+    # Por ahora es local: los archivos van a una carpeta del servidor y en la DB
+    # se guarda la ruta pública. Al desplegar se migra a la nube cambiando solo
+    # dónde se sube el archivo (el schema y el frontend no cambian).
+    media_root: Path = Field(default=_REPO_ROOT / "media", validation_alias="MEDIA_ROOT")
+    media_url_prefix: str = Field(default="/media", validation_alias="MEDIA_URL_PREFIX")
+
     @computed_field  # type: ignore[prop-decorator]
     @property
     def sqlalchemy_database_url(self) -> str:

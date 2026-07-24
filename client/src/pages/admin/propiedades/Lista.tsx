@@ -4,6 +4,7 @@ import { propiedadesApi, type ListarParams } from '../../../api/propiedades'
 import type { PropiedadListItem, TipoOperacion, EstadoComercial } from '../../../types/propiedad'
 import Badge from '../../../components/Badge'
 import StatTile from '../../../components/StatTile'
+import { mediaUrl } from '../../../lib/propiedad'
 import './Lista.css'
 
 const TIPO_OPTIONS   = ['', 'casa', 'depto', 'local', 'terreno', 'oficina', 'otro']
@@ -164,7 +165,7 @@ export default function PropiedadesLista() {
                         <td>
                           <div className="tabla-propiedad">
                             {img
-                              ? <img src={img.url} alt={p.titulo} className="tabla-thumb" />
+                              ? <img src={mediaUrl(img.url)} alt={p.titulo} className="tabla-thumb" />
                               : <div className="tabla-thumb tabla-thumb-empty" />
                             }
                             <span className="tabla-titulo">{p.titulo}</span>

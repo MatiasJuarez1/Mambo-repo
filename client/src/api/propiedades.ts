@@ -50,6 +50,14 @@ export const propiedadesApi = {
   agregarMedio: (propiedadId: number, data: Omit<Medio, 'id' | 'propiedad_id' | 'creado_en'>) =>
     api.post<Medio>(`${BASE}/${propiedadId}/medios`, data),
 
+  // Sube un archivo de imagen (multipart) y lo asocia a la propiedad.
+  subirMedio: (propiedadId: number, archivo: File, esPrincipal = false) => {
+    const fd = new FormData()
+    fd.append('archivo', archivo)
+    fd.append('es_principal', String(esPrincipal))
+    return api.post<Medio>(`${BASE}/${propiedadId}/medios/upload`, fd)
+  },
+
   eliminarMedio: (propiedadId: number, medioId: number) =>
     api.delete<void>(`${BASE}/${propiedadId}/medios/${medioId}`),
 

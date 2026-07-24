@@ -234,3 +234,6 @@ frontend/.vite/
 # Superpowers skills (solo local)
 claude/
 .superpowers/
+
+# Archivos subidos localmente (fotos de propiedades). Se sirven desde /media.
+media/
