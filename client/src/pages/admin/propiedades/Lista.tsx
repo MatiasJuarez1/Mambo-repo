@@ -81,8 +81,8 @@ export default function PropiedadesLista() {
 
       <div className="admin-stats-grid">
         <StatTile label="Total" valor={total} />
-        <StatTile label="Disponibles" valor={disponibles} tono="teal" />
-        <StatTile label="Reservadas" valor={reservadas} tono="pink" />
+        <StatTile label="Disponibles" valor={disponibles} tono="ok" />
+        <StatTile label="Reservadas" valor={reservadas} tono="espera" />
       </div>
 
       {/* Filtros */}

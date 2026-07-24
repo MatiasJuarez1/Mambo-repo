@@ -25,8 +25,8 @@ export default function Dashboard() {
 
       <div className="admin-stats-grid">
         <StatTile label="Propiedades" valor={total} />
-        <StatTile label="Disponibles" valor={disponibles} tono="teal" />
-        <StatTile label="Reservadas" valor={reservadas} tono="pink" />
+        <StatTile label="Disponibles" valor={disponibles} tono="ok" />
+        <StatTile label="Reservadas" valor={reservadas} tono="espera" />
       </div>
 
       <div className="admin-card" style={{ marginTop: '1.25rem' }}>

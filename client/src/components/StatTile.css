@@ -1,6 +1,6 @@
 .stat-tile {
   background: var(--white);
-  border: 1px solid var(--gray);
+  border: 1px solid var(--line);
   border-radius: var(--radius-md);
   padding: 1rem 1.15rem;
 }
@@ -22,5 +22,5 @@
   line-height: 1;
 }
 
-.stat-tile-valor.tono-teal { color: var(--teal); }
-.stat-tile-valor.tono-pink { color: var(--pink); }
+.stat-tile-valor.tono-ok     { color: var(--estado-ok); }
+.stat-tile-valor.tono-espera { color: var(--estado-espera); }

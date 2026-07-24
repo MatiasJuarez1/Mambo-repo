@@ -3,7 +3,7 @@ import './StatTile.css'
 interface Props {
   label: string
   valor: number | string
-  tono?: 'teal' | 'pink'
+  tono?: 'ok' | 'espera'
 }
 
 export default function StatTile({ label, valor, tono }: Props) {
