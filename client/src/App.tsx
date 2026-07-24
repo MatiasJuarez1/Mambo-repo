@@ -5,9 +5,10 @@ import PublicLayout  from './layouts/PublicLayout'
 import AdminLayout   from './layouts/AdminLayout'
 
 // Páginas públicas
-import Home    from './pages/public/Home'
-import Listado from './pages/public/Listado'
-import Detalle from './pages/public/Detalle'
+import Home     from './pages/public/Home'
+import Listado  from './pages/public/Listado'
+import Detalle  from './pages/public/Detalle'
+import Nosotros from './pages/public/Nosotros'
 
 // Páginas admin
 import Dashboard            from './pages/admin/Dashboard'
@@ -26,6 +27,7 @@ export default function App() {
           <Route index               element={<Home />} />
           <Route path="propiedades"  element={<Listado />} />
           <Route path="propiedades/:id" element={<Detalle />} />
+          <Route path="nosotros"     element={<Nosotros />} />
         </Route>
 
         {/* ── Sección admin ── */}

@@ -1,0 +1,247 @@
+/* ── Página Nosotros ──────────────────────────────────────────── */
+
+.nosotros-page {
+  padding-top: var(--navbar-h); /* navbar fija */
+}
+
+/* ── Hero ─────────────────────────────────────────────────────── */
+
+.nosotros-hero {
+  background: var(--teal);
+  padding: 5rem 2rem 4.5rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.nosotros-hero::before {
+  content: '';
+  position: absolute;
+  top: -160px;
+  right: -120px;
+  width: 420px;
+  height: 420px;
+  border-radius: 50%;
+  background: rgba(194, 168, 120, 0.12);
+  pointer-events: none;
+}
+
+.nosotros-eyebrow {
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.5);
+  margin-bottom: 0.75rem;
+}
+
+.nosotros-title {
+  font-family: var(--font-serif);
+  font-size: clamp(2.4rem, 5vw, 3.8rem);
+  font-weight: 600;
+  color: var(--white);
+  line-height: 1.06;
+}
+
+.nosotros-title em {
+  font-style: italic;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.nosotros-lead {
+  margin-top: 1.75rem;
+  max-width: 560px;
+  font-size: 0.98rem;
+  line-height: 1.75;
+  color: rgba(255, 255, 255, 0.78);
+  position: relative;
+}
+
+/* ── Historia ─────────────────────────────────────────────────── */
+
+.nosotros-historia {
+  padding: var(--space-8) 2rem;
+  background: var(--white);
+}
+
+.nosotros-historia-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-8);
+  align-items: center;
+}
+
+.nosotros-historia-texto h2 {
+  font-family: var(--font-serif);
+  font-size: clamp(1.9rem, 3.5vw, 2.6rem);
+  font-weight: 600;
+  color: var(--teal);
+  line-height: 1.12;
+  margin: 0.4rem 0 1.5rem;
+}
+
+.nosotros-historia-texto p {
+  font-size: 0.92rem;
+  line-height: 1.8;
+  color: var(--text-muted);
+}
+
+.nosotros-historia-texto p + p {
+  margin-top: 1.1rem;
+}
+
+.nosotros-historia-foto {
+  min-height: 380px;
+  border-radius: var(--radius-md);
+  background: var(--gray) center / cover no-repeat;
+  box-shadow: var(--shadow-card);
+}
+
+@media (max-width: 860px) {
+  .nosotros-historia-grid { grid-template-columns: 1fr; gap: var(--space-6); }
+  .nosotros-historia-foto { min-height: 240px; }
+}
+
+/* ── Cifras ───────────────────────────────────────────────────── */
+
+.nosotros-cifras {
+  background: var(--cream);
+  padding: var(--space-7) 2rem;
+}
+
+.nosotros-cifras-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-6);
+  text-align: center;
+}
+
+.nosotros-cifra {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.nosotros-cifra-valor {
+  font-family: var(--font-serif);
+  font-size: clamp(2.2rem, 4vw, 3rem);
+  font-weight: 700;
+  line-height: 1;
+  color: var(--green);
+}
+
+.nosotros-cifra-label {
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--gold-dark);
+}
+
+/* ── Valores ──────────────────────────────────────────────────── */
+
+.nosotros-valores {
+  padding: var(--space-8) 2rem;
+  background: var(--white);
+}
+
+.nosotros-valores-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.25rem;
+}
+
+.nosotros-valor-card {
+  border: 1px solid var(--gray);
+  padding: 2rem 1.75rem;
+  position: relative;
+  transition: box-shadow 0.25s, transform 0.25s, border-color 0.25s;
+}
+
+.nosotros-valor-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: var(--teal);
+  transition: background 0.25s;
+}
+
+.nosotros-valor-card:hover {
+  border-color: transparent;
+  box-shadow: 0 10px 36px rgba(7, 103, 102, 0.1);
+  transform: translateY(-4px);
+}
+
+.nosotros-valor-card:hover::before { background: var(--pink); }
+
+.nosotros-valor-card h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 0.5rem;
+  letter-spacing: 0.02em;
+}
+
+.nosotros-valor-card p {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  line-height: 1.65;
+}
+
+/* ── Equipo ───────────────────────────────────────────────────── */
+
+.nosotros-equipo {
+  padding: 0 2rem var(--space-8);
+  background: var(--white);
+}
+
+.nosotros-equipo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--space-6);
+}
+
+.nosotros-persona {
+  text-align: center;
+}
+
+/* Marcador de foto: se reemplaza por <img> cuando haya retratos del equipo. */
+.nosotros-persona-foto {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  max-width: 220px;
+  margin: 0 auto 1.25rem;
+  border-radius: 50%;
+  background: var(--cream);
+  border: 1px solid var(--gray);
+}
+
+.nosotros-persona h3 {
+  font-family: var(--font-serif);
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--teal);
+  margin-bottom: 0.3rem;
+}
+
+.nosotros-persona p {
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+/* ── CTA ──────────────────────────────────────────────────────── */
+
+.nosotros-cta-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  position: relative;
+}
+
+/* El botón outline del hero se reutiliza acá: neutraliza su auto-alineado. */
+.nosotros-cta-acciones .btn-hero { align-self: auto; }
