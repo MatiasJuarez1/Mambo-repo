@@ -95,7 +95,7 @@ body {
   z-index: 100;
   background: rgba(255,255,255,0.96);
   backdrop-filter: blur(10px);
-  border-bottom: 1px solid var(--gray);
+  border-bottom: 1px solid var(--line);
 }
 
 .navbar-inner {
@@ -130,14 +130,14 @@ body {
 
 .navbar-quienes {
   padding-left: 1.5rem;
-  border-left: 1px solid var(--gray);
+  border-left: 1px solid var(--line);
   text-decoration: none;
   color: var(--text);
   white-space: nowrap;
   transition: color 0.2s;
 }
 
-.navbar-quienes:hover { color: var(--pink); }
+.navbar-quienes:hover { color: var(--petrol); }
 
 @media (max-width: 860px) {
   .navbar-logo-img { height: 26px; }
@@ -149,7 +149,7 @@ body {
   font-family: var(--font-serif);
   font-size: 1.5rem;
   font-weight: 700;
-  color: var(--gold);
+  color: var(--petrol);
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
@@ -158,7 +158,7 @@ body {
   font-family: var(--font-sans);
   font-size: 0.58rem;
   font-weight: 500;
-  color: var(--gold-dark);
+  color: var(--text-muted);
   letter-spacing: 0.28em;
   text-transform: uppercase;
 }
@@ -188,21 +188,21 @@ body {
   transition: color 0.2s;
 }
 
-.navbar-links a:hover { color: var(--pink); }
+.navbar-links a:hover { color: var(--petrol); }
 
 /* Botón admin: pastilla de contorno, más discreta que el bloque sólido */
 .navbar-admin-btn {
   display: inline-block;
   padding: 0.45rem 1.1rem;
-  border: 1px solid var(--teal);
+  border: 1px solid var(--petrol);
   border-radius: var(--radius-pill);
   background: transparent;
-  color: var(--teal) !important;
+  color: var(--petrol) !important;
   transition: background 0.2s, color 0.2s !important;
 }
 
 .navbar-admin-btn:hover {
-  background: var(--teal) !important;
+  background: var(--petrol) !important;
   color: var(--white) !important;
 }
 
@@ -225,7 +225,7 @@ body {
 }
 
 .navbar-dropdown-toggle:hover,
-.navbar-dropdown-toggle[aria-expanded='true'] { color: var(--pink); }
+.navbar-dropdown-toggle[aria-expanded='true'] { color: var(--petrol); }
 
 .navbar-caret { transition: transform 0.2s; }
 .navbar-caret.is-open { transform: rotate(180deg); }
@@ -238,7 +238,7 @@ body {
   min-width: 210px;
   list-style: none;
   background: var(--white);
-  border: 1px solid var(--gray);
+  border: 1px solid var(--line);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-card);
   padding: 0.4rem 0;
@@ -261,19 +261,19 @@ body {
 }
 
 .navbar-dropdown-menu a:hover {
-  background: var(--cream);
-  color: var(--green);
+  background: var(--bone);
+  color: var(--petrol);
 }
 
 .navbar-account {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: var(--green);
+  color: var(--petrol);
   transition: color 0.2s;
 }
 
-.navbar-account:hover { color: var(--gold-dark); }
+.navbar-account:hover { color: var(--petrol-deep); }
 
 /* ── Hero (split editorial) ─────────────────────────────── */
 
