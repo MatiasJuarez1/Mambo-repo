@@ -37,17 +37,23 @@ Tres ideas ordenan todo lo demás:
 
 | Token | Hex | Rol |
 |---|---|---|
-| `--ink` | `#121212` | titulares serif, texto fuerte |
-| `--graphite` | `#6A6969` | texto secundario |
+| `--text` | `#121212` | titulares serif, texto fuerte |
+| `--text-muted` | `#6A6969` | texto secundario |
 | `--line` | `#E2E1DF` | bordes, divisores |
 | `--bone` | `#F7F6F4` | superficie alterna (secciones, filas de tabla, fondos de página) |
 | `--white` | `#FFFFFF` | fondo principal |
 
-`--ink` es `#121212` y no negro puro: el negro absoluto sobre blanco vibra en pantalla
+`--text` y `--text-muted` **conservan su nombre y solo cambian de valor**
+(`#111827` → `#121212`, `#6b7280` → `#6A6969`). El renombrado de §5.1 aplica a los
+tokens cuyo nombre miente sobre su contenido (`--pink` apuntando a un dorado); estos
+dos ya están nombrados por rol y son correctos. Mantenerlos evita 48 ediciones sin
+ganancia. Los nombres `--ink` / `--graphite` quedan descartados.
+
+`--text` es `#121212` y no negro puro: el negro absoluto sobre blanco vibra en pantalla
 y cansa la lectura sostenida. El logo conserva `#000000` porque es una forma, no un
 párrafo.
 
-`--graphite` es el gris del logo (`#747373`) oscurecido ~4%. Justificación en §6.
+`--text-muted` es el gris del logo (`#747373`) oscurecido ~4%. Justificación en §6.
 
 `--line` y `--bone` son levemente cálidos, en reemplazo del `#f8f9fb` azulado que hoy
 está hardcodeado en cuatro archivos. Un gris frío junto a un verde petróleo lee a
@@ -180,11 +186,11 @@ Contrastes verificados por cálculo de luminancia relativa (WCAG 2.1):
 
 | Par | Ratio | Veredicto |
 |---|---|---|
-| `--ink` sobre blanco | 17.0 | ✓ AAA |
+| `--text` sobre blanco | 17.0 | ✓ AAA |
 | Blanco sobre `--petrol` | 12.5 | ✓ AAA |
 | `--magenta-deep` sobre blanco | 6.18 | ✓ AA |
-| `--graphite` sobre blanco | 5.41 | ✓ AA |
-| `--graphite` sobre `--bone` | 5.02 | ✓ AA |
+| `--text-muted` sobre blanco | 5.41 | ✓ AA |
+| `--text-muted` sobre `--bone` | 5.02 | ✓ AA |
 | `--magenta` sobre blanco | 4.33 | ✗ texto chico — solo ≥18px o bold |
 | `#747373` (gris del logo) sobre `--bone` | 4.34 | ✗ — motivo del ajuste |
 
