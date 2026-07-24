@@ -5,7 +5,7 @@
 }
 
 .listado-hero {
-  background: var(--teal);
+  background: var(--petrol);
   padding: 4rem 2rem 3.5rem;
 }
 
@@ -35,7 +35,7 @@
 
 .listado-filtros-wrap {
   background: var(--white);
-  border-bottom: 1px solid var(--gray);
+  border-bottom: 1px solid var(--line);
   padding: 0 2rem;
 }
 
@@ -51,7 +51,7 @@
   padding: 0.55rem 0.9rem;
   font-size: 0.85rem;
   font-family: var(--font-sans);
-  border: 1px solid var(--gray);
+  border: 1px solid var(--line);
   background: var(--white);
   color: var(--text);
   outline: none;
@@ -62,14 +62,14 @@
 
 .listado-filtros select:focus,
 .listado-filtros input:focus {
-  border-color: var(--teal);
+  border-color: var(--petrol);
 }
 
 /* ── Cuerpo ───────────────────────────────────────────────────── */
 
 .listado-body {
   padding: 3rem 2rem 5rem;
-  background: #f8f9fb;
+  background: var(--bone);
   min-height: 60vh;
 }
 
@@ -80,7 +80,7 @@
   padding: 3rem 0;
 }
 
-.listado-error { color: #dc2626; }
+.listado-error { color: var(--estado-baja); }
 
 .listado-count {
   font-size: 0.8rem;
