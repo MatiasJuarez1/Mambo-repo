@@ -7,22 +7,6 @@
 }
 
 :root {
-  /* Identidad: verde bosque + dorado (rediseño 2026) */
-  --green:      #1f3d34;
-  --green-dark: #152a24;
-  --gold:       #c2a878;
-  --gold-dark:  #a98c5f;
-  --cream:      #ece4d3;
-
-  /* Alias de compatibilidad: el sitio se rediseñó de teal/rosa a verde/dorado.
-     Se conservan los nombres para no reescribir cada regla del sistema.
-     TEMPORAL: se eliminan en la última tarea de la migración de paleta. */
-  --pink:       var(--gold);
-  --pink-dark:  var(--gold-dark);
-  --teal:       var(--green);
-  --teal-dark:  var(--green-dark);
-  --gray:       #E3E5EA;
-
   /* ── Paleta "Petróleo y tinta" ──────────────────────────────
      Derivada del logo de Mambo Group. Ver
      docs/superpowers/specs/2026-07-24-paleta-de-color-design.md */
