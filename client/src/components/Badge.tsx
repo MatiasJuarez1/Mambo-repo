@@ -1,21 +1,21 @@
 import './Badge.css'
 
-type Color = 'teal' | 'pink' | 'yellow' | 'gray' | 'red' | 'blue'
+type Color = 'ok' | 'espera' | 'neutro' | 'baja' | 'operacion'
 
 const colorMap: Record<string, Color> = {
   // estado_comercial
-  disponible: 'teal',
-  reservada:  'pink',
-  cerrada:    'gray',
-  baja:       'red',
-  // tipo_operacion
-  venta:      'pink',
-  alquiler:   'blue',
-  temporal:   'yellow',
+  disponible: 'ok',
+  reservada:  'espera',
+  cerrada:    'neutro',
+  baja:       'baja',
+  // tipo_operacion — todas en petróleo: el tipo lo dice la etiqueta, no el color
+  venta:      'operacion',
+  alquiler:   'operacion',
+  temporal:   'operacion',
   // estado_publicacion
-  activa:     'teal',
-  pausada:    'yellow',
-  eliminada:  'red',
+  activa:     'ok',
+  pausada:    'espera',
+  eliminada:  'baja',
 }
 
 const labelMap: Record<string, string> = {
@@ -43,7 +43,7 @@ interface Props {
 }
 
 export default function Badge({ value, color }: Props) {
-  const c = color ?? colorMap[value] ?? 'gray'
+  const c = color ?? colorMap[value] ?? 'neutro'
   return (
     <span className={`badge badge-${c}`}>
       {labelMap[value] ?? value}
