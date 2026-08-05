@@ -294,7 +294,7 @@ body {
 /* El background es el poster: se ve al instante y queda de fondo si el video
    no carga o el navegador bloquea el autoplay. */
 .hero-col-photo {
-  width: 42%;
+  width: 48%;
   background: var(--line) center / cover no-repeat;
   position: relative;
   overflow: hidden;

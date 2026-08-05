@@ -7,6 +7,10 @@ import PropiedadCard from '../../components/PropiedadCard'
 // Loop mudo de fondo. El poster es el frame 0, así no hay salto al arrancar.
 // En mobile y con "reducir movimiento" activado el CSS oculta el video y deja
 // el poster: ver .hero-col-photo en index.css.
+//
+// El archivo viene recortado a 720x860 desde el original vertical de 720x1280:
+// el object-fit: cover descartaba techo y mesa igual, y no encodearlos permite
+// gastar esos bits en la franja que sí se ve.
 const heroVideo  = '/hero.mp4'
 const heroPoster = '/hero-poster.jpg'
 
