@@ -291,17 +291,32 @@ body {
   pointer-events: none;
 }
 
+/* El background es el poster: se ve al instante y queda de fondo si el video
+   no carga o el navegador bloquea el autoplay. */
 .hero-col-photo {
   width: 42%;
   background: var(--line) center / cover no-repeat;
   position: relative;
+  overflow: hidden;
 }
 
-/* Degradado sutil que funde la foto con la columna teal */
+.hero-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* El material viene más saturado que la paleta; esto lo alinea sin que se note. */
+  filter: saturate(0.92);
+}
+
+/* Degradado sutil que funde la foto con la columna teal.
+   Va por encima del video: sin el z-index queda tapado. */
 .hero-col-photo::before {
   content: '';
   position: absolute;
   inset: 0;
+  z-index: 1;
   background: linear-gradient(
     90deg,
     rgba(14, 58, 59, 0.38) 0%,
@@ -461,9 +476,18 @@ body {
 
 .hero .btn-primary { position: relative; align-self: flex-start; }
 
+/* Quien pidió menos movimiento en su sistema ve el poster fijo. */
+@media (prefers-reduced-motion: reduce) {
+  .hero-video { display: none; }
+}
+
 @media (max-width: 860px) {
   .hero { flex-direction: column; min-height: auto; padding-bottom: 0; }
   .hero-col-photo { width: 100%; height: 260px; order: 2; }
+
+  /* En una banda de 260px el video no se aprecia y son 3 MB de datos móviles:
+     se muestra solo el poster. `display: none` evita que el navegador lo baje. */
+  .hero-video { display: none; }
   .hero-col-text { order: 1; padding: var(--space-7) var(--space-5); }
 
   .hero-search {

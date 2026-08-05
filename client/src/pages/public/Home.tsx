@@ -4,7 +4,11 @@ import { propiedadesApi } from '../../api/propiedades'
 import type { PropiedadListItem } from '../../types/propiedad'
 import PropiedadCard from '../../components/PropiedadCard'
 
-const hero = '/imagen-mambo.jpg'
+// Loop mudo de fondo. El poster es el frame 0, así no hay salto al arrancar.
+// En mobile y con "reducir movimiento" activado el CSS oculta el video y deja
+// el poster: ver .hero-col-photo en index.css.
+const heroVideo  = '/hero.mp4'
+const heroPoster = '/hero-poster.jpg'
 
 const categorias = [
   { num: '01', label: 'Lotes',         desc: 'Terrenos estratégicamente ubicados en las mejores zonas de Tucumán.' },
@@ -46,7 +50,20 @@ export default function Home() {
             </svg>
           </Link>
         </div>
-        <div className="hero-col-photo" style={{ backgroundImage: `url(${hero})` }} />
+        <div className="hero-col-photo" style={{ backgroundImage: `url(${heroPoster})` }}>
+          <video
+            className="hero-video"
+            src={heroVideo}
+            poster={heroPoster}
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="metadata"
+            aria-hidden="true"
+            tabIndex={-1}
+          />
+        </div>
 
         {/* Buscador flotante (maquetado — el filtrado real llega en un paso siguiente) */}
         <div className="hero-search">
