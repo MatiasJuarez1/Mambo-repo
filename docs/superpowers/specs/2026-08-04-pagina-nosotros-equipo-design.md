@@ -21,7 +21,7 @@ historia, cifras, valores, equipo y CTA. De esas, tres arrastran `TODO`:
 | Sección | Estado hoy | Destino |
 |---|---|---|
 | Hero | Copy genérico usable | Se conserva, ajustando el nombre de la marca |
-| Historia | `TODO: reemplazar por la historia real` | Se reescribe con material real |
+| Historia | `TODO: reemplazar por la historia real` | **Se elimina** |
 | Cifras | `+10 años`, `+200 operaciones` — inventadas | **Se elimina** |
 | Valores | `Claridad / Orden / Decisión` — inventados | **Se elimina** |
 | Equipo | Tres círculos vacíos | Se reescribe: 6 personas reales |
@@ -145,12 +145,12 @@ Los seis archivos se recortan y reexportan una sola vez, antes de tocar el CSS:
 - **Encuadre:** de pecho para arriba, comparable entre las seis. Ni cuerpo entero (Sandra
   quedaría chica) ni primer plano cerrado.
 - **Relación:** dos formatos, para que el CSS no tenga que compensar nada.
-  - **1:1 a 560×560** para las cinco del grid. Se eligió cuadrado sobre 3:4 después de
-    ver la página armada: con cinco tarjetas, el retrato vertical estiraba la sección
-    y empujaba las bios fuera de vista.
+  - **5:4 a 560×448** para las cinco del grid. El 3:4 original estiraba la sección y
+    empujaba las bios fuera de vista; el cuadrado seguía siendo alto. Apaisado, la foto
+    mide menos que el texto que acompaña y la tarjeta se lee de un vistazo.
   - **3:4 a 640×853** para la fundadora, que va en una fila de dos columnas y sí sostiene
     un retrato vertical.
-- **Formato:** JPEG calidad 82. Resultado: **203 KB** en total, contra 1.079 KB de origen.
+- **Formato:** JPEG calidad 82. Resultado: **167 KB** en total, contra 1.079 KB de origen.
 - **Nombres:** se normalizan a `client/public/equipo/<slug>.jpg`, en minúsculas y sin
   tildes, donde `<slug>` es el mismo campo de `Persona` (§7): `sandra`, `luisina`,
   `belen`, `agustina`, `nadia`, `marianela`. Hoy la capitalización de los archivos es
@@ -178,18 +178,27 @@ es ~1.5×. No llega a 2× retina, pero son retratos con fondo liso y poco detall
 subir a 760 px duplicaría el peso para una diferencia que no se ve. La fundadora, a
 330 px de ancho con una fuente de 640 px, sí queda cerca de 2×.
 
+Los recortes se calibraron a mano y se revisaron uno por uno sobre la imagen generada, no
+a ojo sobre el original: la primera pasada dejaba restos del logo (`OUP`, `UP`) en Sandra,
+Belén y Nadia. Cada cambio de relación se rehace **desde los originales**, nunca
+reescalando un recorte anterior, para no acumular pérdida de compresión.
+
 ## 6. Estructura de la página
 
 ```
 [Hero]       Quiénes somos — campo petróleo, sin cambios estructurales
-[Historia]   Manifiesto en dos columnas: texto + foto
 [Equipo]     Sandra destacada  →  grid de 5
 [CTA]        Contactanos / Ver propiedades
 ```
 
-**Historia** se reescribe con material real (los veinte años de gestión de empresas de
-Sandra, la fundación de Mambo Group, la filosofía de transparencia y acompañamiento). No
-se inventa nada: todo sale de su bio. Conserva el layout de dos columnas actual.
+**Historia se elimina.** Se llegó a reescribir con material real de la bio de Sandra, pero
+al ver la página armada quedó claro que no se sostenía: la sección se apoyaba en
+`imagen-mambo1.jpg`, un render genérico de una casa que no es de Mambo ni de Tucumán, y
+era la única imagen no real de una página construida sobre seis retratos verdaderos. El
+manifiesto además repetía lo que la bio de Sandra ya dice mejor y con su firma. La página
+va del hero directo a las personas.
+
+Esto deja `client/public/imagen-mambo1.jpg` sin ningún uso en el código.
 
 **CTA** se conserva tal cual. Es la única página institucional del sitio y sin él la
 página termina en seco en la última tarjeta.
@@ -239,8 +248,8 @@ es el único uso del acento en toda la sección, según la regla de escasez de l
 Los dos párrafos en sans, `--text-muted`.
 
 **Grid.** Fondo `--bone` para separarlo de la fila de Sandra sin necesidad de una línea.
-Cada tarjeta: foto cuadrada con `--radius-md`, nombre en serif `--petrol`, rol en
-versalitas `--text-muted`, cita en serif itálica, bio en sans a `0.82rem`.
+Cada tarjeta: foto 5:4 con `--radius-md`, nombre en serif `--petrol`, rol en versalitas
+`--text-muted`, cita en serif itálica, bio en sans a `0.82rem`.
 
 **Hover:** `translateY(-4px)` y de `--shadow-card` a `--shadow-hover`, la misma transición
 que ya usan las tarjetas de propiedades. Sin zoom sobre la foto: son retratos de personas

@@ -15,10 +15,10 @@
   transform: translateY(-4px);
 }
 
-/* Cuadrada y no 3:4: con cinco tarjetas, el retrato vertical estiraba
-   demasiado la página y empujaba las bios fuera de vista. */
+/* 5:4 apaisada. Con cinco tarjetas, el retrato vertical estiraba la página
+   y empujaba las bios fuera de vista; el cuadrado seguía siendo alto. */
 .persona-card-foto {
-  aspect-ratio: 1 / 1;
+  aspect-ratio: 5 / 4;
   background: var(--bone);
 }
 

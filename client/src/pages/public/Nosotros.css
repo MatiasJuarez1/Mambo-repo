@@ -56,51 +56,6 @@
   position: relative;
 }
 
-/* ── Historia ─────────────────────────────────────────────────── */
-
-.nosotros-historia {
-  padding: var(--space-8) 2rem;
-  background: var(--white);
-}
-
-.nosotros-historia-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--space-8);
-  align-items: center;
-}
-
-.nosotros-historia-texto h2 {
-  font-family: var(--font-serif);
-  font-size: clamp(1.9rem, 3.5vw, 2.6rem);
-  font-weight: 600;
-  color: var(--petrol);
-  line-height: 1.12;
-  margin: 0.4rem 0 1.5rem;
-}
-
-.nosotros-historia-texto p {
-  font-size: 0.92rem;
-  line-height: 1.8;
-  color: var(--text-muted);
-}
-
-.nosotros-historia-texto p + p {
-  margin-top: 1.1rem;
-}
-
-.nosotros-historia-foto {
-  min-height: 380px;
-  border-radius: var(--radius-md);
-  background: var(--bone) center / cover no-repeat;
-  box-shadow: var(--shadow-card);
-}
-
-@media (max-width: 860px) {
-  .nosotros-historia-grid { grid-template-columns: 1fr; gap: var(--space-6); }
-  .nosotros-historia-foto { min-height: 240px; }
-}
-
 /* ── Equipo: la fundadora ─────────────────────────────────────── */
 
 .nosotros-equipo {

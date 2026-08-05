@@ -23,33 +23,6 @@ export default function Nosotros() {
         </div>
       </section>
 
-      {/* ── Historia ── */}
-      <section className="nosotros-historia">
-        <div className="section-container nosotros-historia-grid">
-          <div className="nosotros-historia-texto">
-            <span className="section-label">El grupo</span>
-            <h2>Una forma distinta de acompañar</h2>
-            <p>
-              Mambo Group nació de una decisión: llevar más de veinte años de experiencia
-              liderando empresas y equipos de trabajo al mercado inmobiliario, y hacerlo de
-              otra manera. Más humana, más cercana, más comprometida con las personas.
-            </p>
-            <p>
-              Esa forma de trabajar se sostiene sobre tres cosas que no negociamos:
-              transparencia en cada operación, capacitación permanente del equipo y un
-              acompañamiento genuino antes, durante y después de cada negocio.
-            </p>
-          </div>
-
-          <div
-            className="nosotros-historia-foto"
-            style={{ backgroundImage: 'url(/imagen-mambo1.jpg)' }}
-            role="img"
-            aria-label="Equipo de Mambo Group"
-          />
-        </div>
-      </section>
-
       {/* ── Equipo ── */}
       <section className="nosotros-equipo">
         <div className="section-container">
