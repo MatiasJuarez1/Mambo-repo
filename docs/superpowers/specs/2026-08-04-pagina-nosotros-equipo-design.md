@@ -74,7 +74,7 @@ se corrige `Mambo Groups` → `Mambo Group`.
 | 2 | Belén del Corro Lestard | Asesora Inmobiliaria | «La cercanía también es profesionalismo.» | `foto-belen.jpeg` |
 | 3 | Agustina Polanco | Corredora Inmobiliaria | «Cada hogar comienza con una buena decisión.» | `foto-agustina.jpeg` |
 | 4 | Nadia Medina | Agente Inmobiliaria | «Confianza que acompaña.» | `Foto-Nadia.jpeg` |
-| 5 | Marianela | Agente Inmobiliaria | «Encontrar soluciones es mi forma de ayudar.» | `Foto-Marianela.jpeg` |
+| 5 | Marianela Veiga | Agente Inmobiliaria | «Encontrar soluciones es mi forma de ayudar.» | `Foto-Marianela.jpeg` |
 
 Los nombres de esta columna y el de Sandra (§4.1) son los archivos **de origen**, tal como
 están hoy en `client/public/`. El código no los referencia: apunta a los recortados que
@@ -107,7 +107,7 @@ Bios completas:
   compromiso, honestidad y calidez le permiten generar acuerdos y brindar soluciones que
   transmiten confianza en cada etapa del proceso.
 
-**Pendiente:** falta el apellido de Marianela. Se publica como «Marianela» con un `TODO`.
+El apellido de Marianela (Veiga) llegó después de la primera redacción de este spec.
 
 ## 5. Tratamiento de las fotos
 
@@ -152,8 +152,9 @@ Los seis archivos se recortan y reexportan una sola vez, antes de tocar el CSS:
   tildes, donde `<slug>` es el mismo campo de `Persona` (§7): `sandra`, `luisina`,
   `belen`, `agustina`, `nadia`, `marianela`. Hoy la capitalización de los archivos es
   inconsistente (`Foto-Sandra` vs `foto-belen`).
-- **Originales:** se conservan en `client/public/equipo/originales/` para poder rehacer
-  el recorte sin pedir los archivos de nuevo.
+- **Originales:** se conservan en `client/fotos-originales/` para poder rehacer el recorte
+  sin pedir los archivos de nuevo. Va fuera de `public/` a propósito: Vite copia `public/`
+  entero al build, así que dejarlos ahí sumaría 1 MB muerto a cada deploy.
 
 Por qué recortar los archivos y no resolverlo en CSS: el CSS necesitaría un punto focal y
 un factor de zoom por persona —doce números mágicos sin forma de verificarlos salvo
@@ -278,10 +279,9 @@ flex `wrap` + `justify-content: center` y un `flex-basis` calculado, no con
 
 ## 12. Decisiones abiertas
 
-1. **Apellido de Marianela.** Se publica como «Marianela» hasta que lo pasen.
-2. **La foto de Luisina desentona.** Es la única sacada con celular, contra pared beige y
+1. **La foto de Luisina desentona.** Es la única sacada con celular, contra pared beige y
    sin la marca; las otras cinco son de la misma sesión de estudio. El recorte de pecho
    para arriba lo atenúa. Conviene pedir que la repitan en la próxima sesión.
-3. **Sin filtro global sobre las fotos.** Se evaluó blanco y negro y duotono petróleo para
+2. **Sin filtro global sobre las fotos.** Se evaluó blanco y negro y duotono petróleo para
    homogeneizar el set. Se descartó: con la foto nueva de Belén ya no hace falta, y es una
    decisión estética que le corresponde al cliente.

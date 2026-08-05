@@ -101,135 +101,117 @@
   .nosotros-historia-foto { min-height: 240px; }
 }
 
-/* ── Cifras ───────────────────────────────────────────────────── */
-
-.nosotros-cifras {
-  background: var(--bone);
-  padding: var(--space-7) 2rem;
-}
-
-.nosotros-cifras-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: var(--space-6);
-  text-align: center;
-}
-
-.nosotros-cifra {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.nosotros-cifra-valor {
-  font-family: var(--font-serif);
-  font-size: clamp(2.2rem, 4vw, 3rem);
-  font-weight: 700;
-  line-height: 1;
-  color: var(--petrol);
-}
-
-.nosotros-cifra-label {
-  font-size: 0.72rem;
-  font-weight: 500;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--text-muted);
-}
-
-/* ── Valores ──────────────────────────────────────────────────── */
-
-.nosotros-valores {
-  padding: var(--space-8) 2rem;
-  background: var(--white);
-}
-
-.nosotros-valores-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 1.25rem;
-}
-
-.nosotros-valor-card {
-  border: 1px solid var(--line);
-  padding: 2rem 1.75rem;
-  position: relative;
-  transition: box-shadow 0.25s, transform 0.25s, border-color 0.25s;
-}
-
-.nosotros-valor-card::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 3px;
-  background: var(--petrol);
-  transition: background 0.25s;
-}
-
-.nosotros-valor-card:hover {
-  border-color: transparent;
-  box-shadow: 0 10px 36px rgba(14, 58, 59, 0.1);
-  transform: translateY(-4px);
-}
-
-.nosotros-valor-card:hover::before { background: var(--magenta); }
-
-.nosotros-valor-card h3 {
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--text);
-  margin-bottom: 0.5rem;
-  letter-spacing: 0.02em;
-}
-
-.nosotros-valor-card p {
-  font-size: 0.85rem;
-  color: var(--text-muted);
-  line-height: 1.65;
-}
-
-/* ── Equipo ───────────────────────────────────────────────────── */
+/* ── Equipo: la fundadora ─────────────────────────────────────── */
 
 .nosotros-equipo {
-  padding: 0 2rem var(--space-8);
+  padding: var(--space-8) 2rem var(--space-7);
   background: var(--white);
 }
 
-.nosotros-equipo-grid {
+.nosotros-fundadora {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: var(--space-6);
+  grid-template-columns: 5fr 7fr;
+  gap: var(--space-8);
+  align-items: center;
 }
 
-.nosotros-persona {
-  text-align: center;
-}
-
-/* Marcador de foto: se reemplaza por <img> cuando haya retratos del equipo. */
-.nosotros-persona-foto {
-  width: 100%;
-  aspect-ratio: 1 / 1;
-  max-width: 220px;
-  margin: 0 auto 1.25rem;
-  border-radius: 50%;
+.nosotros-fundadora-foto {
+  aspect-ratio: 3 / 4;
+  border-radius: var(--radius-md);
+  overflow: hidden;
   background: var(--bone);
-  border: 1px solid var(--line);
+  box-shadow: var(--shadow-card);
 }
 
-.nosotros-persona h3 {
+.nosotros-fundadora-foto img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.nosotros-fundadora-texto h3 {
   font-family: var(--font-serif);
-  font-size: 1.25rem;
+  font-size: clamp(1.9rem, 3.2vw, 2.5rem);
   font-weight: 600;
   color: var(--petrol);
-  margin-bottom: 0.3rem;
+  line-height: 1.12;
 }
 
-.nosotros-persona p {
-  font-size: 0.72rem;
+.nosotros-fundadora-rol {
+  margin-top: 0.5rem;
+  font-size: 0.7rem;
   font-weight: 500;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--text-muted);
+}
+
+/* Único uso del acento magenta en toda la sección (regla de escasez de la paleta). */
+.nosotros-fundadora-cita {
+  margin: 1.75rem 0;
+  padding-left: 1.5rem;
+  border-left: 2px solid var(--magenta);
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: clamp(1.2rem, 2vw, 1.5rem);
+  line-height: 1.5;
+  color: var(--text);
+}
+
+.nosotros-fundadora-bio {
+  font-size: 0.92rem;
+  line-height: 1.8;
+  color: var(--text-muted);
+}
+
+.nosotros-fundadora-bio + .nosotros-fundadora-bio {
+  margin-top: 1.1rem;
+}
+
+@media (max-width: 860px) {
+  .nosotros-fundadora {
+    grid-template-columns: 1fr;
+    gap: var(--space-6);
+  }
+  /* Apilada, la foto a ancho completo queda desproporcionada. */
+  .nosotros-fundadora-foto {
+    max-width: 320px;
+    margin-inline: auto;
+  }
+}
+
+/* ── Equipo: el grid ──────────────────────────────────────────── */
+
+.nosotros-equipo-grid-section {
+  padding: var(--space-7) 2rem var(--space-8);
+  background: var(--bone);
+}
+
+/* Flex y no Grid: son cinco tarjetas y la última fila queda incompleta.
+   CSS Grid no permite centrar una fila incompleta; flex + justify-content sí.
+   El cálculo de --cols replica un grid de N columnas con gap uniforme. */
+.nosotros-equipo-grid {
+  --gap: var(--space-6);
+  --cols: 3;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--gap);
+}
+
+.nosotros-equipo-grid > * {
+  flex: 0 1 calc((100% - (var(--cols) - 1) * var(--gap)) / var(--cols));
+  max-width: calc((100% - (var(--cols) - 1) * var(--gap)) / var(--cols));
+}
+
+@media (max-width: 1023px) {
+  .nosotros-equipo-grid { --cols: 2; }
+}
+
+@media (max-width: 639px) {
+  .nosotros-equipo-grid { --cols: 1; }
+  .nosotros-equipo-grid > * { max-width: 380px; }
 }
 
 /* ── CTA ──────────────────────────────────────────────────────── */

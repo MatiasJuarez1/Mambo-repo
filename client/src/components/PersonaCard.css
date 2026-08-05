@@ -1,0 +1,75 @@
+/* ── Tarjeta de integrante del equipo ─────────────────────────── */
+
+.persona-card {
+  display: flex;
+  flex-direction: column;
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  transition: box-shadow 0.25s, transform 0.25s;
+}
+
+.persona-card:hover {
+  box-shadow: var(--shadow-hover);
+  transform: translateY(-4px);
+}
+
+.persona-card-foto {
+  aspect-ratio: 3 / 4;
+  background: var(--bone);
+}
+
+.persona-card-foto img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Sin zoom en hover, a diferencia de las tarjetas de propiedades:
+   son retratos de personas, no fotos de producto. */
+
+.persona-card-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding: 1.5rem 1.5rem 1.75rem;
+}
+
+.persona-card-nombre {
+  font-family: var(--font-serif);
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--petrol);
+  line-height: 1.15;
+}
+
+.persona-card-rol {
+  margin-top: 0.4rem;
+  font-size: 0.66rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.persona-card-cita {
+  margin: 1.1rem 0;
+  padding: 0.9rem 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 1.08rem;
+  line-height: 1.45;
+  color: var(--text);
+}
+
+.persona-card-bio {
+  font-size: 0.85rem;
+  line-height: 1.7;
+  color: var(--text-muted);
+}
+
+.persona-card-bio + .persona-card-bio { margin-top: 0.9rem; }

@@ -1,41 +1,8 @@
 import { Link } from 'react-router-dom'
+import PersonaCard from '../../components/PersonaCard'
 import { EMAIL_CONTACTO } from '../../config/contacto'
+import { altDe, EQUIPO, FUNDADORA, fotoDe } from './equipo'
 import './Nosotros.css'
-
-const foto = '/imagen-mambo1.jpg'
-
-// TODO: reemplazar por los valores reales del grupo.
-const valores = [
-  {
-    num: '01',
-    titulo: 'Claridad',
-    desc: 'Cada operación se explica sin letra chica: condiciones, plazos y costos sobre la mesa.',
-  },
-  {
-    num: '02',
-    titulo: 'Orden',
-    desc: 'Documentación, seguimiento y tiempos gestionados con método de principio a fin.',
-  },
-  {
-    num: '03',
-    titulo: 'Decisión',
-    desc: 'Información concreta del mercado local para que elijas con criterio, no por impulso.',
-  },
-]
-
-// TODO: cargar el equipo real (nombre, rol y foto) cuando esté definido.
-const equipo = [
-  { nombre: 'Nombre Apellido', rol: 'Dirección' },
-  { nombre: 'Nombre Apellido', rol: 'Comercial' },
-  { nombre: 'Nombre Apellido', rol: 'Administración' },
-]
-
-// TODO: reemplazar por las cifras reales del grupo.
-const cifras = [
-  { valor: '+10', label: 'Años en el mercado tucumano' },
-  { valor: '+200', label: 'Operaciones concretadas' },
-  { valor: '100%', label: 'Acompañamiento personalizado' },
-]
 
 export default function Nosotros() {
   return (
@@ -43,14 +10,15 @@ export default function Nosotros() {
       {/* ── Hero ── */}
       <section className="nosotros-hero">
         <div className="section-container">
-          <p className="nosotros-eyebrow">Mambo Groups</p>
+          <p className="nosotros-eyebrow">Mambo Group</p>
           <h1 className="nosotros-title">
             Quiénes<br />
             <em>somos</em>
           </h1>
           <p className="nosotros-lead">
-            Un grupo inmobiliario de Tucumán enfocado en lotes, casas e inversiones,
-            con un modo de trabajo simple: claridad, orden y decisiones bien informadas.
+            Un grupo inmobiliario de Tucumán que trabaja con una convicción simple:
+            detrás de cada propiedad hay una familia, un proyecto de vida y una decisión
+            que merece ser acompañada.
           </p>
         </div>
       </section>
@@ -61,57 +29,24 @@ export default function Nosotros() {
           <div className="nosotros-historia-texto">
             <span className="section-label">El grupo</span>
             <h2>Una forma distinta de acompañar</h2>
-            {/* TODO: reemplazar por la historia real del grupo. */}
             <p>
-              Mambo Groups nació para ordenar una industria que muchas veces se mueve
-              a media palabra. Trabajamos con propiedades del mercado local, revisadas
-              una por una, y acompañamos a cada cliente durante todo el proceso.
+              Mambo Group nació de una decisión: llevar más de veinte años de experiencia
+              liderando empresas y equipos de trabajo al mercado inmobiliario, y hacerlo de
+              otra manera. Más humana, más cercana, más comprometida con las personas.
             </p>
             <p>
-              Conocemos las zonas, los valores reales y las oportunidades que todavía
-              no se publicaron. Eso nos permite recomendar en función de tu objetivo
-              —vivir o invertir— y no de lo que haya disponible ese día.
+              Esa forma de trabajar se sostiene sobre tres cosas que no negociamos:
+              transparencia en cada operación, capacitación permanente del equipo y un
+              acompañamiento genuino antes, durante y después de cada negocio.
             </p>
           </div>
 
           <div
             className="nosotros-historia-foto"
-            style={{ backgroundImage: `url(${foto})` }}
+            style={{ backgroundImage: 'url(/imagen-mambo1.jpg)' }}
             role="img"
-            aria-label="Equipo de Mambo Groups"
+            aria-label="Equipo de Mambo Group"
           />
-        </div>
-      </section>
-
-      {/* ── Cifras ── */}
-      <section className="nosotros-cifras">
-        <div className="section-container nosotros-cifras-grid">
-          {cifras.map(c => (
-            <div key={c.label} className="nosotros-cifra">
-              <span className="nosotros-cifra-valor">{c.valor}</span>
-              <span className="nosotros-cifra-label">{c.label}</span>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ── Valores ── */}
-      <section className="nosotros-valores">
-        <div className="section-container">
-          <div className="section-header">
-            <h2>Cómo trabajamos</h2>
-            <p>Tres principios que ordenan cada operación que tomamos.</p>
-          </div>
-
-          <div className="nosotros-valores-grid">
-            {valores.map(v => (
-              <div key={v.num} className="nosotros-valor-card">
-                <span className="cat-num">{v.num}</span>
-                <h3>{v.titulo}</h3>
-                <p>{v.desc}</p>
-              </div>
-            ))}
-          </div>
         </div>
       </section>
 
@@ -123,13 +58,35 @@ export default function Nosotros() {
             <p>Las personas detrás de cada operación.</p>
           </div>
 
+          {/* Fundadora: fila propia. Su bio es el doble de larga que las demás. */}
+          <article className="nosotros-fundadora">
+            <div className="nosotros-fundadora-foto">
+              <img
+                src={fotoDe(FUNDADORA)}
+                alt={altDe(FUNDADORA)}
+                width={800}
+                height={1067}
+              />
+            </div>
+
+            <div className="nosotros-fundadora-texto">
+              <h3>{FUNDADORA.nombre}</h3>
+              <p className="nosotros-fundadora-rol">{FUNDADORA.rol}</p>
+              <blockquote className="nosotros-fundadora-cita">{FUNDADORA.cita}</blockquote>
+              {FUNDADORA.bio.map((parrafo, i) => (
+                <p key={i} className="nosotros-fundadora-bio">{parrafo}</p>
+              ))}
+            </div>
+          </article>
+        </div>
+      </section>
+
+      {/* ── Grid del equipo ── */}
+      <section className="nosotros-equipo-grid-section">
+        <div className="section-container">
           <div className="nosotros-equipo-grid">
-            {equipo.map((p, i) => (
-              <div key={i} className="nosotros-persona">
-                <div className="nosotros-persona-foto" aria-hidden="true" />
-                <h3>{p.nombre}</h3>
-                <p>{p.rol}</p>
-              </div>
+            {EQUIPO.map(p => (
+              <PersonaCard key={p.slug} persona={p} />
             ))}
           </div>
         </div>
