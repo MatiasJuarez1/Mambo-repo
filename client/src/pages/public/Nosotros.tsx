@@ -64,8 +64,8 @@ export default function Nosotros() {
               <img
                 src={fotoDe(FUNDADORA)}
                 alt={altDe(FUNDADORA)}
-                width={800}
-                height={1067}
+                width={640}
+                height={853}
               />
             </div>
 

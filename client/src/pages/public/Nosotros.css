@@ -108,15 +108,18 @@
   background: var(--white);
 }
 
+/* La foto ocupa menos que el texto a propósito: su bio son dos párrafos y una
+   cita, y un retrato más ancho estiraba la fila sin agregar información. */
 .nosotros-fundadora {
   display: grid;
-  grid-template-columns: 5fr 7fr;
-  gap: var(--space-8);
+  grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+  gap: var(--space-7);
   align-items: center;
 }
 
 .nosotros-fundadora-foto {
   aspect-ratio: 3 / 4;
+  max-width: 330px;
   border-radius: var(--radius-md);
   overflow: hidden;
   background: var(--bone);
@@ -176,7 +179,7 @@
   }
   /* Apilada, la foto a ancho completo queda desproporcionada. */
   .nosotros-fundadora-foto {
-    max-width: 320px;
+    max-width: 260px;
     margin-inline: auto;
   }
 }

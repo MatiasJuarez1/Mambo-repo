@@ -144,10 +144,13 @@ Los seis archivos se recortan y reexportan una sola vez, antes de tocar el CSS:
 
 - **Encuadre:** de pecho para arriba, comparable entre las seis. Ni cuerpo entero (Sandra
   quedaría chica) ni primer plano cerrado.
-- **Relación:** 3:4 exacta, para que el CSS no tenga que compensar nada.
-- **Ancho de salida:** 800 px, es decir 800×1067 (≈2× sobre una tarjeta de ~378 px en
-  desktop).
-- **Formato:** JPEG calidad 82. Objetivo: ~350 KB en total, contra los 1.079 KB de hoy.
+- **Relación:** dos formatos, para que el CSS no tenga que compensar nada.
+  - **1:1 a 560×560** para las cinco del grid. Se eligió cuadrado sobre 3:4 después de
+    ver la página armada: con cinco tarjetas, el retrato vertical estiraba la sección
+    y empujaba las bios fuera de vista.
+  - **3:4 a 640×853** para la fundadora, que va en una fila de dos columnas y sí sostiene
+    un retrato vertical.
+- **Formato:** JPEG calidad 82. Resultado: **203 KB** en total, contra 1.079 KB de origen.
 - **Nombres:** se normalizan a `client/public/equipo/<slug>.jpg`, en minúsculas y sin
   tildes, donde `<slug>` es el mismo campo de `Persona` (§7): `sandra`, `luisina`,
   `belen`, `agustina`, `nadia`, `marianela`. Hoy la capitalización de los archivos es
@@ -170,9 +173,10 @@ idea pero calibrada a ojo y sin ganancia de peso.
 
 ### 5.4 Resolución
 
-Tarjeta del grid en desktop: `(1200 − 64) / 3 ≈ 378 px`. Con fuentes de 800 px el factor
-es ~2.1×, suficiente en pantallas retina. Un primer plano más cerrado bajaría a ~1.4× y
-se vería blando; de ahí que el encuadre sea de pecho para arriba y no de cara.
+Tarjeta del grid en desktop: `(1200 − 64) / 3 ≈ 378 px`. Con fuentes de 560 px el factor
+es ~1.5×. No llega a 2× retina, pero son retratos con fondo liso y poco detalle fino, y
+subir a 760 px duplicaría el peso para una diferencia que no se ve. La fundadora, a
+330 px de ancho con una fuente de 640 px, sí queda cerca de 2×.
 
 ## 6. Estructura de la página
 
@@ -235,8 +239,8 @@ es el único uso del acento en toda la sección, según la regla de escasez de l
 Los dos párrafos en sans, `--text-muted`.
 
 **Grid.** Fondo `--bone` para separarlo de la fila de Sandra sin necesidad de una línea.
-Cada tarjeta: foto 3:4 con `--radius-md`, nombre en serif `--petrol`, rol en versalitas
-`--text-muted`, cita en serif itálica, bio en sans a `0.85rem`.
+Cada tarjeta: foto cuadrada con `--radius-md`, nombre en serif `--petrol`, rol en
+versalitas `--text-muted`, cita en serif itálica, bio en sans a `0.82rem`.
 
 **Hover:** `translateY(-4px)` y de `--shadow-card` a `--shadow-hover`, la misma transición
 que ya usan las tarjetas de propiedades. Sin zoom sobre la foto: son retratos de personas

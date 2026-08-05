@@ -6,7 +6,7 @@ export default function PersonaCard({ persona: p }: { persona: Persona }) {
   return (
     <article className="persona-card">
       <div className="persona-card-foto">
-        <img src={fotoDe(p)} alt={altDe(p)} width={800} height={1067} loading="lazy" />
+        <img src={fotoDe(p)} alt={altDe(p)} width={560} height={560} loading="lazy" />
       </div>
 
       <div className="persona-card-body">

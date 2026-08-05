@@ -15,8 +15,10 @@
   transform: translateY(-4px);
 }
 
+/* Cuadrada y no 3:4: con cinco tarjetas, el retrato vertical estiraba
+   demasiado la página y empujaba las bios fuera de vista. */
 .persona-card-foto {
-  aspect-ratio: 3 / 4;
+  aspect-ratio: 1 / 1;
   background: var(--bone);
 }
 
@@ -34,20 +36,20 @@
   display: flex;
   flex-direction: column;
   flex: 1;
-  padding: 1.5rem 1.5rem 1.75rem;
+  padding: 1.35rem 1.35rem 1.5rem;
 }
 
 .persona-card-nombre {
   font-family: var(--font-serif);
-  font-size: 1.5rem;
+  font-size: 1.35rem;
   font-weight: 600;
   color: var(--petrol);
   line-height: 1.15;
 }
 
 .persona-card-rol {
-  margin-top: 0.4rem;
-  font-size: 0.66rem;
+  margin-top: 0.35rem;
+  font-size: 0.63rem;
   font-weight: 500;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -55,20 +57,20 @@
 }
 
 .persona-card-cita {
-  margin: 1.1rem 0;
-  padding: 0.9rem 0;
+  margin: 0.9rem 0;
+  padding: 0.75rem 0;
   border-top: 1px solid var(--line);
   border-bottom: 1px solid var(--line);
   font-family: var(--font-serif);
   font-style: italic;
-  font-size: 1.08rem;
-  line-height: 1.45;
+  font-size: 1rem;
+  line-height: 1.4;
   color: var(--text);
 }
 
 .persona-card-bio {
-  font-size: 0.85rem;
-  line-height: 1.7;
+  font-size: 0.82rem;
+  line-height: 1.65;
   color: var(--text-muted);
 }
 
