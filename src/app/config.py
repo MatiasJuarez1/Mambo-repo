@@ -93,6 +93,30 @@ class Settings(BaseSettings):
         """
         return [origen.strip() for origen in self.cors_origins.split(",") if origen.strip()]
 
+    @model_validator(mode="before")
+    @classmethod
+    def _recortar_espacios(cls, valores):
+        """Le saca los espacios y saltos de línea de los bordes a todo valor de texto.
+
+        No es cosmético. Estas variables se cargan copiando y pegando en el panel
+        de un hosting, y ahí es fácil arrastrar un `\\n` final que no se ve en
+        ningún lado. Los síntomas que produce apuntan siempre lejos de la causa:
+
+        - en `DATABASE_URL`, el nombre de la base queda al final, así que Postgres
+          responde `database "postgres\\n" does not exist`;
+        - en `R2_SECRET_ACCESS_KEY`, la firma se calcula sobre otro secreto y todo
+          devuelve `SignatureDoesNotMatch`, que parece un problema de permisos.
+
+        Ninguno de estos valores puede empezar ni terminar en espacio de forma
+        legítima, así que recortarlos no puede romper una configuración válida.
+        """
+        if isinstance(valores, dict):
+            return {
+                clave: (valor.strip() if isinstance(valor, str) else valor)
+                for clave, valor in valores.items()
+            }
+        return valores
+
     @model_validator(mode="after")
     def _validar_combinaciones(self) -> "Settings":
         """Falla al arrancar ante configuraciones que no funcionarían en runtime.

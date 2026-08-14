@@ -77,6 +77,24 @@ def test_el_ttl_del_token_dura_una_jornada_de_trabajo(monkeypatch):
     assert _settings_sin_env().jwt_ttl_horas == 8
 
 
+def test_se_recortan_los_saltos_de_linea_al_pegar_variables(monkeypatch):
+    """Pegar en el panel de un hosting arrastra un `\\n` final que no se ve.
+
+    Ya pasó al desplegar: `DATABASE_URL` quedó con un salto de línea y, como el
+    nombre de la base es lo último de la URL, Postgres respondía
+    `database "postgres\\n" does not exist`. El mismo `\\n` en el secreto de R2
+    daría un `SignatureDoesNotMatch`, que parece un problema de permisos.
+    """
+    monkeypatch.setenv("JWT_SECRET", "cualquiera")
+    monkeypatch.setenv("DATABASE_URL", "postgresql+psycopg2://u:p@host:5432/postgres\n")
+    monkeypatch.setenv("R2_SECRET_ACCESS_KEY", "  un-secreto  ")
+
+    settings = _settings_sin_env()
+
+    assert settings.database_url == "postgresql+psycopg2://u:p@host:5432/postgres"
+    assert settings.r2_secret_access_key == "un-secreto"
+
+
 def _entorno_r2_completo(monkeypatch) -> None:
     """Deja el entorno con una configuración de R2 válida, para romperla de a una."""
     monkeypatch.setenv("JWT_SECRET", "cualquiera")
