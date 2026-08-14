@@ -99,3 +99,20 @@
   font-size: 1.35rem;
   color: var(--petrol);
 }
+
+/* ── Pantallas chicas ─────────────────────────────────────────── */
+
+@media (max-width: 860px) {
+  /* Con este padding el input queda en ~42px y el botón en ~38px: los dos
+     únicos controles de la pantalla, y ninguno llega al mínimo táctil. */
+  .login-input,
+  .login-boton { min-height: var(--tap-min); }
+}
+
+@media (max-width: 640px) {
+  /* A 320px, 24px de página más 32px de ficha por lado dejan el formulario en
+     poco más de 200px de ancho útil. */
+  .login-page { padding: var(--space-4); }
+
+  .login-card { padding: var(--space-6) var(--space-5); }
+}

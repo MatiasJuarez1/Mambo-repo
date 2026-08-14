@@ -93,8 +93,35 @@
 
 /* ── Grid de cards ────────────────────────────────────────────── */
 
+/* El mínimo va envuelto en min(100%, 280px) porque un minmax() de ancho fijo no
+   puede achicarse por debajo de ese valor: a 320px la columna medía más que el
+   contenedor y la página scrolleaba en horizontal. */
 .propiedades-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
   gap: 1.5rem;
+}
+
+/* ── Pantallas chicas ─────────────────────────────────────────── */
+
+@media (max-width: 860px) {
+  /* Los <select> nativos quedan en ~38px de alto con este padding: no llegan al
+     mínimo táctil. */
+  .listado-filtros select { min-height: var(--tap-min); }
+}
+
+@media (max-width: 640px) {
+  /* Tres filtros de 180px no entran en una fila de 320px: se apilan a ancho
+     completo en vez de quedar dos arriba y uno suelto abajo. */
+  .listado-filtros { flex-direction: column; }
+
+  .listado-filtros select {
+    width: 100%;
+    min-width: 0;
+  }
+
+  /* 2rem de padding lateral se comen un octavo de la pantalla de cada lado. */
+  .listado-hero { padding: 4rem 1rem 3.5rem; }
+  .listado-filtros-wrap { padding: 0 1rem; }
+  .listado-body { padding: 3rem 1rem 5rem; }
 }

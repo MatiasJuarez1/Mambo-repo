@@ -24,6 +24,17 @@ export interface Medio {
   descripcion: string | null
   orden: number
   es_principal: boolean
+  /**
+   * Copias reducidas de la foto, por ancho: `{"400": "...", "800": "...", "1600": "..."}`.
+   * Las claves son el ancho real en píxeles y los valores tienen la misma forma
+   * que `url` (relativa en local, absoluta con R2).
+   *
+   * Solo están las que se generaron: una foto de 600px trae únicamente la de 400.
+   * Es `null` —no `{}`— cuando no hay ninguna (medios anteriores a la columna,
+   * los del seed que apuntan a terceros, fotos ya más chicas que 400px); ahí se
+   * usa `url` a secas. Ver `lib/imagen.ts`.
+   */
+  variantes: Record<string, string> | null
   creado_en: string
 }
 

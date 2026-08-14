@@ -128,7 +128,7 @@
 .detalle-caract-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
 .detalle-caract-item { font-size: 0.85rem; color: var(--text); display: flex; align-items: center; gap: 0.5rem; }
 .detalle-caract-item::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: var(--petrol); flex-shrink: 0; }
-@media (max-width: 520px) { .detalle-caract-grid { grid-template-columns: 1fr; } }
+@media (max-width: 640px) { .detalle-caract-grid { grid-template-columns: 1fr; } }
 
 /* Aside sticky */
 .detalle-aside {

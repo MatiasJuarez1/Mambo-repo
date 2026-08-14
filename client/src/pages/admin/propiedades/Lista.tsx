@@ -4,7 +4,8 @@ import { propiedadesApi, type ListarParams } from '../../../api/propiedades'
 import type { PropiedadListItem, TipoOperacion, EstadoComercial } from '../../../types/propiedad'
 import Badge from '../../../components/Badge'
 import StatTile from '../../../components/StatTile'
-import { etiquetaEstado, LABEL_ESTADO, mediaUrl } from '../../../lib/propiedad'
+import { etiquetaEstado, LABEL_ESTADO } from '../../../lib/propiedad'
+import { ANCHO_MINIATURA, urlDeVariante } from '../../../lib/imagen'
 import './Lista.css'
 
 const TIPO_OPTIONS   = ['', 'casa', 'depto', 'local', 'terreno', 'oficina', 'otro']
@@ -163,27 +164,40 @@ export default function PropiedadesLista() {
                   {visibles.map(p => {
                     const img = p.medios.find(m => m.es_principal) ?? p.medios[0]
                     return (
+                      /* Los `data-label` no se ven en escritorio: bajo 640px la tabla pasa a
+                         tarjetas apiladas (Lista.css) y cada celda se rotula con el suyo. */
                       <tr key={p.id}>
-                        <td>
+                        <td data-label="Propiedad">
                           <div className="tabla-propiedad">
                             {img
-                              ? <img src={mediaUrl(img.url)} alt={p.titulo} className="tabla-thumb" />
+                              /* Sin `srcset`: el hueco mide 48×48 fijos, así que no
+                                 hay nada que el navegador tenga que decidir. Se pide
+                                 la variante más chica y, si la foto no tiene, la
+                                 completa. */
+                              ? <img
+                                  src={urlDeVariante(img, ANCHO_MINIATURA)}
+                                  alt={p.titulo}
+                                  className="tabla-thumb"
+                                  loading="lazy"
+                                  width={48}
+                                  height={48}
+                                />
                               : <div className="tabla-thumb tabla-thumb-empty" />
                             }
                             <span className="tabla-titulo">{p.titulo}</span>
                           </div>
                         </td>
-                        <td><Badge value={p.tipo_propiedad} /></td>
-                        <td><Badge value={p.tipo_operacion} /></td>
-                        <td>
+                        <td data-label="Tipo"><Badge value={p.tipo_propiedad} /></td>
+                        <td data-label="Operación"><Badge value={p.tipo_operacion} /></td>
+                        <td data-label="Estado">
                           <Badge
                             value={p.estado_comercial}
                             label={etiquetaEstado(p.estado_comercial, p.tipo_operacion)}
                           />
                         </td>
-                        <td className="tabla-precio">{formatPrecio(p.precio, p.moneda)}</td>
-                        <td>{p.ubicacion?.ciudad ?? '—'}</td>
-                        <td>
+                        <td data-label="Precio" className="tabla-precio">{formatPrecio(p.precio, p.moneda)}</td>
+                        <td data-label="Ciudad">{p.ubicacion?.ciudad ?? '—'}</td>
+                        <td data-label="Acciones">
                           <div className="tabla-acciones">
                             <button
                               className="btn btn-outline"

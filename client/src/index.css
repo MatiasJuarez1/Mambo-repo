@@ -1,5 +1,21 @@
 @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap');
 
+/* ── Escala de breakpoints ───────────────────────────────────────
+   Dos anchos, y solo dos, para todo el proyecto:
+
+     móvil   max-width: 640px  → una columna, targets táctiles,
+                                 tarjetas en lugar de tabla
+     tablet  max-width: 860px  → colapso de dos columnas a una
+
+   No son custom properties, y no pueden serlo: `@media (max-width: var(--x))`
+   no es CSS válido —las variables se resuelven al calcular estilos, y la
+   condición de una media query se evalúa antes de eso—. Así que esta escala
+   es una convención documentada: los valores se escriben literales en cada
+   `@media`, y la única forma de que no se disperse otra vez en 520/600/639/
+   900/1023 es que quien agregue una query lea esta tabla primero.
+
+   Los tokens que sí son variables (--navbar-h, --tap-min) están en :root. */
+
 *, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
@@ -55,6 +71,10 @@
   /* Alto de la navbar fija: las páginas lo usan como padding-top */
   --navbar-h: 72px;
 
+  /* Mínimo táctil (WCAG 2.5.5). Se aplica bajo 860px, donde el puntero deja
+     de ser un mouse: en escritorio un enlace de 20px de alto se acierta igual. */
+  --tap-min: 44px;
+
   /* Radios */
   --radius-sm: 4px;
   --radius-md: 10px;
@@ -63,6 +83,14 @@
   /* Sombras del sistema */
   --shadow-card:  0 2px 14px rgba(17, 24, 39, 0.06);
   --shadow-hover: 0 14px 38px rgba(14, 58, 59, 0.13);
+}
+
+/* Va pegado al :root a propósito: es la misma declaración, redefinida por ancho.
+   Al final del archivo quedaría lejos de lo que modifica y se perdería de vista.
+   Todo lo que consume --navbar-h como padding-top (Listado, Detalle, Nosotros,
+   Servicios) se reajusta solo; no hay que tocar ninguno. */
+@media (max-width: 860px) {
+  :root { --navbar-h: 60px; }
 }
 
 html { scroll-behavior: smooth; }
@@ -126,11 +154,124 @@ body {
 
 .navbar-quienes:hover { color: var(--petrol); }
 
-@media (max-width: 860px) {
-  .navbar-logo-img { height: 26px; }
-  .navbar-left { gap: 1rem; }
-  .navbar-quienes { padding-left: 1rem; }
+/* ── Hamburguesa y drawer móvil ── */
+
+/* Ambos existen sólo bajo 860px. El overlay además se monta sólo con el menú
+   abierto; esta regla es el cinturón por si el ancho cambia con el drawer
+   abierto (rotar el teléfono, agrandar la ventana) y el estado sobrevive. */
+.navbar-hamburguesa,
+.navbar-drawer,
+.navbar-drawer-overlay { display: none; }
+
+.navbar-hamburguesa {
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  /* Es el único control de la navbar en móvil: errarle no tiene segundo intento
+     cómodo, así que llega al mínimo táctil por sí solo. */
+  min-width: var(--tap-min);
+  min-height: var(--tap-min);
+  padding: 0 0.5rem;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
 }
+
+.navbar-hamburguesa-barra {
+  display: block;
+  width: 20px;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--petrol);
+}
+
+.navbar-drawer-lista {
+  list-style: none;
+  padding: 0.5rem 0 1.5rem;
+}
+
+/* Los enlaces de primer nivel y los toggles de acordeón comparten aspecto: son
+   el mismo nivel de la jerarquía y sólo se distinguen por el caret. */
+.navbar-drawer-enlace,
+.navbar-drawer-acordeon-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  width: 100%;
+  min-height: var(--tap-min);
+  padding: 0.7rem 1.25rem;
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  text-align: left;
+  color: var(--text);
+  text-decoration: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.navbar-drawer-acordeon-toggle[aria-expanded='true'] { color: var(--petrol); }
+
+/* Los ítems del acordeón van en caja baja e indentados: no heredan la versalita
+   del nivel de arriba, igual que en el desplegable de escritorio. */
+.navbar-drawer-sublista {
+  list-style: none;
+  background: var(--bone);
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.navbar-drawer-sublista a {
+  display: flex;
+  align-items: center;
+  min-height: var(--tap-min);
+  padding: 0.5rem 1.25rem 0.5rem 2rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  text-transform: none;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.navbar-drawer-sublista a:hover { color: var(--petrol); }
+
+.navbar-drawer-acciones {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 0.75rem;
+  padding: 1.25rem;
+  border-top: 1px solid var(--line);
+}
+
+/* La pastilla ocupa el ancho que sobra y el icono de cuenta se queda al costado:
+   con 320px de panel una fila alcanza para los dos, y así el acceso al panel
+   sigue sin rótulo, como en escritorio. */
+.navbar-drawer-acciones .navbar-contacto-btn {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--tap-min);
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  text-decoration: none;
+}
+
+.navbar-drawer-acciones .navbar-account {
+  min-width: var(--tap-min);
+  min-height: var(--tap-min);
+}
+
 
 .logo-mambo {
   font-family: var(--font-serif);
@@ -261,6 +402,79 @@ body {
 }
 
 .navbar-account:hover { color: var(--petrol-deep); }
+
+/* ── Navbar bajo 860px (tablet y teléfono) ─────────────────────
+   Va al final de la sección y no arriba junto a `.navbar-quienes`, porque
+   varias de estas declaraciones pisan a las de base con la misma especificidad
+   (`display` sobre `.navbar-links`, `.navbar-drawer`, …) y una media query no
+   suma especificidad: si el bloque quedara antes, ganaría el valor de
+   escritorio y el drawer nunca se vería. */
+
+@media (max-width: 860px) {
+  .navbar-logo-img { height: 26px; }
+
+  /* Bajo 860px la navbar queda en logo + hamburguesa: en 375px la fila entera
+     (logo + "Quiénes somos" + dos desplegables + pastilla + icono, con
+     gap: 2.25rem) no entra ni recortando el gap. Todo eso pasa al drawer, que
+     ofrece los mismos destinos. La alternancia es por `display: none` y no por
+     `matchMedia`: no parpadea en la primera pintura y saca el subárbol del
+     árbol de accesibilidad, así que ningún destino queda anunciado dos veces.
+
+     El `min-height: var(--tap-min)` que tenía acá `.navbar-dropdown-toggle` ya
+     no hace falta: ese botón no se ve más bajo 860px. El mínimo táctil vive
+     ahora en los controles del drawer, que son los que efectivamente se tocan. */
+  .navbar-quienes,
+  .navbar-links { display: none; }
+
+  .navbar-hamburguesa { display: flex; }
+
+  .navbar-drawer-overlay {
+    display: block;
+    position: fixed;
+    /* Arranca debajo de la navbar en vez de taparla: el drawer y el overlay son
+       descendientes de `.navbar` —que con z-index: 100 y position: fixed abre su
+       propio contexto de apilamiento—, así que a pantalla completa se comerían
+       el logo y la hamburguesa. Dejando la barra a la vista, además, la misma
+       hamburguesa que abrió el menú sirve para cerrarlo. */
+    inset: var(--navbar-h) 0 0 0;
+    /* Petróleo profundo translúcido en vez de negro: el oscurecido queda dentro
+       de la paleta y no ensucia el magenta de la pastilla de Contacto. */
+    background: rgba(7, 31, 32, 0.55);
+    z-index: 1;
+  }
+
+  .navbar-drawer {
+    display: block;
+    position: fixed;
+    inset: var(--navbar-h) 0 0 auto;
+    width: min(320px, 84vw);
+    overflow-y: auto;
+    background: var(--white);
+    border-left: 1px solid var(--line);
+    box-shadow: -18px 0 40px rgba(7, 31, 32, 0.18);
+    z-index: 2;
+    /* Fuera de pantalla, no `display: none`: la animación necesita un punto de
+       partida. El `visibility: hidden` es lo que lo saca del orden de tabulación
+       mientras está cerrado —un panel desplazado sigue siendo enfocable— y se
+       anima junto al transform: `visibility` pasa a visible apenas arranca la
+       transición y recién vuelve a hidden cuando termina, así que la salida se
+       ve completa. */
+    transform: translateX(100%);
+    visibility: hidden;
+    transition: transform 0.25s ease, visibility 0.25s;
+  }
+
+  .navbar-drawer.abierto {
+    transform: translateX(0);
+    visibility: visible;
+  }
+}
+
+/* El drawer sigue funcionando sin el deslizamiento: quien pidió menos
+   movimiento lo ve aparecer y desaparecer, no viajar. */
+@media (prefers-reduced-motion: reduce) {
+  .navbar-drawer { transition: none; }
+}
 
 /* ── Hero (split editorial) ─────────────────────────────── */
 
@@ -396,11 +610,15 @@ body {
 
 @media (max-width: 860px) {
   .hero { flex-direction: column; min-height: auto; padding-bottom: 0; }
-  .hero-col-photo { width: 100%; height: 260px; order: 2; }
 
-  /* En una banda de 260px el video no se aprecia y son 3 MB de datos móviles:
-     se muestra solo el poster. `display: none` evita que el navegador lo baje. */
-  .hero-video { display: none; }
+  /* 45vh en vez de los 260px fijos de antes: en una banda de 260px el video no
+     se lee. El piso de 260px es para el teléfono apaisado, donde 45vh son ~170px
+     y quedaría peor que antes.
+
+     Va con `max()` en una sola declaración y no como height + min-height porque
+     acá el mínimo es parte de la misma decisión de alto, no una restricción
+     aparte; leerlo en un renglón evita preguntarse cuál de las dos gana. */
+  .hero-col-photo { width: 100%; height: max(45vh, 260px); order: 2; }
   .hero-col-text { order: 1; padding: var(--space-7) var(--space-5); }
 }
 

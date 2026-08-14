@@ -163,11 +163,11 @@
   max-width: calc((100% - (var(--cols) - 1) * var(--gap)) / var(--cols));
 }
 
-@media (max-width: 1023px) {
+@media (max-width: 860px) {
   .nosotros-equipo-grid { --cols: 2; }
 }
 
-@media (max-width: 639px) {
+@media (max-width: 640px) {
   .nosotros-equipo-grid { --cols: 1; }
   .nosotros-equipo-grid > * { max-width: 380px; }
 }
