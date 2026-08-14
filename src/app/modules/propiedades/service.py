@@ -1,12 +1,11 @@
 import io
-import uuid
+from collections.abc import Sequence
 from datetime import datetime
 from decimal import Decimal
-from pathlib import Path
-from typing import List, Optional
 
 from fastapi import HTTPException, UploadFile, status
 from PIL import Image, ImageOps, UnidentifiedImageError
+from sqlalchemy import case
 from sqlalchemy.orm import Session
 
 # Registra el decodificador HEIC/HEIF (fotos de iPhone) en Pillow. Es opcional:
@@ -18,7 +17,6 @@ try:
 except ImportError:
     pass
 
-from app.config import get_settings
 from app.modules.propiedades.models import (
     EstadoComercial,
     Propiedad,
@@ -35,19 +33,29 @@ from app.modules.propiedades.schemas import (
     PropiedadCreate,
     PropiedadUpdate,
 )
+from app.storage import borrar_imagen, guardar_imagen
 
 
 def listar_propiedades(
     db: Session,
-    tipo_propiedad: Optional[TipoPropiedad] = None,
-    tipo_operacion: Optional[TipoOperacion] = None,
-    estado_comercial: Optional[EstadoComercial] = None,
-    ciudad: Optional[str] = None,
-    precio_min: Optional[Decimal] = None,
-    precio_max: Optional[Decimal] = None,
+    tipo_propiedad: TipoPropiedad | None = None,
+    tipo_operacion: TipoOperacion | None = None,
+    estado_comercial: EstadoComercial | None = None,
+    ciudad: str | None = None,
+    precio_min: Decimal | None = None,
+    precio_max: Decimal | None = None,
     skip: int = 0,
     limit: int = 20,
-) -> List[Propiedad]:
+    estados: Sequence[EstadoComercial] | None = None,
+) -> list[Propiedad]:
+    """Listado de propiedades con filtros opcionales.
+
+    Hay dos filtros de estado porque cubren dos usos distintos y conviven:
+    `estado_comercial` acota a uno exacto (el que usa el admin), mientras que
+    `estados` acepta un conjunto, que es lo que necesita el sitio público para
+    mostrar las operaciones ya cerradas junto a las disponibles sin arrastrar las
+    dadas de baja. Si se pasan los dos, se aplican ambos.
+    """
     query = db.query(Propiedad).filter(Propiedad.eliminado_en.is_(None))
 
     if tipo_propiedad:
@@ -56,6 +64,8 @@ def listar_propiedades(
         query = query.filter(Propiedad.tipo_operacion == tipo_operacion)
     if estado_comercial:
         query = query.filter(Propiedad.estado_comercial == estado_comercial)
+    if estados:
+        query = query.filter(Propiedad.estado_comercial.in_(estados))
     if precio_min is not None:
         query = query.filter(Propiedad.precio >= precio_min)
     if precio_max is not None:
@@ -65,7 +75,45 @@ def listar_propiedades(
             PropiedadUbicacion.ciudad.ilike(f"%{ciudad}%")
         )
 
-    return query.offset(skip).limit(limit).all()
+    # Las disponibles van primero y recién después las reservadas/cerradas/bajas.
+    # El orden vive acá y no en el frontend porque `limit` recorta ANTES de que el
+    # cliente reciba nada: ordenar allá dejaría el inventario vigente fuera de la
+    # primera página en cuanto se acumulen operaciones cerradas.
+    prioridad_estado = case(
+        (Propiedad.estado_comercial == EstadoComercial.disponible, 0),
+        else_=1,
+    )
+
+    return (
+        query.order_by(prioridad_estado, Propiedad.creado_en.desc(), Propiedad.id.desc())
+        .offset(skip)
+        .limit(limit)
+        .all()
+    )
+
+
+def listar_ciudades(db: Session) -> list[str]:
+    """Devuelve las ciudades que tienen al menos una propiedad publicada.
+
+    Se usa para alimentar el desplegable de zonas del frontend: solo interesan las
+    ciudades con propiedades vigentes (no eliminadas) y disponibles. Se descartan
+    las ubicaciones sin ciudad cargada (nula o cadena vacía) y el resultado viene
+    sin repetidos y ordenado alfabéticamente.
+    """
+    filas = (
+        db.query(PropiedadUbicacion.ciudad)
+        .join(Propiedad, Propiedad.id == PropiedadUbicacion.propiedad_id)
+        .filter(
+            Propiedad.eliminado_en.is_(None),
+            Propiedad.estado_comercial == EstadoComercial.disponible,
+            PropiedadUbicacion.ciudad.isnot(None),
+            PropiedadUbicacion.ciudad != "",
+        )
+        .distinct()
+        .order_by(PropiedadUbicacion.ciudad)
+        .all()
+    )
+    return [fila[0] for fila in filas]
 
 
 def obtener_propiedad(db: Session, propiedad_id: int) -> Propiedad:
@@ -216,14 +264,14 @@ def subir_medio(
     db: Session,
     propiedad_id: int,
     archivo: UploadFile,
-    descripcion: Optional[str] = None,
+    descripcion: str | None = None,
     es_principal: bool = False,
 ) -> PropiedadMedio:
-    """Guarda un archivo de imagen en disco local y registra el medio en la DB.
+    """Guarda un archivo de imagen y registra el medio en la DB.
 
-    El binario se escribe en `media_root/propiedades/` con un nombre único y en la
-    tabla se guarda solo la ruta pública (columna `url`). Migrar a la nube en el
-    futuro implica cambiar únicamente el destino de escritura de esta función.
+    Dónde queda el binario lo decide `app.storage` según `STORAGE_BACKEND`: en
+    disco durante el desarrollo, en Cloudinary en producción. Acá solo se guardan
+    la URL pública y la clave con la que después se lo puede borrar.
     """
     obtener_propiedad(db, propiedad_id)
 
@@ -237,13 +285,7 @@ def subir_medio(
     # El backend detecta el formato real, valida y normaliza la imagen (no el navegador).
     contenido, extension = _procesar_imagen(contenido)
 
-    settings = get_settings()
-    nombre = f"{uuid.uuid4().hex}{extension}"
-    destino_dir = Path(settings.media_root) / "propiedades"
-    destino_dir.mkdir(parents=True, exist_ok=True)
-    (destino_dir / nombre).write_bytes(contenido)
-
-    url = f"{settings.media_url_prefix}/propiedades/{nombre}"
+    guardado = guardar_imagen(contenido, extension)
 
     # El orden es la cantidad de medios ya existentes; si es la primera foto de la
     # propiedad se marca como principal por defecto.
@@ -254,7 +296,8 @@ def subir_medio(
     medio = PropiedadMedio(
         propiedad_id=propiedad_id,
         tipo_medio=TipoMedio.imagen,
-        url=url,
+        url=guardado.url,
+        storage_key=guardado.clave,
         descripcion=descripcion,
         orden=medios_existentes,
         es_principal=es_principal or medios_existentes == 0,
@@ -274,12 +317,10 @@ def eliminar_medio(db: Session, propiedad_id: int, medio_id: int) -> None:
     if not medio:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Medio no encontrado")
 
-    # Si el archivo está almacenado localmente, se borra también del disco.
-    settings = get_settings()
-    if medio.url.startswith(settings.media_url_prefix):
-        rel = medio.url[len(settings.media_url_prefix):].lstrip("/")
-        archivo = Path(settings.media_root) / rel
-        archivo.unlink(missing_ok=True)
+    # Se borra primero el archivo y después la fila. `borrar_imagen` no propaga
+    # errores del proveedor a propósito (ver su docstring): dejar la foto rota en
+    # la web sería peor que dejar un archivo huérfano en el CDN.
+    borrar_imagen(medio.url, medio.storage_key)
 
     db.delete(medio)
     db.commit()

@@ -1,14 +1,15 @@
-import enum
 from datetime import datetime
+from enum import StrEnum
 
-from sqlalchemy import Column, BigInteger, String, Text, Numeric, DateTime, ForeignKey
+from sqlalchemy import BigInteger, Column, DateTime, ForeignKey, Numeric, String, Text
 from sqlalchemy import Enum as SAEnum
 from sqlalchemy.orm import relationship
 
 from app.database import Base
 
 
-class EstadoPublicacion(str, enum.Enum):
+# StrEnum: ver la nota en propiedades/models.py.
+class EstadoPublicacion(StrEnum):
     activa = "activa"
     pausada = "pausada"
     eliminada = "eliminada"
@@ -24,7 +25,7 @@ class Publicacion(Base):
     titulo = Column(String(255), nullable=False)
     descripcion = Column(Text, nullable=True)
     estado = Column(
-        SAEnum(EstadoPublicacion, name="estado_publicacion", create_type=False),
+        SAEnum(EstadoPublicacion, name="estado_publicacion"),
         nullable=False,
         default=EstadoPublicacion.activa,
     )
@@ -37,7 +38,9 @@ class Publicacion(Base):
     # Sin FK (ver nota en propiedades.models): users usa BIGINT UNSIGNED.
     creado_por_usuario_id = Column(BigInteger, nullable=True)
     creado_en = Column(DateTime, nullable=False, default=datetime.utcnow)
-    actualizado_en = Column(DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
+    actualizado_en = Column(
+        DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow
+    )
     eliminado_en = Column(DateTime, nullable=True)
 
     propiedad = relationship("Propiedad", back_populates="publicaciones")

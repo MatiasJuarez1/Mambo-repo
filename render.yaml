@@ -1,0 +1,49 @@
+# Blueprint de Render: define el servicio de la API para no depender de que la
+# configuración del panel esté bien tipeada. Se aplica desde Render con
+# "New +" → "Blueprint" apuntando a este repositorio.
+#
+# El nombre `mambo-api` tiene que coincidir con el host escrito en
+# client/vercel.json, que es literal y no interpola variables.
+services:
+  - type: web
+    name: mambo-api
+    runtime: python
+    plan: free
+    rootDir: src
+    buildCommand: pip install -e .
+    # $PORT lo asigna Render; escuchar en un puerto fijo deja el deploy colgado.
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11.9"
+
+      # ── Base de datos (Supabase) ──
+      # Se carga a mano en el panel. Tiene que ser la cadena del **pooler** de
+      # Supabase (`...pooler.supabase.com`), no la de conexión directa: la
+      # directa resuelve solo por IPv6 y Render no tiene salida IPv6, así que
+      # falla con "Network is unreachable" sin más explicación.
+      # Formato: postgresql+psycopg2://postgres.<ref>:<password>@aws-0-<region>.pooler.supabase.com:5432/postgres
+      - key: DATABASE_URL
+        sync: false
+
+      # ── Sesión ──
+      # Lo genera Render una sola vez y queda fijo. Si se regenera, todas las
+      # sesiones abiertas dejan de validar y hay que volver a iniciar sesión.
+      - key: JWT_SECRET
+        generateValue: true
+      # Producción tiene TLS: la cookie solo debe viajar por HTTPS.
+      - key: COOKIE_SECURE
+        value: "True"
+      # `lax` es correcto porque el proxy de Vercel hace que el navegador vea
+      # front y API en el mismo origen. Ver client/vercel.json.
+      - key: COOKIE_SAMESITE
+        value: lax
+
+      # ── Fotos ──
+      # Obligatorio en Render: su disco es efímero y se borra en cada deploy.
+      - key: STORAGE_BACKEND
+        value: cloudinary
+      # cloudinary://<api_key>:<api_secret>@<cloud_name>, del dashboard de Cloudinary.
+      - key: CLOUDINARY_URL
+        sync: false
