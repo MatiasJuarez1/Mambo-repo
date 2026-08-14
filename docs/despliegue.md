@@ -7,7 +7,7 @@ Cuatro servicios, cada uno con un trabajo:
 | **Vercel** | El frontend (Vite/React) y el proxy hacia la API | Free |
 | **Render** | La API (FastAPI) | Free |
 | **Supabase** | La base PostgreSQL | Free |
-| **Cloudinary** | Las fotos de las propiedades | Free |
+| **Cloudflare R2** | Las fotos de las propiedades | Free |
 
 El orden importa: cada paso necesita un dato del anterior.
 
@@ -80,17 +80,48 @@ para no seguir trabajando contra producción sin darte cuenta.
 
 ---
 
-## 2. Cloudinary (las fotos)
+## 2. Cloudflare R2 (las fotos)
 
-1. Crear una cuenta gratis.
-2. Dashboard → **API environment variable**. Copiar el valor completo:
+R2 tiene **dos URLs distintas** y confundirlas es el error clásico del paso:
 
-```
-cloudinary://<api_key>:<api_secret>@<cloud_name>
-```
+| | Para qué | Dónde sale |
+|---|---|---|
+| **Endpoint S3** | **Subir**. Privado: cada request va firmada con SigV4. | R2 → Overview → *S3 API* |
+| **URL pública** | **Leer**. Es lo que abre el navegador y lo que se guarda en la base. | Settings del bucket → *Public Development URL* |
 
-Es un secreto: da permiso de subir y borrar. No va al repositorio, solo al panel
-de Render.
+> ⚠️ Guardar el endpoint S3 como URL pública deja todas las fotos rotas con un
+> 401, porque el navegador no firma nada. La app rechaza esa combinación al
+> arrancar en vez de dejarla pasar.
+
+### Credenciales
+
+R2 → **Manage API Tokens** → **Create API token**:
+
+- Permiso: **Object Read & Write**
+- En *Specify bucket(s)*: **solo el bucket del proyecto**, nunca "All buckets".
+  Una cuenta de Cloudflare suele tener buckets de varios proyectos, y un token
+  amplio se los lleva a todos si se filtra.
+- TTL: *Forever*
+
+Devuelve **Access Key ID** y **Secret Access Key**. El secret se muestra **una
+sola vez**.
+
+### Acceso público
+
+En el bucket → **Settings** → **Public Development URL** → **Enable** (pide
+escribir `allow`).
+
+> Sin este paso el bucket responde **403 a todo**, incluso a su raíz. Es fácil de
+> confundir con un problema de credenciales, pero se distinguen: si las
+> credenciales estuvieran mal, la *subida* fallaría; acá sube bien y falla solo
+> la lectura. Y un 403 en una ruta inexistente —en vez de un 404— es la firma de
+> que el acceso público está apagado.
+
+Queda una URL `https://pub-<hash>.r2.dev`. Cloudflare limita su ancho de banda y
+no la recomienda para producción: cuando haya dominio propio, se conecta en
+**Custom Domains** de esa misma pantalla y se cambia solo `R2_PUBLIC_BASE_URL`.
+Las fotos ya subidas siguen funcionando, porque en la base se guarda además la
+key del objeto.
 
 ---
 
@@ -103,10 +134,10 @@ configurar nada a mano.
 2. Rama: `integracion-postgres` (o `main` si ya mergeaste).
 3. Render lee el blueprint y pide las dos variables marcadas como `sync: false`:
    - `DATABASE_URL` → la cadena del pooler de Supabase.
-   - `CLOUDINARY_URL` → la de Cloudinary.
+   - `R2_ACCESS_KEY_ID` y `R2_SECRET_ACCESS_KEY` → las del token de R2.
 
    El resto (`JWT_SECRET` generado, `COOKIE_SECURE=True`, `COOKIE_SAMESITE=lax`,
-   `STORAGE_BACKEND=cloudinary`) ya viene definido.
+   `STORAGE_BACKEND=r2` y las URLs de R2) ya viene definido.
 4. Deploy. Anotá la URL que queda: debería ser
    `https://mambo-api.onrender.com`.
 
@@ -148,11 +179,10 @@ En este orden, porque cada una descarta una causa distinta:
    responde bien pero vuelve a la pantalla de login, el problema es la cookie:
    revisá que `COOKIE_SECURE=True` y que el proxy de `vercel.json` apunte al
    host correcto de Render.
-3. **Cargar una propiedad con foto.** Después verificá en el Media Library de
-   Cloudinary que el archivo aparezca en `mambo/propiedades/`. Si la foto se ve
-   pero no está en Cloudinary, `STORAGE_BACKEND` no quedó en `cloudinary` y el
-   archivo se está escribiendo en el disco efímero de Render — donde va a
-   desaparecer en el próximo deploy.
+3. **Cargar una propiedad con foto.** Después verificá en el bucket de R2 que el
+   archivo aparezca bajo `propiedades/`. Si la foto se ve pero no está en el
+   bucket, `STORAGE_BACKEND` no quedó en `r2` y el archivo se está escribiendo
+   en el disco efímero de Render — donde va a desaparecer en el próximo deploy.
 4. **Probar el panel desde un iPhone.** Es la comprobación que valida toda la
    decisión del proxy; si algo estuviera mal armado, Safari sería el primero en
    romperse.
@@ -169,7 +199,7 @@ elimina, y es el primer gasto que conviene hacer.
 **Supabase pausa los proyectos free tras 7 días sin actividad.** Un sitio con
 visitas no llega a esa condición; uno que todavía no se publicó, sí.
 
-**Cloudinary free son 25 GB.** A ~300 KB por foto procesada, sobra.
+**R2 free son 10 GB, y el egress no se cobra nunca.** A ~300 KB por foto ya procesada, sobra.
 
 ---
 

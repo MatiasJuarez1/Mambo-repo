@@ -4,26 +4,41 @@ Dos backends detrás de la misma interfaz, elegidos por `STORAGE_BACKEND`:
 
 - **local** — escribe en `media_root/` y sirve por `/media` con `StaticFiles`. Es
   el modo de desarrollo: no necesita credenciales ni red.
-- **cloudinary** — sube a Cloudinary y guarda la URL absoluta del CDN. Es el modo
-  de producción, y no es una preferencia sino un requisito: el disco de Render es
-  efímero y se borra entero en cada deploy, así que un archivo escrito localmente
-  desaparece con la próxima subida de código.
+- **r2** — sube a Cloudflare R2 (API compatible con S3). Es el modo de
+  producción, y no es una preferencia sino un requisito: el disco de Render es
+  efímero y se borra entero en cada deploy, así que un archivo escrito
+  localmente desaparece con la próxima subida de código.
 
 Cada backend devuelve `ArchivoGuardado(url, clave)`. La `clave` es el
 identificador con el que después se borra el archivo —la ruta relativa en local,
-el `public_id` en Cloudinary— y se guarda en la columna `storage_key` del medio.
-Se guarda en vez de deducirla de la URL porque la URL es lo que se le muestra al
-navegador y puede cambiar de forma (versión, transformaciones, dominio propio)
-sin que el identificador real cambie.
+la key del objeto en R2— y se guarda en la columna `storage_key` del medio. Se
+guarda en vez de deducirla de la URL porque la URL es lo que se le muestra al
+navegador y puede cambiar de forma (dominio propio, CDN delante) sin que el
+identificador real cambie.
+
+## Los dos dominios de R2
+
+R2 tiene dos URLs distintas y confundirlas es el error clásico:
+
+- El **endpoint S3** (`<account_id>.r2cloudflarestorage.com`) es por donde se
+  *sube*. Es privado: cada request va firmada con SigV4 y nunca se le muestra al
+  navegador.
+- La **URL pública** (`R2_PUBLIC_BASE_URL`) es por donde se *lee*: el subdominio
+  `r2.dev` del bucket o un dominio propio conectado a él. Es la que se guarda en
+  la base.
+
+Guardar el endpoint S3 en la base da fotos rotas con 401 en toda la web, porque
+el navegador no firma nada.
 """
 
+import mimetypes
 import uuid
 from pathlib import Path
 from typing import NamedTuple
 
 from app.config import get_settings
 
-# Subcarpeta (local) / carpeta (Cloudinary) donde viven las fotos de propiedades.
+# Subcarpeta (local) / prefijo de la key (R2) donde viven las fotos.
 CARPETA_PROPIEDADES = "propiedades"
 
 
@@ -31,40 +46,39 @@ class ArchivoGuardado(NamedTuple):
     """Resultado de guardar un archivo."""
 
     url: str
-    """URL pública: relativa (`/media/...`) en local, absoluta del CDN en Cloudinary."""
+    """URL pública: relativa (`/media/...`) en local, absoluta en R2."""
 
     clave: str | None
     """Identificador para borrarlo después. `None` si el backend no lo necesita."""
 
 
-def _configurar_cloudinary():
-    """Devuelve el módulo `cloudinary.uploader` ya configurado.
+def _cliente_r2():
+    """Devuelve un cliente boto3 apuntado al bucket de R2.
 
     La importación es perezosa a propósito: en desarrollo y en los tests el
-    backend es local y el paquete puede no estar instalado. Que falte solo
-    debería romper a quien realmente vaya a subir algo a la nube.
+    backend es local y boto3 puede no estar instalado. Que falte solo debería
+    romper a quien realmente vaya a subir algo a la nube.
     """
     try:
-        import cloudinary
-        import cloudinary.uploader
+        import boto3
+        from botocore.config import Config
     except ModuleNotFoundError as exc:  # pragma: no cover - depende del entorno
         raise RuntimeError(
-            "STORAGE_BACKEND=cloudinary pero el paquete `cloudinary` no está instalado. "
-            "Instalalo con: pip install cloudinary"
+            "STORAGE_BACKEND=r2 pero boto3 no está instalado. "
+            "Instalalo con: pip install boto3"
         ) from exc
 
     settings = get_settings()
-    if settings.cloudinary_url:
-        # El SDK parsea `cloudinary://api_key:api_secret@cloud_name` solo.
-        cloudinary.config(cloudinary_url=settings.cloudinary_url, secure=True)
-    else:
-        cloudinary.config(
-            cloud_name=settings.cloudinary_cloud_name,
-            api_key=settings.cloudinary_api_key,
-            api_secret=settings.cloudinary_api_secret,
-            secure=True,
-        )
-    return cloudinary.uploader
+    return boto3.client(
+        "s3",
+        endpoint_url=settings.r2_endpoint_url,
+        aws_access_key_id=settings.r2_access_key_id,
+        aws_secret_access_key=settings.r2_secret_access_key,
+        # R2 exige `auto` como región y firma v4. Con la región por defecto de
+        # boto3 (us-east-1) la firma no valida y todo responde 401.
+        region_name="auto",
+        config=Config(signature_version="s3v4"),
+    )
 
 
 def _guardar_local(contenido: bytes, extension: str) -> ArchivoGuardado:
@@ -80,51 +94,56 @@ def _guardar_local(contenido: bytes, extension: str) -> ArchivoGuardado:
     )
 
 
-def _guardar_cloudinary(contenido: bytes, extension: str) -> ArchivoGuardado:
-    uploader = _configurar_cloudinary()
+def _guardar_r2(contenido: bytes, extension: str) -> ArchivoGuardado:
     settings = get_settings()
+    key = f"{CARPETA_PROPIEDADES}/{uuid.uuid4().hex}{extension}"
 
-    # El public_id va sin extensión: Cloudinary la deriva del formato del binario
-    # y la agrega a la URL. Ponérsela acá la duplicaría (`archivo.jpg.jpg`).
-    carpeta = f"{settings.cloudinary_carpeta}/{CARPETA_PROPIEDADES}".strip("/")
-    public_id = f"{carpeta}/{uuid.uuid4().hex}"
+    # Sin ContentType, R2 entrega los archivos como application/octet-stream y el
+    # navegador los ofrece para descargar en vez de mostrarlos: las fotos
+    # aparecen rotas aunque estén perfectamente subidas.
+    tipo_mime = mimetypes.types_map.get(extension, "application/octet-stream")
 
-    resultado = uploader.upload(
-        contenido,
-        public_id=public_id,
-        resource_type="image",
-        # La imagen ya viene validada y redimensionada por `_procesar_imagen`;
-        # que Cloudinary no la vuelva a tocar al subirla.
-        overwrite=False,
+    _cliente_r2().put_object(
+        Bucket=settings.r2_bucket,
+        Key=key,
+        Body=contenido,
+        ContentType=tipo_mime,
+        # Sin ACL a propósito: R2 no soporta permisos por objeto. Que el bucket
+        # sea legible se configura una sola vez en Cloudflare, habilitando el
+        # subdominio r2.dev o conectándole un dominio propio.
+        CacheControl="public, max-age=31536000, immutable",
     )
-    return ArchivoGuardado(url=resultado["secure_url"], clave=resultado["public_id"])
+
+    base = settings.r2_public_base_url.rstrip("/")
+    return ArchivoGuardado(url=f"{base}/{key}", clave=key)
 
 
 def guardar_imagen(contenido: bytes, extension: str) -> ArchivoGuardado:
     """Guarda los bytes de una imagen ya validada y devuelve dónde quedó."""
-    if get_settings().storage_backend == "cloudinary":
-        return _guardar_cloudinary(contenido, extension)
+    if get_settings().storage_backend == "r2":
+        return _guardar_r2(contenido, extension)
     return _guardar_local(contenido, extension)
 
 
 def borrar_imagen(url: str, clave: str | None) -> None:
     """Borra el archivo del almacenamiento. No falla si ya no está.
 
-    Borrar el archivo es siempre secundario respecto de borrar la fila: un archivo
-    huérfano en el CDN es basura barata, pero una fila que no se pudo borrar deja
-    una foto rota en la web. Por eso los errores del proveedor se tragan.
+    Borrar el archivo es siempre secundario respecto de borrar la fila: un
+    archivo huérfano en el bucket es basura barata, pero una fila que no se pudo
+    borrar deja una foto rota en la web. Por eso los errores del proveedor se
+    tragan.
 
-    Las filas sin `clave` (las del seed, que apuntan a URLs de terceros) no tienen
-    nada que borrar: el archivo no es nuestro.
+    Las filas sin `clave` (las del seed, que apuntan a URLs de terceros) no
+    tienen nada que borrar: el archivo no es nuestro.
     """
     if not clave:
         return
 
     settings = get_settings()
 
-    if settings.storage_backend == "cloudinary":
+    if settings.storage_backend == "r2":
         try:
-            _configurar_cloudinary().destroy(clave, resource_type="image", invalidate=True)
+            _cliente_r2().delete_object(Bucket=settings.r2_bucket, Key=clave)
         except Exception:  # noqa: BLE001 — ver el docstring
             pass
         return

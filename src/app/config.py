@@ -26,29 +26,35 @@ class Settings(BaseSettings):
     database_url: str | None = Field(default=None, validation_alias="DATABASE_URL")
 
     # ── Almacenamiento de archivos (fotos de propiedades) ──
-    # `local` escribe en disco y sirve por /media; `cloudinary` sube al CDN.
-    # En producción tiene que ser `cloudinary`: el disco de Render es efímero y se
-    # borra en cada deploy, así que una foto guardada en local dura hasta la
-    # próxima subida de código. Ver app/storage.py.
-    storage_backend: Literal["local", "cloudinary"] = Field(
+    # `local` escribe en disco y sirve por /media; `r2` sube a Cloudflare R2.
+    # En producción tiene que ser `r2`: el disco de Render es efímero y se borra
+    # en cada deploy, así que una foto guardada en local dura hasta la próxima
+    # subida de código. Ver app/storage.py.
+    storage_backend: Literal["local", "r2"] = Field(
         default="local", validation_alias="STORAGE_BACKEND"
     )
     media_root: Path = Field(default=_REPO_ROOT / "media", validation_alias="MEDIA_ROOT")
     media_url_prefix: str = Field(default="/media", validation_alias="MEDIA_URL_PREFIX")
 
-    # Cloudinary acepta las credenciales de dos formas. `CLOUDINARY_URL` es una
-    # sola variable (`cloudinary://api_key:api_secret@cloud_name`) y es la que
-    # conviene pegar en el panel de un hosting; las tres sueltas quedan como
-    # alternativa por si se prefiere tenerlas separadas.
-    cloudinary_url: str | None = Field(default=None, validation_alias="CLOUDINARY_URL")
-    cloudinary_cloud_name: str | None = Field(
-        default=None, validation_alias="CLOUDINARY_CLOUD_NAME"
+    # ── Cloudflare R2 ──
+    # Son DOS dominios distintos y no son intercambiables:
+    #
+    # - `r2_endpoint_url` es la API S3, por donde se **sube**. Es privada: cada
+    #   request va firmada con SigV4 y nunca se le muestra al navegador.
+    # - `r2_public_base_url` es por donde se **lee**: el subdominio r2.dev del
+    #   bucket o un dominio propio. Es la que se guarda en la base.
+    #
+    # Confundirlas es el error clásico: guardar el endpoint S3 en la base deja
+    # todas las fotos rotas con un 401, porque el navegador no firma nada.
+    r2_endpoint_url: str | None = Field(default=None, validation_alias="R2_ENDPOINT_URL")
+    r2_bucket: str | None = Field(default=None, validation_alias="R2_BUCKET")
+    r2_access_key_id: str | None = Field(default=None, validation_alias="R2_ACCESS_KEY_ID")
+    r2_secret_access_key: str | None = Field(
+        default=None, validation_alias="R2_SECRET_ACCESS_KEY"
     )
-    cloudinary_api_key: str | None = Field(default=None, validation_alias="CLOUDINARY_API_KEY")
-    cloudinary_api_secret: str | None = Field(
-        default=None, validation_alias="CLOUDINARY_API_SECRET"
+    r2_public_base_url: str | None = Field(
+        default=None, validation_alias="R2_PUBLIC_BASE_URL"
     )
-    cloudinary_carpeta: str = Field(default="mambo", validation_alias="CLOUDINARY_CARPETA")
 
     # ── Autenticación (JWT en cookie httponly) ──
     # `jwt_secret` va sin default a propósito: si falta, pydantic-settings hace
@@ -104,18 +110,34 @@ class Settings(BaseSettings):
                 "descarta la cookie y nadie puede iniciar sesión."
             )
 
-        # Cloudinary sin credenciales sube todo a la nada. Mejor no arrancar que
-        # aceptar fotos y perderlas.
-        credenciales_sueltas = (
-            self.cloudinary_cloud_name and self.cloudinary_api_key and self.cloudinary_api_secret
-        )
-        if self.storage_backend == "cloudinary" and not (
-            self.cloudinary_url or credenciales_sueltas
-        ):
-            raise ValueError(
-                "STORAGE_BACKEND=cloudinary exige CLOUDINARY_URL (o las tres "
-                "variables CLOUDINARY_CLOUD_NAME / _API_KEY / _API_SECRET)."
-            )
+        # R2 sin configurar sube todo a la nada. Mejor no arrancar que aceptar
+        # fotos y perderlas.
+        if self.storage_backend == "r2":
+            faltantes = [
+                nombre
+                for nombre, valor in (
+                    ("R2_ENDPOINT_URL", self.r2_endpoint_url),
+                    ("R2_BUCKET", self.r2_bucket),
+                    ("R2_ACCESS_KEY_ID", self.r2_access_key_id),
+                    ("R2_SECRET_ACCESS_KEY", self.r2_secret_access_key),
+                    ("R2_PUBLIC_BASE_URL", self.r2_public_base_url),
+                )
+                if not valor
+            ]
+            if faltantes:
+                raise ValueError(
+                    f"STORAGE_BACKEND=r2 exige {', '.join(faltantes)}."
+                )
+
+            # Atajo al error clásico: poner el endpoint S3 como URL pública. Las
+            # fotos se subirían bien y se verían todas rotas con un 401, porque
+            # ese dominio exige request firmada y el navegador no firma nada.
+            if "r2.cloudflarestorage.com" in (self.r2_public_base_url or ""):
+                raise ValueError(
+                    "R2_PUBLIC_BASE_URL apunta al endpoint S3, que es privado y "
+                    "responde 401 al navegador. Usá el subdominio público del "
+                    "bucket (https://pub-<hash>.r2.dev) o tu dominio propio."
+                )
         return self
 
     @computed_field  # type: ignore[prop-decorator]

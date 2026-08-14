@@ -18,7 +18,7 @@ dependencies = [
   "python-multipart>=0.0.9",
   "pillow>=10.4",          # procesamiento de imágenes (validación, EXIF, resize)
   "pillow-heif>=0.18",     # decodifica HEIC/HEIF (fotos de iPhone) en Pillow
-  "cloudinary>=1.40",      # storage de fotos en producción (STORAGE_BACKEND=cloudinary)
+  "boto3>=1.34",           # cliente S3 para Cloudflare R2 (STORAGE_BACKEND=r2)
 ]
 
 [project.optional-dependencies]

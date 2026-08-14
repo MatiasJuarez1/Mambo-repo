@@ -58,10 +58,10 @@ cd client && npm test                          # frontend (vitest + Testing Libr
 
 ## Deployment
 
-Vercel (frontend) + Render (API) + Supabase (PostgreSQL) + Cloudinary (photos). Step-by-step runbook in [docs/despliegue.md](docs/despliegue.md); the service definition lives in [render.yaml](render.yaml). Three things that are easy to get wrong:
+Vercel (frontend) + Render (API) + Supabase (PostgreSQL) + Cloudflare R2 (photos). Step-by-step runbook in [docs/despliegue.md](docs/despliegue.md); the service definition lives in [render.yaml](render.yaml). Three things that are easy to get wrong:
 
 - **[client/vercel.json](client/vercel.json) proxies `/api/*` and `/auth/*` to Render**, so the browser sees a single origin and the session cookie stays first-party (`SameSite=Lax`). Calling Render directly would make it a third-party cookie, which Safari and iOS block by default. The Render host is written literally — `vercel.json` does not interpolate env vars — and only those two prefixes are proxied, so a frontend call to any other root-mounted router (`/people`, `/deals`, …) 404s in production while working locally.
-- **`STORAGE_BACKEND=cloudinary` is mandatory on Render**, whose disk is wiped on every deploy.
+- **`STORAGE_BACKEND=r2` is mandatory on Render**, whose disk is wiped on every deploy. R2 has two non-interchangeable URLs: `R2_ENDPOINT_URL` (S3 API, private, used to upload) and `R2_PUBLIC_BASE_URL` (what the browser opens and what is stored in the DB). Putting the S3 endpoint in the latter serves every photo as a 401.
 - **Migrations do not run on deploy** (Render free has no pre-deploy hook). Run `alembic upgrade head` locally with `DATABASE_URL` pointed at Supabase, using its **session pooler** string — the direct-connection host is IPv6-only and Render has no IPv6 egress.
 
 ## ⚠️ Directory-name mismatch
@@ -72,7 +72,7 @@ Vercel (frontend) + Render (API) + Supabase (PostgreSQL) + Cloudinary (photos). 
 
 FastAPI app assembled in [src/app/main.py](src/app/main.py): each domain module exposes a `router`, and `main.py` mounts them all. Config and DB are the two shared foundations:
 
-- [src/app/config.py](src/app/config.py) — `Settings` (pydantic-settings) loaded from env or a `.env` at the **repo root** (not `src/`). Provide either `DATABASE_URL` or the `POSTGRES_*` vars; `sqlalchemy_database_url` builds a `postgresql+psycopg2://` URL from the parts when `DATABASE_URL` is unset. Access via the `lru_cache`d `get_settings()`. Copy `.env.example` to repo-root `.env`. A `model_validator` rejects two combinations at startup rather than letting them fail silently at runtime: `COOKIE_SAMESITE=none` without `COOKIE_SECURE`, and `STORAGE_BACKEND=cloudinary` without credentials.
+- [src/app/config.py](src/app/config.py) — `Settings` (pydantic-settings) loaded from env or a `.env` at the **repo root** (not `src/`). Provide either `DATABASE_URL` or the `POSTGRES_*` vars; `sqlalchemy_database_url` builds a `postgresql+psycopg2://` URL from the parts when `DATABASE_URL` is unset. Access via the `lru_cache`d `get_settings()`. Copy `.env.example` to repo-root `.env`. A `model_validator` rejects two combinations at startup rather than letting them fail silently at runtime: `COOKIE_SAMESITE=none` without `COOKIE_SECURE`, and `STORAGE_BACKEND=r2` without its five R2 variables (or with the S3 endpoint mistakenly set as the public URL).
 - [src/app/database.py](src/app/database.py) — one SQLAlchemy `engine` + `SessionLocal`, the shared `Base` (DeclarativeBase), and the `get_db()` FastAPI dependency (per-request session). All models inherit this `Base`.
 
 ### Domain modules

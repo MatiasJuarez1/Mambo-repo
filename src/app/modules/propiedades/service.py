@@ -270,7 +270,7 @@ def subir_medio(
     """Guarda un archivo de imagen y registra el medio en la DB.
 
     Dónde queda el binario lo decide `app.storage` según `STORAGE_BACKEND`: en
-    disco durante el desarrollo, en Cloudinary en producción. Acá solo se guardan
+    disco durante el desarrollo, en Cloudflare R2 en producción. Acá solo se guardan
     la URL pública y la clave con la que después se lo puede borrar.
     """
     obtener_propiedad(db, propiedad_id)

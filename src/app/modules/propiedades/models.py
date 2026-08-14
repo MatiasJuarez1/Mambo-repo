@@ -146,7 +146,7 @@ class PropiedadMedio(Base):
     )
     url = Column(String(1024), nullable=False)
     # Identificador del archivo en el almacenamiento, para poder borrarlo: la ruta
-    # relativa en local, el `public_id` en Cloudinary. Va aparte de `url` porque la
+    # relativa en local, la key del objeto en R2. Va aparte de `url` porque la
     # URL es lo que ve el navegador y puede cambiar de forma (versión, dominio
     # propio, transformaciones) sin que cambie el identificador real.
     # Nulo en los medios que apuntan a una URL de un tercero (p. ej. el seed): esos

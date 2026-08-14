@@ -40,10 +40,24 @@ services:
       - key: COOKIE_SAMESITE
         value: lax
 
-      # ── Fotos ──
+      # ── Fotos (Cloudflare R2) ──
       # Obligatorio en Render: su disco es efímero y se borra en cada deploy.
       - key: STORAGE_BACKEND
-        value: cloudinary
-      # cloudinary://<api_key>:<api_secret>@<cloud_name>, del dashboard de Cloudinary.
-      - key: CLOUDINARY_URL
+        value: r2
+      # Endpoint S3: por acá se SUBE. Es privado, va firmado, y no es la URL que
+      # ve el navegador.
+      - key: R2_ENDPOINT_URL
+        value: https://4649bf993a67f2b3ef9e8e796945c4e9.r2.cloudflarestorage.com
+      - key: R2_BUCKET
+        value: mambocloude
+      # Por acá se LEE: es la URL que se guarda en la base y que abre el
+      # navegador. El día que haya dominio propio para las fotos, se cambia solo
+      # esta variable —las fotos ya subidas siguen sirviéndose igual, porque en
+      # la base se guarda además la key del objeto—.
+      - key: R2_PUBLIC_BASE_URL
+        value: https://pub-fff5ca4b186b48cdbe974432c9bceb57.r2.dev
+      # Credenciales del token de R2. Se cargan a mano en el panel.
+      - key: R2_ACCESS_KEY_ID
+        sync: false
+      - key: R2_SECRET_ACCESS_KEY
         sync: false
