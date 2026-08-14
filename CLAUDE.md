@@ -56,6 +56,14 @@ cd client && npm test                          # frontend (vitest + Testing Libr
 - [src/conftest.py](src/conftest.py) (repo-level, loaded before anything else) sets a throwaway `JWT_SECRET` so the suite can import the app — `Settings` builds at import time and the secret has no default.
 - Frontend tests **must run with `--pool=threads`** (already baked into `npm test`). The default `forks` pool times out spawning workers on Windows and produces failures that have nothing to do with the code.
 
+## Deployment
+
+Vercel (frontend) + Render (API) + Supabase (PostgreSQL) + Cloudinary (photos). Step-by-step runbook in [docs/despliegue.md](docs/despliegue.md); the service definition lives in [render.yaml](render.yaml). Three things that are easy to get wrong:
+
+- **[client/vercel.json](client/vercel.json) proxies `/api/*` and `/auth/*` to Render**, so the browser sees a single origin and the session cookie stays first-party (`SameSite=Lax`). Calling Render directly would make it a third-party cookie, which Safari and iOS block by default. The Render host is written literally — `vercel.json` does not interpolate env vars — and only those two prefixes are proxied, so a frontend call to any other root-mounted router (`/people`, `/deals`, …) 404s in production while working locally.
+- **`STORAGE_BACKEND=cloudinary` is mandatory on Render**, whose disk is wiped on every deploy.
+- **Migrations do not run on deploy** (Render free has no pre-deploy hook). Run `alembic upgrade head` locally with `DATABASE_URL` pointed at Supabase, using its **session pooler** string — the direct-connection host is IPv6-only and Render has no IPv6 egress.
+
 ## ⚠️ Directory-name mismatch
 
 `docker-compose.yml`, `docs/README.md`, and `src/README.md` refer to `backend/` and `frontend/`, but the real directories are `src/` and `client/`. **`docker compose up` will fail** against the current tree (build contexts `./backend` and `./frontend` don't exist). Treat the docs' `backend/` as `src/` and `frontend/` as `client/`, or fix the paths before relying on Docker.
@@ -92,7 +100,7 @@ Modules: `auth`, `people`, `activities`, `reservations`, `deals`, `notes`, `audi
 - The authenticated identity comes from the `sessions` row, **not** from the `sub` claim: the database decides who you are, not the token's payload.
 - `require_role("staff", "admin")` is a **dependency factory** for role gating (roles via the `user_roles` → `roles` relationship). Both `modules/propiedades` and `modules/publicaciones` apply it per-endpoint via a `SOLO_STAFF` constant — **deliberately not on the `APIRouter`**, because the `GET`s must stay anonymous for the public site.
 - `jwt_secret` has **no default**: a missing `JWT_SECRET` fails app startup by design. `cookie_secure` must become `True` in production, but only once TLS is in place — with `secure=True` over plain HTTP the browser drops the cookie and nobody can log in.
-- Create the first admin with `python src/scripts/crear_admin.py` (prompts for the password via `getpass`; never pass it as an argument).
+- Create the first admin from `src/` with `python -m scripts.crear_admin` (prompts for the password via `getpass`; never pass it as an argument). It must be run as a module, not as `python scripts/crear_admin.py` — the script imports `app.main` to register every model before touching the DB.
 
 The frontend counterpart: [client/src/context/AuthContext.tsx](client/src/context/AuthContext.tsx) asks `GET /auth/me` on mount, because the cookie is httponly and JS cannot read it. [client/src/api/client.ts](client/src/api/client.ts) must keep `credentials: 'include'` — without it the browser never attaches the cookie cross-origin and every authenticated call 401s.
 
