@@ -231,3 +231,31 @@ alembic upgrade head
 Antes de pushear un cambio de modelos, `alembic check` avisa si te olvidaste de
 generar la migración — los tests no lo detectan, porque arman el esquema desde
 los propios modelos.
+
+### Variantes de fotos (una sola vez, después de la migración `0003`)
+
+Las fotos nuevas generan solas sus variantes de 400/800/1600 al subirse. Las que
+ya estaban en el bucket antes de la migración quedan con `variantes` en `NULL` y
+se siguen sirviendo enteras: no se rompen, pero un celular se las baja a
+resolución completa.
+
+Para reprocesarlas, con `DATABASE_URL` y las cinco variables de R2 apuntando a
+producción:
+
+```powershell
+cd src
+python -m scripts.regenerar_variantes --dry-run   # cuántas fotos son
+python -m scripts.regenerar_variantes
+```
+
+Baja cada original de R2, genera las variantes y las vuelve a subir, así que
+consume tráfico del bucket. Es **idempotente**: se puede cortar a la mitad y
+volver a correr, y las filas ya hechas se saltean. Si alguna foto falla, la
+informa y sigue con el resto; el script sale con código 1 para que la falla no
+se pierda en el scroll.
+
+⚠️ La revisión **`0002_indices_declarados`** crea 19 índices que los modelos
+declaran y el esquema inicial nunca creó. Uno de ellos, `ix_sessions_token_hash`,
+es **UNIQUE**: si en producción hubiera `token_hash` duplicados, el
+`CREATE INDEX` falla y hay que limpiar esas filas de `sessions` antes (borrarlas
+solo desloguea a quien las tenga).
