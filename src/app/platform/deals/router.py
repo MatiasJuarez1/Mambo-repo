@@ -184,7 +184,12 @@ def get_deal(
     return DealOut.model_validate(deal)
 
 
-@router.post("/deals", response_model=DealOut, status_code=status.HTTP_201_CREATED, dependencies=[_staff])
+@router.post(
+    "/deals",
+    response_model=DealOut,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[_staff],
+)
 def create_deal(
     body: DealCreate,
     db: DBSession = Depends(get_db),

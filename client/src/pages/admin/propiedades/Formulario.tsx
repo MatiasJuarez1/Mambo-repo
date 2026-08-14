@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { propiedadesApi } from '../../../api/propiedades'
 import type { TipoPropiedad, TipoOperacion, EstadoComercial, Medio } from '../../../types/propiedad'
-import { mediaUrl } from '../../../lib/propiedad'
+import { etiquetaEstado, mediaUrl } from '../../../lib/propiedad'
 import './Formulario.css'
 
 interface FormState {
@@ -215,12 +215,26 @@ export default function PropiedadFormulario() {
             </div>
 
             <div className="form-field">
-              <label>Estado comercial</label>
-              <select value={form.estado_comercial} onChange={e => set('estado_comercial', e.target.value as EstadoComercial)}>
+              <label htmlFor="estado_comercial">Estado comercial</label>
+              {/* Las etiquetas se derivan de la operación elegida arriba: el valor que
+                  se guarda sigue siendo `cerrada` (es el enum de la base), pero quien
+                  carga la propiedad lee "Vendida" o "Alquilada" según corresponda. */}
+              <select
+                id="estado_comercial"
+                value={form.estado_comercial}
+                onChange={e => set('estado_comercial', e.target.value as EstadoComercial)}
+              >
                 {(['disponible','reservada','cerrada','baja'] as EstadoComercial[]).map(t => (
-                  <option key={t} value={t}>{t.charAt(0).toUpperCase() + t.slice(1)}</option>
+                  <option key={t} value={t}>{etiquetaEstado(t, form.tipo_operacion)}</option>
                 ))}
               </select>
+              <p className="form-hint">
+                {form.estado_comercial === 'baja'
+                  ? 'No se muestra en el sitio público.'
+                  : form.estado_comercial === 'disponible'
+                    ? 'Se muestra como disponible.'
+                    : 'Se muestra en el sitio con una faja encima.'}
+              </p>
             </div>
           </div>
         </div>

@@ -12,6 +12,10 @@
     "moduleDetection": "force",
     "noEmit": true,
 
+    /* Globals de Vitest (describe/it/expect) sin necesidad de importarlos en cada test.
+       Los matchers de jest-dom se tipan solos vía src/test/setup.ts. */
+    "types": ["vitest/globals"],
+
     /* JSX */
     "jsx": "react-jsx",
 

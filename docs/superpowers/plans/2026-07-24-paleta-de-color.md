@@ -66,7 +66,7 @@ Agrega los tokens nuevos sin tocar los viejos. Al terminar, el sitio se ve casi 
 - [ ] **Step 1: Verificar que los tokens nuevos todavía no existen**
 
 ```bash
-grep -c "petrol\|magenta\|estado-ok" client/src/index.css
+grep -c "petrol\|magenta\|estado-" client/src/index.css
 ```
 
 Esperado: `0`
@@ -149,11 +149,11 @@ por:
 - [ ] **Step 4: Verificar que los tokens existen y el build pasa**
 
 ```bash
-grep -c "petrol\|magenta\|estado-ok" client/src/index.css
+grep -c "petrol\|magenta\|estado-" client/src/index.css
 cd client && npm run build
 ```
 
-Esperado: el `grep` devuelve un número mayor a `10`; el build termina con `✓ built in ...` sin errores.
+Esperado: el `grep` devuelve `15`; el build termina con `✓ built in ...` sin errores.
 
 - [ ] **Step 5: Commit**
 

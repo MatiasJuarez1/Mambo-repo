@@ -1,0 +1,276 @@
+/* ── Página Servicios ─────────────────────────────────────────── */
+
+.servicios-page {
+  padding-top: var(--navbar-h); /* navbar fija */
+}
+
+/* ── Hero ─────────────────────────────────────────────────────── */
+
+.servicios-hero {
+  background: var(--petrol);
+  padding: 4.5rem 2rem 4rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.servicios-hero::before {
+  content: '';
+  position: absolute;
+  top: -170px;
+  right: -130px;
+  width: 420px;
+  height: 420px;
+  border-radius: 50%;
+  background: rgba(232, 239, 239, 0.10);
+  pointer-events: none;
+}
+
+.servicios-eyebrow {
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.5);
+  margin-bottom: 0.75rem;
+}
+
+.servicios-title {
+  font-family: var(--font-serif);
+  font-size: clamp(2.1rem, 4.4vw, 3.4rem);
+  font-weight: 600;
+  color: var(--white);
+  line-height: 1.08;
+  position: relative;
+}
+
+.servicios-title em {
+  font-style: italic;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.servicios-lead {
+  margin-top: 1.75rem;
+  max-width: 640px;
+  font-size: 0.98rem;
+  line-height: 1.75;
+  color: rgba(255, 255, 255, 0.78);
+  position: relative;
+}
+
+/* ── Cuerpo ───────────────────────────────────────────────────── */
+
+.servicios-cuerpo {
+  background: var(--white);
+  padding: var(--space-8) 2rem;
+}
+
+.servicios-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 9fr);
+  gap: var(--space-8);
+  align-items: start;
+}
+
+/* ── Índice pegajoso ──────────────────────────────────────────── */
+
+/* El top despeja la navbar fija; sin él, la primera entrada queda debajo. */
+.servicios-indice {
+  position: sticky;
+  top: calc(var(--navbar-h) + 2rem);
+}
+
+.servicios-indice-lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-left: 1px solid var(--line);
+}
+
+/* Filete a la izquierda en vez de caja: mismo recurso que el resto del sitio.
+   La marca del activo es el mismo filete engrosado y teñido de petróleo. */
+.servicios-indice-item {
+  display: flex;
+  align-items: baseline;
+  gap: 0.7rem;
+  padding: 0.7rem 0 0.7rem 1.1rem;
+  margin-left: -1px;
+  border-left: 2px solid transparent;
+  text-decoration: none;
+  color: var(--text-muted);
+  transition: color 0.2s, border-color 0.2s;
+}
+
+.servicios-indice-item:hover {
+  color: var(--text);
+}
+
+.servicios-indice-item.is-activo {
+  color: var(--petrol);
+  font-weight: 600;
+  border-left-color: var(--petrol);
+}
+
+.servicios-indice-num {
+  font-size: 0.66rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  color: var(--text-muted);
+}
+
+.servicios-indice-item.is-activo .servicios-indice-num {
+  color: var(--magenta-deep);
+}
+
+.servicios-indice-titulo {
+  font-size: 0.86rem;
+  line-height: 1.4;
+}
+
+/* ── Bloques de servicio ──────────────────────────────────────── */
+
+.servicios-bloques {
+  min-width: 0; /* deja que las columnas de viñetas se achiquen en vez de desbordar */
+}
+
+/* Filete superior como separador; el primero no lleva para no duplicar
+   el borde del hero. scroll-margin-top: la navbar fija tapaba el número. */
+.servicio {
+  padding-top: var(--space-7);
+  padding-bottom: var(--space-7);
+  border-top: 1px solid var(--line);
+  scroll-margin-top: calc(var(--navbar-h) + 1.5rem);
+}
+
+.servicio:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.servicio:last-child {
+  padding-bottom: 0;
+}
+
+/* Único acento magenta de la página (regla de escasez de la paleta). */
+.servicio-num {
+  font-family: var(--font-serif);
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  color: var(--magenta-deep);
+  margin-bottom: 0.6rem;
+}
+
+.servicio-titulo {
+  font-family: var(--font-serif);
+  font-size: clamp(1.7rem, 3vw, 2.3rem);
+  font-weight: 600;
+  color: var(--petrol);
+  line-height: 1.14;
+}
+
+.servicio-bajada {
+  margin-top: 1rem;
+  max-width: 640px;
+  font-size: 0.94rem;
+  line-height: 1.8;
+  color: var(--text-muted);
+}
+
+.servicio-items {
+  margin-top: 1.75rem;
+  padding: 0;
+  list-style: none;
+  columns: 2;
+  column-gap: var(--space-7);
+}
+
+.servicio-items li {
+  break-inside: avoid;
+  padding: 0.5rem 0 0.5rem 1.1rem;
+  border-top: 1px solid var(--line);
+  font-size: 0.88rem;
+  line-height: 1.5;
+  color: var(--text);
+  position: relative;
+}
+
+.servicio-items li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 1.05rem;
+  width: 5px;
+  height: 1px;
+  background: var(--petrol);
+}
+
+/* ── CTA ──────────────────────────────────────────────────────── */
+
+/* La línea del mail que vivía acá se fue a <DatosContacto />, que ya lo lista
+   junto al resto de la ficha. */
+.servicios-cta {
+  border-top: 1px solid var(--line);
+}
+
+/* ── Responsive ───────────────────────────────────────────────── */
+
+@media (max-width: 900px) {
+  .servicios-cuerpo {
+    padding: var(--space-7) 1.25rem var(--space-8);
+  }
+
+  .servicios-grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-6);
+  }
+
+  /* El índice deja de ser columna y pasa a una fila de chips scrolleable,
+     pegada bajo la navbar mientras se recorren los bloques. */
+  .servicios-indice {
+    top: var(--navbar-h);
+    z-index: 5;
+    margin: 0 -1.25rem;
+    padding: 0.6rem 1.25rem;
+    background: var(--white);
+    border-bottom: 1px solid var(--line);
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .servicios-indice-lista {
+    display: flex;
+    gap: 0.5rem;
+    border-left: 0;
+    width: max-content;
+  }
+
+  .servicios-indice-item {
+    gap: 0.45rem;
+    padding: 0.45rem 0.9rem;
+    margin-left: 0;
+    border-left: 0;
+    border-radius: var(--radius-pill);
+    background: var(--bone);
+    white-space: nowrap;
+  }
+
+  .servicios-indice-item.is-activo {
+    background: var(--petrol);
+    color: var(--white);
+  }
+
+  .servicios-indice-item.is-activo .servicios-indice-num {
+    color: rgba(255, 255, 255, 0.6);
+  }
+
+  /* En una columna, dos columnas de viñetas dejan renglones de dos palabras. */
+  .servicio-items {
+    columns: 1;
+  }
+}
+
+@media (max-width: 640px) {
+  .servicios-hero {
+    padding: 3.5rem 1.25rem 3rem;
+  }
+}

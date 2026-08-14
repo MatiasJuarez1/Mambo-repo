@@ -1,0 +1,166 @@
+/* ── Buscador flotante del hero ─────────────────────────────
+   Estas reglas vivían en index.css junto al resto del hero. La barra se
+   posiciona `absolute` respecto de `.hero`, que sigue en index.css: si aquel
+   contenedor pierde su `position`, la barra se va al alto de la página. */
+
+.hero-search {
+  position: absolute;
+  left: 50%;
+  bottom: -44px;
+  transform: translateX(-50%);
+  z-index: 5;
+  width: min(1120px, calc(100% - 3rem));
+  display: flex;
+  align-items: stretch;
+  gap: 0.6rem;
+  padding: 0.75rem;
+  background: var(--bone);
+  border-radius: var(--radius-pill);
+  box-shadow: 0 18px 44px rgba(7, 31, 32, 0.22);
+}
+
+/* Conmutador Propiedades / Servicios: ocupa el lugar del viejo rótulo
+   "Quick Search". La pestaña activa se marca con un filete inferior y no con
+   un fondo lleno, para que el único bloque petróleo sólido de la barra siga
+   siendo el botón de submit. */
+
+.qs-tabs {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  padding: 0 1.35rem 0 1.6rem;
+  flex-shrink: 0;
+}
+
+.qs-tab {
+  padding: 0.2rem 0;
+  border: none;
+  border-bottom: 2px solid transparent;
+  background: none;
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s;
+}
+
+.qs-tab:hover { color: var(--petrol); }
+
+.qs-tab[aria-selected='true'] {
+  color: var(--petrol);
+  border-bottom-color: var(--petrol);
+}
+
+/* El min-width es la pieza clave de la fila. Un <select> mide lo que su opción
+   más larga ("Alquiler temporal", los nombres de ciudad) y ese ancho no cede
+   solo; con el `min-width: auto` que trae todo ítem flex, los tres campos se
+   plantan en ese mínimo, la suma pasa el ancho de la barra y el sobrante empuja
+   al botón Buscar fuera de la píldora. En 0, el apretón lo absorben los campos. */
+.qs-field {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.75rem 1.35rem;
+  background: var(--white);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+}
+
+/* El campo único del modo Servicios ocupa el espacio de los tres. */
+.qs-field--ancho { flex: 3; }
+
+.qs-field::after {
+  content: '';
+  margin-left: auto;
+  flex-shrink: 0;
+  width: 0;
+  height: 0;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 5px solid var(--text-muted);
+}
+
+.qs-ico { color: var(--petrol); flex-shrink: 0; }
+
+.qs-text { display: flex; flex-direction: column; min-width: 0; line-height: 1.15; }
+
+/* Ahora que el campo cede ancho, los dos renglones se recortan en vez de
+   partirse: el rótulo en dos líneas descuadraría el alto de la barra. */
+.qs-cap {
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.qs-select {
+  border: none;
+  background: transparent;
+  padding: 0;
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--text);
+  cursor: pointer;
+  appearance: none;
+  outline: none;
+  /* Sigue el ancho del campo en vez de imponérselo: con max-width el select
+     todavía podía reclamar el ancho de su opción más larga. */
+  width: 100%;
+  text-overflow: ellipsis;
+}
+
+/* No se achica: si falta lugar lo ceden los campos, no el submit. */
+.qs-buscar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 0 2.6rem;
+  border: none;
+  background: var(--petrol);
+  color: var(--white);
+  border-radius: var(--radius-pill);
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.qs-buscar:hover { background: var(--petrol-deep); }
+
+/* El select apaga su outline nativo por diseño; el foco de teclado se repone
+   acá para no dejar la barra sin recorrido visible. */
+.qs-select:focus-visible,
+.qs-tab:focus-visible,
+.qs-buscar:focus-visible {
+  outline: 2px solid var(--petrol);
+  outline-offset: 2px;
+}
+
+@media (max-width: 860px) {
+  .hero-search {
+    position: static;
+    transform: none;
+    order: 3;
+    width: auto;
+    margin: var(--space-5);
+    flex-direction: column;
+    border-radius: var(--radius-md);
+  }
+  .qs-tabs { padding: 0.3rem 0.5rem; }
+  .qs-field { border-radius: var(--radius-md); }
+  .qs-buscar { padding: 0.8rem; border-radius: var(--radius-md); }
+}

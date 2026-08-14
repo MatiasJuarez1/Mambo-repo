@@ -3,6 +3,11 @@ import { Link } from 'react-router-dom'
 import { propiedadesApi } from '../../api/propiedades'
 import type { PropiedadListItem } from '../../types/propiedad'
 import PropiedadCard from '../../components/PropiedadCard'
+import BuscadorHero from '../../components/BuscadorHero'
+import DatosContacto from '../../components/DatosContacto'
+import { linkWhatsApp } from '../../config/contacto'
+
+const MENSAJE_WSP = 'Hola Mambo Groups! Vi la web y quería hacerles una consulta.'
 
 // Loop mudo de fondo. El poster es el frame 0, así no hay salto al arrancar.
 // En mobile y con "reducir movimiento" activado el CSS oculta el video y deja
@@ -69,63 +74,7 @@ export default function Home() {
           />
         </div>
 
-        {/* Buscador flotante (maquetado — el filtrado real llega en un paso siguiente) */}
-        <div className="hero-search">
-          <span className="hero-search__label">Quick Search</span>
-
-          <label className="qs-field">
-            <svg className="qs-ico" viewBox="0 0 24 24" width="20" height="20" fill="none"
-                 stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"
-                 aria-hidden="true">
-              <path d="M7 7h11l-3-3M17 17H6l3 3" />
-            </svg>
-            <span className="qs-text">
-              <span className="qs-cap">Operación</span>
-              <select className="qs-select" defaultValue="" aria-label="Operación">
-                <option value="">Venta/Alquiler</option>
-                <option>Venta</option>
-                <option>Alquiler</option>
-              </select>
-            </span>
-          </label>
-
-          <label className="qs-field">
-            <svg className="qs-ico" viewBox="0 0 24 24" width="20" height="20" fill="none"
-                 stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"
-                 aria-hidden="true">
-              <path d="M4 11l8-6 8 6M6 10v9h12v-9" />
-            </svg>
-            <span className="qs-text">
-              <span className="qs-cap">Tipo</span>
-              <select className="qs-select" defaultValue="" aria-label="Tipo">
-                <option value="">Lotes/Casas/Comercial</option>
-                <option>Lotes</option>
-                <option>Casas</option>
-                <option>Comercial</option>
-              </select>
-            </span>
-          </label>
-
-          <label className="qs-field">
-            <svg className="qs-ico" viewBox="0 0 24 24" width="20" height="20" fill="none"
-                 stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"
-                 aria-hidden="true">
-              <path d="M12 21s7-6.3 7-11a7 7 0 1 0-14 0c0 4.7 7 11 7 11z" />
-              <circle cx="12" cy="10" r="2.4" />
-            </svg>
-            <span className="qs-text">
-              <span className="qs-cap">Zona</span>
-              <select className="qs-select" defaultValue="" aria-label="Zona">
-                <option value="">Tucumán</option>
-                <option>San Miguel de Tucumán</option>
-                <option>Yerba Buena</option>
-                <option>Tafí Viejo</option>
-              </select>
-            </span>
-          </label>
-
-          <Link to="/propiedades" className="qs-buscar">Buscar</Link>
-        </div>
+        <BuscadorHero />
       </section>
 
       {/* ── Values strip ── */}
@@ -176,15 +125,25 @@ export default function Home() {
       </section>
 
       {/* ── CTA ── */}
-      <section className="cta-section" id="contacto">
-        <h2>Asesoramiento personalizado</h2>
-        <p>
-          Nuestro equipo te acompaña en cada paso de tu decisión
-          inmobiliaria, con claridad y sin vueltas.
-        </p>
-        <a href="mailto:info@mambogroups.com" className="btn-white">
-          Contactanos
-        </a>
+      <section className="cta-section cta-con-datos">
+        <div className="cta-inner">
+          <div className="cta-mensaje">
+            <h2>Asesoramiento personalizado</h2>
+            <p>
+              Nuestro equipo te acompaña en cada paso de tu decisión
+              inmobiliaria, con claridad y sin vueltas.
+            </p>
+            <a
+              href={linkWhatsApp(MENSAJE_WSP)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn-cta"
+            >
+              Contactanos
+            </a>
+          </div>
+          <DatosContacto />
+        </div>
       </section>
     </>
   )

@@ -4,7 +4,7 @@ import { propiedadesApi, type ListarParams } from '../../../api/propiedades'
 import type { PropiedadListItem, TipoOperacion, EstadoComercial } from '../../../types/propiedad'
 import Badge from '../../../components/Badge'
 import StatTile from '../../../components/StatTile'
-import { mediaUrl } from '../../../lib/propiedad'
+import { etiquetaEstado, LABEL_ESTADO, mediaUrl } from '../../../lib/propiedad'
 import './Lista.css'
 
 const TIPO_OPTIONS   = ['', 'casa', 'depto', 'local', 'terreno', 'oficina', 'otro']
@@ -120,8 +120,10 @@ export default function PropiedadesLista() {
           onChange={e => handleFiltro('estado_comercial', e.target.value)}
         >
           <option value="">Todos los estados</option>
+          {/* Acá el filtro abarca ventas y alquileres a la vez, así que "cerrada" no
+              puede resolverse a una sola palabra: LABEL_ESTADO nombra las dos. */}
           {ESTADO_OPTIONS.map(e => (
-            <option key={e} value={e}>{e.charAt(0).toUpperCase() + e.slice(1)}</option>
+            <option key={e} value={e}>{LABEL_ESTADO[e]}</option>
           ))}
         </select>
 
@@ -173,7 +175,12 @@ export default function PropiedadesLista() {
                         </td>
                         <td><Badge value={p.tipo_propiedad} /></td>
                         <td><Badge value={p.tipo_operacion} /></td>
-                        <td><Badge value={p.estado_comercial} /></td>
+                        <td>
+                          <Badge
+                            value={p.estado_comercial}
+                            label={etiquetaEstado(p.estado_comercial, p.tipo_operacion)}
+                          />
+                        </td>
                         <td className="tabla-precio">{formatPrecio(p.precio, p.moneda)}</td>
                         <td>{p.ubicacion?.ciudad ?? '—'}</td>
                         <td>

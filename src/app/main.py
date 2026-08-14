@@ -21,12 +21,19 @@ from app.platform.reservations.router import router as reservations_router
 
 app = FastAPI(title="Mambo API", version="1.0.0")
 
+_settings = get_settings()
+
 app.add_middleware(
     CORSMiddleware,
+    # Dominios de producción, que llegan por la variable CORS_ORIGINS. Se suman al
+    # regex de dev en vez de reemplazarlo: si se borrara, el frontend local dejaría
+    # de poder hablarle a la API.
+    allow_origins=_settings.cors_origins_lista,
     # En dev el frontend de Vite corre en localhost; si el 5173 está ocupado, Vite
     # cae a 5174/5175/... Se acepta cualquier puerto local para que la app no se
-    # rompa por ese corrimiento (en producción se restringe al dominio real).
+    # rompa por ese corrimiento.
     allow_origin_regex=r"http://(localhost|127\.0\.0\.1):\d+",
+    # Imprescindible para el login: sin esto el navegador descarta la cookie de sesión.
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -34,7 +41,6 @@ app.add_middleware(
 
 # Archivos subidos (fotos de propiedades) servidos de forma local.
 # La carpeta se crea si no existe para que StaticFiles no falle en un entorno limpio.
-_settings = get_settings()
 _settings.media_root.mkdir(parents=True, exist_ok=True)
 app.mount(
     _settings.media_url_prefix,

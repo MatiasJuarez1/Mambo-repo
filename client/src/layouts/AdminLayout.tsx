@@ -1,4 +1,5 @@
 import { Outlet, NavLink, useNavigate } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
 import './AdminLayout.css'
 
 const grupos = [
@@ -13,6 +14,7 @@ const grupos = [
 
 export default function AdminLayout() {
   const navigate = useNavigate()
+  const { usuario, logout } = useAuth()
 
   return (
     <div className="admin-shell">
@@ -48,6 +50,17 @@ export default function AdminLayout() {
         </nav>
 
         <div className="admin-sidebar-footer">
+          {/* Al cerrar sesión el contexto se queda sin usuario y `RutaProtegida`
+              —que envuelve a todo el panel— manda al login sola. */}
+          {usuario && (
+            <div className="admin-sesion">
+              <span className="admin-sesion-email" title={usuario.email}>{usuario.email}</span>
+              <button type="button" className="admin-sesion-salir" onClick={() => logout()}>
+                Salir
+              </button>
+            </div>
+          )}
+
           <NavLink to="/" className="admin-nav-item">← Ver sitio</NavLink>
         </div>
       </aside>

@@ -1,22 +1,20 @@
 from datetime import datetime
 from decimal import Decimal
-from typing import List, Optional
 
 from pydantic import BaseModel, ConfigDict
 
 from app.modules.propiedades.models import EstadoComercial, TipoMedio, TipoOperacion, TipoPropiedad
 
-
 # ── Ubicación ────────────────────────────────────────────────────────────────
 
 class UbicacionBase(BaseModel):
-    direccion: Optional[str] = None
-    ciudad: Optional[str] = None
-    provincia: Optional[str] = None
-    pais: Optional[str] = "AR"
-    codigo_postal: Optional[str] = None
-    lat: Optional[Decimal] = None
-    lng: Optional[Decimal] = None
+    direccion: str | None = None
+    ciudad: str | None = None
+    provincia: str | None = None
+    pais: str | None = "AR"
+    codigo_postal: str | None = None
+    lat: Decimal | None = None
+    lng: Decimal | None = None
 
 
 class UbicacionCreate(UbicacionBase):
@@ -40,7 +38,7 @@ class UbicacionResponse(UbicacionBase):
 class MedioBase(BaseModel):
     tipo_medio: TipoMedio = TipoMedio.imagen
     url: str
-    descripcion: Optional[str] = None
+    descripcion: str | None = None
     orden: int = 0
     es_principal: bool = False
 
@@ -50,11 +48,11 @@ class MedioCreate(MedioBase):
 
 
 class MedioUpdate(BaseModel):
-    tipo_medio: Optional[TipoMedio] = None
-    url: Optional[str] = None
-    descripcion: Optional[str] = None
-    orden: Optional[int] = None
-    es_principal: Optional[bool] = None
+    tipo_medio: TipoMedio | None = None
+    url: str | None = None
+    descripcion: str | None = None
+    orden: int | None = None
+    es_principal: bool | None = None
 
 
 class MedioResponse(MedioBase):
@@ -88,49 +86,49 @@ class CaracteristicaResponse(CaracteristicaBase):
 
 class PropiedadBase(BaseModel):
     titulo: str
-    descripcion: Optional[str] = None
+    descripcion: str | None = None
     tipo_propiedad: TipoPropiedad = TipoPropiedad.otro
     tipo_operacion: TipoOperacion = TipoOperacion.venta
     estado_comercial: EstadoComercial = EstadoComercial.disponible
     moneda: str = "ARS"
-    precio: Optional[Decimal] = None
-    dormitorios: Optional[int] = None
-    banos: Optional[int] = None
-    m2_cubiertos: Optional[Decimal] = None
-    m2_totales: Optional[Decimal] = None
-    propietario_persona_id: Optional[int] = None
+    precio: Decimal | None = None
+    dormitorios: int | None = None
+    banos: int | None = None
+    m2_cubiertos: Decimal | None = None
+    m2_totales: Decimal | None = None
+    propietario_persona_id: int | None = None
 
 
 class PropiedadCreate(PropiedadBase):
-    ubicacion: Optional[UbicacionCreate] = None
-    medios: List[MedioCreate] = []
-    caracteristicas: List[CaracteristicaCreate] = []
+    ubicacion: UbicacionCreate | None = None
+    medios: list[MedioCreate] = []
+    caracteristicas: list[CaracteristicaCreate] = []
 
 
 class PropiedadUpdate(BaseModel):
-    titulo: Optional[str] = None
-    descripcion: Optional[str] = None
-    tipo_propiedad: Optional[TipoPropiedad] = None
-    tipo_operacion: Optional[TipoOperacion] = None
-    estado_comercial: Optional[EstadoComercial] = None
-    moneda: Optional[str] = None
-    precio: Optional[Decimal] = None
-    dormitorios: Optional[int] = None
-    banos: Optional[int] = None
-    m2_cubiertos: Optional[Decimal] = None
-    m2_totales: Optional[Decimal] = None
-    propietario_persona_id: Optional[int] = None
-    ubicacion: Optional[UbicacionUpdate] = None
+    titulo: str | None = None
+    descripcion: str | None = None
+    tipo_propiedad: TipoPropiedad | None = None
+    tipo_operacion: TipoOperacion | None = None
+    estado_comercial: EstadoComercial | None = None
+    moneda: str | None = None
+    precio: Decimal | None = None
+    dormitorios: int | None = None
+    banos: int | None = None
+    m2_cubiertos: Decimal | None = None
+    m2_totales: Decimal | None = None
+    propietario_persona_id: int | None = None
+    ubicacion: UbicacionUpdate | None = None
 
 
 class PropiedadResponse(PropiedadBase):
     id: int
     creado_en: datetime
     actualizado_en: datetime
-    eliminado_en: Optional[datetime] = None
-    ubicacion: Optional[UbicacionResponse] = None
-    medios: List[MedioResponse] = []
-    caracteristicas: List[CaracteristicaResponse] = []
+    eliminado_en: datetime | None = None
+    ubicacion: UbicacionResponse | None = None
+    medios: list[MedioResponse] = []
+    caracteristicas: list[CaracteristicaResponse] = []
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -142,13 +140,13 @@ class PropiedadListItem(BaseModel):
     tipo_operacion: TipoOperacion
     estado_comercial: EstadoComercial
     moneda: str
-    precio: Optional[Decimal] = None
-    dormitorios: Optional[int] = None
-    banos: Optional[int] = None
-    m2_cubiertos: Optional[Decimal] = None
-    m2_totales: Optional[Decimal] = None
+    precio: Decimal | None = None
+    dormitorios: int | None = None
+    banos: int | None = None
+    m2_cubiertos: Decimal | None = None
+    m2_totales: Decimal | None = None
     creado_en: datetime
-    ubicacion: Optional[UbicacionResponse] = None
-    medios: List[MedioResponse] = []
+    ubicacion: UbicacionResponse | None = None
+    medios: list[MedioResponse] = []
 
     model_config = ConfigDict(from_attributes=True)

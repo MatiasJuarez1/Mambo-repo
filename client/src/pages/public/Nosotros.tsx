@@ -1,8 +1,11 @@
 import { Link } from 'react-router-dom'
+import DatosContacto from '../../components/DatosContacto'
 import PersonaCard from '../../components/PersonaCard'
-import { EMAIL_CONTACTO } from '../../config/contacto'
+import { linkWhatsApp } from '../../config/contacto'
 import { altDe, EQUIPO, FUNDADORA, fotoDe } from './equipo'
 import './Nosotros.css'
+
+const MENSAJE_WSP = 'Hola Mambo Groups! Vi la web y quería hacerles una consulta.'
 
 export default function Nosotros() {
   return (
@@ -66,15 +69,27 @@ export default function Nosotros() {
       </section>
 
       {/* ── CTA ── */}
-      <section className="cta-section" id="contacto">
-        <h2>Hablemos de tu próximo paso</h2>
-        <p>
-          Contanos qué estás buscando y te armamos una selección de propiedades
-          que se ajuste a tu objetivo.
-        </p>
-        <div className="nosotros-cta-acciones">
-          <a href={`mailto:${EMAIL_CONTACTO}`} className="btn-white">Contactanos</a>
-          <Link to="/propiedades" className="btn-hero">Ver propiedades</Link>
+      <section className="cta-section cta-con-datos">
+        <div className="cta-inner">
+          <div className="cta-mensaje">
+            <h2>Hablemos de tu próximo paso</h2>
+            <p>
+              Contanos qué estás buscando y te armamos una selección de propiedades
+              que se ajuste a tu objetivo.
+            </p>
+            <div className="nosotros-cta-acciones">
+              <a
+                href={linkWhatsApp(MENSAJE_WSP)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-cta"
+              >
+                Contactanos
+              </a>
+              <Link to="/propiedades" className="btn-hero">Ver propiedades</Link>
+            </div>
+          </div>
+          <DatosContacto />
         </div>
       </section>
     </div>

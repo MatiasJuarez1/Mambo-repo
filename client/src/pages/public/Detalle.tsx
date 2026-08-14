@@ -2,7 +2,13 @@ import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { propiedadesApi } from '../../api/propiedades'
 import type { Propiedad } from '../../types/propiedad'
-import { formatPrecio, LABEL_OPERACION, LABEL_TIPO, mediaUrl } from '../../lib/propiedad'
+import {
+  etiquetaCierre,
+  formatPrecio,
+  LABEL_OPERACION,
+  LABEL_TIPO,
+  mediaUrl,
+} from '../../lib/propiedad'
 import { EMAIL_CONTACTO, linkWhatsApp } from '../../config/contacto'
 import './Detalle.css'
 
@@ -48,7 +54,16 @@ export default function Detalle() {
   const imagenes = prop.medios.filter(m => m.tipo_medio === 'imagen')
   const ubicStr = [prop.ubicacion?.direccion, prop.ubicacion?.ciudad, prop.ubicacion?.provincia]
     .filter(Boolean).join(' · ')
-  const mensajeWsp = `Hola! Me interesa la propiedad "${prop.titulo}" (${window.location.href})`
+
+  // Una operación cerrada ya no se puede visitar ni negociar; una reserva, en cambio,
+  // se puede caer, así que ahí se avisa pero se mantienen los dos canales abiertos.
+  const cierre = etiquetaCierre(prop)
+  const operacionCerrada = prop.estado_comercial === 'cerrada'
+  const verbo = prop.tipo_operacion === 'venta' ? 'se vendió' : 'se alquiló'
+
+  const mensajeWsp = operacionCerrada
+    ? `Hola! Vi que la propiedad "${prop.titulo}" ya ${verbo}. ¿Tienen algo similar disponible?`
+    : `Hola! Me interesa la propiedad "${prop.titulo}" (${window.location.href})`
 
   return (
     <main className="detalle-page">
@@ -74,6 +89,7 @@ export default function Detalle() {
               aria-label={`Foto principal de ${prop.titulo}`}
             >
               <span className="detalle-badge">{LABEL_OPERACION[prop.tipo_operacion]}</span>
+              {cierre && <span className="detalle-faja">{cierre}</span>}
             </button>
             <div className="detalle-gal-thumbs">
               {imagenes.slice(1, 5).map((m, i) => {
@@ -143,17 +159,41 @@ export default function Detalle() {
 
         {/* Aside sticky */}
         <aside className="detalle-aside">
-          <p className="detalle-precio">{formatPrecio(prop.precio, prop.moneda)}</p>
-          <p className="detalle-precio-k">Precio de {LABEL_OPERACION[prop.tipo_operacion].toLowerCase()}</p>
+          {cierre && (
+            <p className="detalle-aviso" role="status">
+              {operacionCerrada
+                ? `Esta propiedad ya ${verbo}. Queda publicada como antecedente de nuestras operaciones.`
+                : 'Esta propiedad está reservada. Podés consultar igual: las reservas a veces no prosperan.'}
+            </p>
+          )}
+
+          <p className={operacionCerrada ? 'detalle-precio detalle-precio-cerrado' : 'detalle-precio'}>
+            {formatPrecio(prop.precio, prop.moneda)}
+          </p>
+          <p className="detalle-precio-k">
+            {operacionCerrada
+              ? 'Valor de la operación'
+              : `Precio de ${LABEL_OPERACION[prop.tipo_operacion].toLowerCase()}`}
+          </p>
 
           <a className="detalle-btn-wsp" href={linkWhatsApp(mensajeWsp)} target="_blank" rel="noopener noreferrer">
             Consultar por WhatsApp
           </a>
-          <button className="detalle-btn-visita" onClick={() => setMostrarForm(v => !v)}>
-            Solicitar visita
-          </button>
 
-          {mostrarForm && (
+          {/* Sin "Solicitar visita" cuando la operación ya se cerró: no hay nada que
+              visitar, y ofrecerlo haría perder el tiempo al visitante y a la oficina.
+              En su lugar, el camino hacia lo que sí está disponible. */}
+          {operacionCerrada ? (
+            <Link to="/propiedades" className="detalle-btn-visita">
+              Ver propiedades disponibles
+            </Link>
+          ) : (
+            <button className="detalle-btn-visita" onClick={() => setMostrarForm(v => !v)}>
+              Solicitar visita
+            </button>
+          )}
+
+          {mostrarForm && !operacionCerrada && (
             <form
               className="detalle-form"
               onSubmit={e => {

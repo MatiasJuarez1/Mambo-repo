@@ -5,8 +5,6 @@ from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.orm import Session as DBSession
 
 from app.database import get_db
-from app.platform.auth.dependencies import get_current_user, require_role
-from app.platform.auth.models import User
 from app.platform.activities import service
 from app.platform.activities.schemas import (
     ActivityCreate,
@@ -14,6 +12,8 @@ from app.platform.activities.schemas import (
     ActivityUpdate,
     PaginatedActivities,
 )
+from app.platform.auth.dependencies import get_current_user, require_role
+from app.platform.auth.models import User
 
 router = APIRouter(prefix="/activities", tags=["activities"])
 

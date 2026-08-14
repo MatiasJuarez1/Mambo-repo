@@ -1,17 +1,20 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { OPCIONES_TIPO } from '../lib/propiedad'
+import { SERVICIOS } from '../pages/public/catalogo-servicios'
 
-// Tipos de propiedad ofrecidos en cada desplegable de operación.
-// El `tipo` viaja como query param a /propiedades, donde el Listado filtra.
-const TIPOS_MENU = [
-  { tipo: 'casa',    label: 'Casas' },
-  { tipo: 'depto',   label: 'Departamentos' },
-  { tipo: 'terreno', label: 'Lotes y terrenos' },
-  { tipo: 'local',   label: 'Locales comerciales' },
-  { tipo: 'oficina', label: 'Oficinas' },
-] as const
+/** Una entrada de un desplegable de la navbar. */
+interface EntradaMenu {
+  label: string
+  to: string
+}
 
-function OperacionDropdown({ operacion, titulo }: { operacion: string; titulo: string }) {
+/**
+ * Desplegable genérico de la navbar: un botón con caret que abre una lista de
+ * enlaces. Lo usan tanto "Propiedades" como "Servicios"; el contenido del menú
+ * es lo único que cambia entre ellos.
+ */
+function NavbarDropdown({ titulo, entradas }: { titulo: string; entradas: EntradaMenu[] }) {
   const [abierto, setAbierto] = useState(false)
   const ref = useRef<HTMLLIElement>(null)
 
@@ -47,12 +50,9 @@ function OperacionDropdown({ operacion, titulo }: { operacion: string; titulo: s
 
       {abierto && (
         <ul className="navbar-dropdown-menu">
-          {TIPOS_MENU.map(({ tipo, label }) => (
-            <li key={tipo}>
-              <Link
-                to={`/propiedades?tipo_operacion=${operacion}&tipo_propiedad=${tipo}`}
-                onClick={() => setAbierto(false)}
-              >
+          {entradas.map(({ label, to }) => (
+            <li key={to}>
+              <Link to={to} onClick={() => setAbierto(false)}>
                 {label}
               </Link>
             </li>
@@ -63,15 +63,28 @@ function OperacionDropdown({ operacion, titulo }: { operacion: string; titulo: s
   )
 }
 
-export default function Navbar() {
-  // TODO: reemplazar por verificación de rol cuando esté implementado el auth
-  const esAdmin = true
+// Menú de propiedades: solo filtra por tipo. La operación (venta / alquiler /
+// temporal) no es una decisión de navegación — la resuelven la barra del hero y
+// los filtros del listado.
+const ENTRADAS_PROPIEDADES: EntradaMenu[] = OPCIONES_TIPO.map(({ valor, label }) => ({
+  label,
+  to: `/propiedades?tipo_propiedad=${valor}`,
+}))
 
+// Menú de servicios: cada entrada baja al ancla de su bloque en /servicios.
+const ENTRADAS_SERVICIOS: EntradaMenu[] = SERVICIOS.map(({ slug, titulo }) => ({
+  label: titulo,
+  to: `/servicios#${slug}`,
+}))
+
+export default function Navbar() {
   return (
     <nav className="navbar">
       <div className="navbar-inner">
         <div className="navbar-left">
-          <Link to="/" className="navbar-logo">
+          {/* El onClick cubre el caso que `ScrollToTop` no puede: si ya estás en el
+              home, la ruta no cambia y sin esto el logo no haría nada. */}
+          <Link to="/" className="navbar-logo" onClick={() => window.scrollTo(0, 0)}>
             <img
               src="/logo-mambo-horizontal.png"
               alt="Mambo Group — Soluciones Inmobiliarias"
@@ -82,21 +95,16 @@ export default function Navbar() {
         </div>
 
         <ul className="navbar-links">
-          <OperacionDropdown operacion="venta" titulo="Venta" />
-          <OperacionDropdown operacion="alquiler" titulo="Alquiler" />
+          <NavbarDropdown titulo="Propiedades" entradas={ENTRADAS_PROPIEDADES} />
+          <NavbarDropdown titulo="Servicios" entradas={ENTRADAS_SERVICIOS} />
           <li>
-            <a href="#contacto">Contacto</a>
+            <a href="#contacto" className="navbar-contacto-btn">Contacto</a>
           </li>
-          {/* Visible siempre por ahora — condicionado al rol cuando haya auth */}
-          {esAdmin && (
-            <li>
-              <Link to="/admin" className="navbar-admin-btn">
-                Administración
-              </Link>
-            </li>
-          )}
+          {/* El acceso al panel es solo este icono, sin botón rotulado: el visitante
+              no tiene por qué ver señalizada la puerta de administración. Quien
+              corresponda entra igual, y `RutaProtegida` decide si pasa o va al login. */}
           <li>
-            <Link to="/admin" className="navbar-account" aria-label="Cuenta">
+            <Link to="/admin" className="navbar-account" aria-label="Acceso al panel">
               <svg viewBox="0 0 24 24" width="18" height="18" fill="none"
                    stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"
                    strokeLinejoin="round" aria-hidden="true">

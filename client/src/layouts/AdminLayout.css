@@ -93,6 +93,46 @@
   border-top: 1px solid rgba(255,255,255,0.08);
 }
 
+/* Identidad de la sesión + salida. El email va en una línea aparte porque en
+   220px de sidebar no entra al lado del botón sin recortarse a la mitad. */
+.admin-sesion {
+  padding: 0 0.85rem 0.75rem;
+  margin-bottom: 0.5rem;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+.admin-sesion-email {
+  display: block;
+  font-size: 0.72rem;
+  color: rgba(255,255,255,0.5);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-bottom: 0.4rem;
+}
+
+/* Acción secundaria: contorno tenue, para que no compita con la navegación. */
+.admin-sesion-salir {
+  font-family: var(--font-sans);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.7);
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.22);
+  border-radius: var(--radius-sm);
+  padding: 0.35rem 0.75rem;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.admin-sesion-salir:hover {
+  background: rgba(255,255,255,0.08);
+  border-color: rgba(255,255,255,0.4);
+  color: var(--white);
+}
+
 /* ── Main ─────────────────────────────────────────────────── */
 
 .admin-main {

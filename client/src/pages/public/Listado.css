@@ -46,8 +46,8 @@
   padding: 1.1rem 0;
 }
 
-.listado-filtros select,
-.listado-filtros input {
+/* Los tres filtros —operación, tipo y zona— son <select>: comparten estilo. */
+.listado-filtros select {
   padding: 0.55rem 0.9rem;
   font-size: 0.85rem;
   font-family: var(--font-sans);
@@ -56,12 +56,12 @@
   color: var(--text);
   outline: none;
   min-width: 180px;
+  max-width: 100%;
   transition: border-color 0.2s;
   border-radius: 3px;
 }
 
-.listado-filtros select:focus,
-.listado-filtros input:focus {
+.listado-filtros select:focus {
   border-color: var(--petrol);
 }
 

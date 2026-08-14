@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { propiedadesApi } from '../../api/propiedades'
 import type { PropiedadListItem } from '../../types/propiedad'
+import { ESTADOS_PUBLICOS, OPCIONES_TIPO } from '../../lib/propiedad'
 import PropiedadCard from '../../components/PropiedadCard'
 import './Listado.css'
 
@@ -13,11 +14,29 @@ export default function Listado() {
   const [propiedades, setPropiedades] = useState<PropiedadListItem[]>([])
   const [loading, setLoading]         = useState(true)
   const [error, setError]             = useState<string | null>(null)
+  const [ciudades, setCiudades]       = useState<string[]>([])
 
   // Filtros desde URL
   const operacion = searchParams.get('tipo_operacion') ?? ''
   const tipo      = searchParams.get('tipo_propiedad') ?? ''
   const ciudad    = searchParams.get('ciudad') ?? ''
+
+  // Zonas disponibles para el desplegable. Si el endpoint falla, el select se
+  // queda solo con "Todas las zonas": la página sigue funcionando y no se
+  // muestra ningún error, porque esto no impide ver las propiedades.
+  useEffect(() => {
+    propiedadesApi
+      .ciudades()
+      .then(setCiudades)
+      .catch(() => setCiudades([]))
+  }, [])
+
+  // Una `ciudad=` que venga por URL y no esté en la lista (link viejo, zona que
+  // se quedó sin inventario) se agrega igual como opción: si no, el select
+  // quedaría en blanco y el usuario no vería por qué filtra el listado.
+  const opcionesCiudad = ciudad && !ciudades.includes(ciudad)
+    ? [ciudad, ...ciudades]
+    : ciudades
 
   useEffect(() => {
     setLoading(true)
@@ -26,7 +45,10 @@ export default function Listado() {
         tipo_operacion:  operacion || undefined,
         tipo_propiedad:  tipo      || undefined,
         ciudad:          ciudad    || undefined,
-        estado_comercial: 'disponible',
+        // Se piden también las reservadas y las cerradas: se muestran con una faja
+        // encima (ver PropiedadCard) como antecedente de operaciones concretadas.
+        // El backend las devuelve después de las disponibles.
+        estados: ESTADOS_PUBLICOS,
       })
       .then(setPropiedades)
       .catch(e => setError(e.message))
@@ -59,31 +81,37 @@ export default function Listado() {
             <select
               value={operacion}
               onChange={e => set('tipo_operacion', e.target.value)}
+              aria-label="Operación"
             >
               <option value="">Todas las operaciones</option>
               <option value="venta">Venta</option>
               <option value="alquiler">Alquiler</option>
+              {/* `temporal` existe en el enum del backend; no se ofrece en la
+                  barra del hero, pero acá sí para poder filtrarlo. */}
               <option value="temporal">Temporal</option>
             </select>
 
             <select
               value={tipo}
               onChange={e => set('tipo_propiedad', e.target.value)}
+              aria-label="Tipo de propiedad"
             >
               <option value="">Todos los tipos</option>
-              <option value="casa">Casa</option>
-              <option value="depto">Departamento</option>
-              <option value="local">Local</option>
-              <option value="terreno">Terreno</option>
-              <option value="oficina">Oficina</option>
+              {OPCIONES_TIPO.map(({ valor, label }) => (
+                <option key={valor} value={valor}>{label}</option>
+              ))}
             </select>
 
-            <input
-              type="text"
-              placeholder="Ciudad o zona..."
+            <select
               value={ciudad}
               onChange={e => set('ciudad', e.target.value)}
-            />
+              aria-label="Zona"
+            >
+              <option value="">Todas las zonas</option>
+              {opcionesCiudad.map(c => (
+                <option key={c} value={c}>{c}</option>
+              ))}
+            </select>
           </div>
         </div>
       </div>

@@ -1,20 +1,33 @@
 import { Link } from 'react-router-dom'
 import type { PropiedadListItem } from '../types/propiedad'
-import { formatPrecio, imagenPrincipal, LABEL_OPERACION, LABEL_TIPO } from '../lib/propiedad'
+import {
+  etiquetaCierre,
+  formatPrecio,
+  imagenPrincipal,
+  LABEL_OPERACION,
+  LABEL_TIPO,
+} from '../lib/propiedad'
 import './PropiedadCard.css'
 
 export default function PropiedadCard({ propiedad: p }: { propiedad: PropiedadListItem }) {
   const img = imagenPrincipal(p)
   const loc = [p.ubicacion?.ciudad, p.ubicacion?.provincia].filter(Boolean).join(', ')
+  // Si la operación ya se cerró, la ficha se sigue mostrando pero atenuada y con
+  // una faja encima: sirve de antecedente, no de oferta vigente.
+  const cierre = etiquetaCierre(p)
 
   return (
-    <Link to={`/propiedades/${p.id}`} className="prop-card">
+    <Link
+      to={`/propiedades/${p.id}`}
+      className={cierre ? 'prop-card prop-card--cerrada' : 'prop-card'}
+    >
       <div className="prop-card-img">
         {img
           ? <img src={img} alt={p.titulo} loading="lazy" />
           : <div className="prop-card-img-empty" />
         }
         <span className="prop-card-badge">{LABEL_OPERACION[p.tipo_operacion]}</span>
+        {cierre && <span className="prop-card-faja">{cierre}</span>}
       </div>
 
       <div className="prop-card-body">

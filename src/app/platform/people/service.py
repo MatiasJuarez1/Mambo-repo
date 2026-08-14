@@ -1,7 +1,7 @@
 """Lógica de negocio: CRUD people y people_contacts."""
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from fastapi import HTTPException, status
 from sqlalchemy import or_
@@ -14,7 +14,6 @@ from app.platform.people.schemas import (
     PersonCreate,
     PersonUpdate,
 )
-
 
 # ---------------------------------------------------------------------------
 # People
@@ -72,7 +71,7 @@ def update_person(db: DBSession, person_id: int, data: PersonUpdate) -> Person:
     person = get_person_or_404(db, person_id)
     for field, value in data.model_dump(exclude_unset=True).items():
         setattr(person, field, value)
-    person.updated_at = datetime.now(timezone.utc)
+    person.updated_at = datetime.now(UTC)
     db.commit()
     db.refresh(person)
     return person
@@ -80,7 +79,7 @@ def update_person(db: DBSession, person_id: int, data: PersonUpdate) -> Person:
 
 def soft_delete_person(db: DBSession, person_id: int) -> None:
     person = get_person_or_404(db, person_id)
-    person.deleted_at = datetime.now(timezone.utc)
+    person.deleted_at = datetime.now(UTC)
     db.commit()
 
 

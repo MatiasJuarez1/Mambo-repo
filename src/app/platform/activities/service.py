@@ -1,14 +1,13 @@
 """Lógica de negocio: CRUD activities, filtros y cierre de tarea."""
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session as DBSession
 
 from app.platform.activities.models import Activity
 from app.platform.activities.schemas import ActivityCreate, ActivityUpdate
-
 
 # ---------------------------------------------------------------------------
 # Queries
@@ -39,7 +38,12 @@ def list_activities(
         q = q.filter(Activity.property_id == property_id)
 
     total = q.count()
-    items = q.order_by(Activity.due_at.asc().nullslast(), Activity.created_at.desc()).offset(skip).limit(limit).all()
+    items = (
+        q.order_by(Activity.due_at.asc().nullslast(), Activity.created_at.desc())
+        .offset(skip)
+        .limit(limit)
+        .all()
+    )
     return total, items
 
 
@@ -78,7 +82,7 @@ def update_activity(db: DBSession, activity_id: int, data: ActivityUpdate) -> Ac
     for field, value in data.model_dump(exclude_unset=True).items():
         setattr(activity, field, value)
 
-    activity.updated_at = datetime.now(timezone.utc)
+    activity.updated_at = datetime.now(UTC)
     db.commit()
     db.refresh(activity)
     return activity
@@ -94,8 +98,8 @@ def mark_done(db: DBSession, activity_id: int) -> Activity:
         )
 
     activity.status = "hecha"
-    activity.done_at = datetime.now(timezone.utc)
-    activity.updated_at = datetime.now(timezone.utc)
+    activity.done_at = datetime.now(UTC)
+    activity.updated_at = datetime.now(UTC)
     db.commit()
     db.refresh(activity)
     return activity
@@ -111,7 +115,7 @@ def cancel_activity(db: DBSession, activity_id: int) -> Activity:
         )
 
     activity.status = "cancelada"
-    activity.updated_at = datetime.now(timezone.utc)
+    activity.updated_at = datetime.now(UTC)
     db.commit()
     db.refresh(activity)
     return activity

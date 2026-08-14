@@ -24,6 +24,9 @@
   cursor: pointer;
   border-radius: var(--radius-md);
   background: var(--bone) center / cover no-repeat;
+  /* Recorta la faja de operación cerrada, que es más ancha que la foto para salir
+     por los dos costados; sin esto se derrama fuera de la galería. */
+  overflow: hidden;
 }
 .detalle-gal-thumbs { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: var(--space-2); }
 .detalle-gal-thumb {
@@ -56,10 +59,33 @@
   color: var(--white); background: var(--petrol); border-radius: var(--radius-sm);
 }
 
+/* Faja de operación cerrada sobre la foto principal. Mismo recurso que la ficha del
+   listado, para que la propiedad se lea igual desde los dos lados. */
+.detalle-faja {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 130%;
+  transform: translate(-50%, -50%) rotate(-9deg);
+  padding: 0.7rem 0;
+  text-align: center;
+  /* --magenta-deep y no --magenta: el puro no llega al contraste AA con texto blanco. */
+  background: var(--magenta-deep);
+  color: var(--white);
+  font-family: var(--font-sans);
+  font-size: 1.35rem;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  box-shadow: 0 2px 14px rgba(0, 0, 0, 0.2);
+  pointer-events: none;
+}
+
 @media (max-width: 860px) {
   .detalle-galeria { grid-template-columns: 1fr; }
   .detalle-gal-principal { height: 280px; }
   .detalle-gal-thumbs { grid-template-rows: 90px; grid-template-columns: repeat(4, 1fr); }
+  .detalle-faja { font-size: 1rem; letter-spacing: 0.16em; }
 }
 
 /* Layout 2 columnas */
@@ -122,6 +148,22 @@
 }
 .detalle-btn-wsp { background: var(--magenta); color: var(--white); text-decoration: none; margin-top: var(--space-5); border: none; }
 .detalle-btn-wsp:hover { background: var(--magenta-deep); }
+/* Aviso de estado en la columna de contacto. Va antes del precio a propósito: el
+   visitante tiene que enterarse de que la operación se cerró antes de leer la cifra. */
+.detalle-aviso {
+  padding: 0.85rem 1rem;
+  margin-bottom: 1.15rem;
+  background: var(--petrol-soft);
+  border-left: 3px solid var(--petrol);
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  line-height: 1.45;
+  color: var(--petrol-deep);
+}
+
+/* El precio de una operación cerrada es un dato histórico, no una oferta vigente. */
+.detalle-precio-cerrado { color: var(--text-muted); }
+
 .detalle-btn-visita { background: transparent; color: var(--petrol); border: 1px solid var(--petrol); margin-top: 0.6rem; }
 .detalle-btn-visita:hover { background: var(--petrol); color: var(--white); }
 

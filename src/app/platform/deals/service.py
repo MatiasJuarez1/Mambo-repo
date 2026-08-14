@@ -1,7 +1,7 @@
 """Lógica de negocio: CRUD pipelines, deals, movimiento de etapa, deal_parties."""
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session as DBSession
@@ -13,11 +13,10 @@ from app.platform.deals.schemas import (
     DealPartyCreate,
     DealUpdate,
     PipelineCreate,
-    PipelineUpdate,
     PipelineStageCreate,
     PipelineStageUpdate,
+    PipelineUpdate,
 )
-
 
 # ---------------------------------------------------------------------------
 # Pipeline
@@ -213,7 +212,7 @@ def update_deal(db: DBSession, deal_id: int, data: DealUpdate) -> Deal:
     deal = get_deal_or_404(db, deal_id)
     for field, value in data.model_dump(exclude_unset=True).items():
         setattr(deal, field, value)
-    deal.updated_at = datetime.now(timezone.utc)
+    deal.updated_at = datetime.now(UTC)
     db.commit()
     db.refresh(deal)
     return deal
@@ -228,10 +227,10 @@ def move_stage(db: DBSession, deal_id: int, data: DealMoveStage) -> Deal:
     deal.is_won = stage.is_won
     deal.is_lost = stage.is_lost
     if stage.is_won or stage.is_lost:
-        deal.closed_at = datetime.now(timezone.utc)
+        deal.closed_at = datetime.now(UTC)
     else:
         deal.closed_at = None
-    deal.updated_at = datetime.now(timezone.utc)
+    deal.updated_at = datetime.now(UTC)
 
     db.commit()
     db.refresh(deal)
@@ -240,7 +239,7 @@ def move_stage(db: DBSession, deal_id: int, data: DealMoveStage) -> Deal:
 
 def soft_delete_deal(db: DBSession, deal_id: int) -> None:
     deal = get_deal_or_404(db, deal_id)
-    deal.deleted_at = datetime.now(timezone.utc)
+    deal.deleted_at = datetime.now(UTC)
     db.commit()
 
 

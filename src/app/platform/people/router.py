@@ -53,7 +53,12 @@ def get_person(
     return PersonOut.model_validate(person)
 
 
-@router.post("", response_model=PersonOut, status_code=status.HTTP_201_CREATED, dependencies=[_staff])
+@router.post(
+    "",
+    response_model=PersonOut,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[_staff],
+)
 def create_person(
     body: PersonCreate,
     db: DBSession = Depends(get_db),

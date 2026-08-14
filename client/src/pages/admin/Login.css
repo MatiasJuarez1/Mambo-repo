@@ -1,0 +1,101 @@
+/* Pantalla de acceso al panel. Fondo petróleo a pantalla completa y una sola
+   ficha centrada: no hay navegación ni nada más que hacer acá. */
+
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-5);
+  background: var(--petrol-deep);
+}
+
+.login-card {
+  width: 100%;
+  max-width: 380px;
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-7) var(--space-6);
+  background: var(--white);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+}
+
+.login-marca {
+  display: flex;
+  flex-direction: column;
+  line-height: 1;
+  margin-bottom: var(--space-6);
+}
+
+.login-titulo {
+  font-family: var(--font-serif);
+  font-size: 1.6rem;
+  font-weight: 600;
+  color: var(--petrol);
+  margin-bottom: var(--space-5);
+}
+
+.login-label {
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: var(--space-1);
+}
+
+.login-input {
+  padding: 0.65rem 0.8rem;
+  margin-bottom: var(--space-4);
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  color: var(--text);
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.login-input:focus { border-color: var(--petrol); }
+
+/* Fondo tenue para que el error se lea como un bloque y no como una línea más
+   del formulario. El rojo va en el tono oscuro de la escala: pasa AA en 0.85rem. */
+.login-error {
+  padding: 0.6rem 0.8rem;
+  margin-bottom: var(--space-4);
+  font-size: 0.82rem;
+  line-height: 1.4;
+  color: var(--estado-baja);
+  background: var(--estado-baja-bg);
+  border-radius: var(--radius-sm);
+}
+
+.login-boton {
+  margin-top: var(--space-2);
+  padding: 0.7rem 1.25rem;
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--white);
+  background: var(--magenta-cta);
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.login-boton:hover:not(:disabled) { background: var(--magenta-deep); }
+
+.login-boton:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.login-card .logo-mambo {
+  font-size: 1.35rem;
+  color: var(--petrol);
+}

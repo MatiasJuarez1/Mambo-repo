@@ -13,7 +13,10 @@ const BASE = '/api/v1/propiedades'
 export interface ListarParams {
   tipo_propiedad?: string
   tipo_operacion?: string
+  /** Un estado exacto. Para pedir varios a la vez, usar `estados`. */
   estado_comercial?: string
+  /** Varios estados a la vez; viaja como el parámetro repetido que espera FastAPI. */
+  estados?: readonly string[]
   ciudad?: string
   precio_min?: number
   precio_max?: number
@@ -24,7 +27,11 @@ export interface ListarParams {
 function toQuery(params: ListarParams): string {
   const q = new URLSearchParams()
   Object.entries(params).forEach(([k, v]) => {
-    if (v !== undefined && v !== '') q.set(k, String(v))
+    if (v === undefined || v === '') return
+    // FastAPI lee las listas como el mismo parámetro repetido
+    // (?estados=disponible&estados=cerrada), no como valores separados por coma.
+    if (Array.isArray(v)) v.forEach(item => q.append(k, String(item)))
+    else q.set(k, String(v))
   })
   const s = q.toString()
   return s ? `?${s}` : ''
@@ -33,6 +40,10 @@ function toQuery(params: ListarParams): string {
 export const propiedadesApi = {
   listar: (params: ListarParams = {}) =>
     api.get<PropiedadListItem[]>(`${BASE}${toQuery(params)}`),
+
+  // Zonas (ciudades) que hoy tienen propiedades publicadas, para los desplegables.
+  ciudades: () =>
+    api.get<string[]>(`${BASE}/ciudades`),
 
   obtener: (id: number) =>
     api.get<Propiedad>(`${BASE}/${id}`),

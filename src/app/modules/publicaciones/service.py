@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import List, Optional
 
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
@@ -10,11 +9,11 @@ from app.modules.publicaciones.schemas import PublicacionCreate, PublicacionUpda
 
 def listar_publicaciones(
     db: Session,
-    estado: Optional[EstadoPublicacion] = None,
-    propiedad_id: Optional[int] = None,
+    estado: EstadoPublicacion | None = None,
+    propiedad_id: int | None = None,
     skip: int = 0,
     limit: int = 20,
-) -> List[Publicacion]:
+) -> list[Publicacion]:
     query = db.query(Publicacion).filter(Publicacion.eliminado_en.is_(None))
 
     if estado:
@@ -27,10 +26,10 @@ def listar_publicaciones(
 
 def listar_publicaciones_activas(
     db: Session,
-    propiedad_id: Optional[int] = None,
+    propiedad_id: int | None = None,
     skip: int = 0,
     limit: int = 20,
-) -> List[Publicacion]:
+) -> list[Publicacion]:
     """Endpoint público: solo devuelve publicaciones activas."""
     return listar_publicaciones(db, EstadoPublicacion.activa, propiedad_id, skip, limit)
 

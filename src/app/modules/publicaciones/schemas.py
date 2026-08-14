@@ -1,6 +1,5 @@
 from datetime import datetime
 from decimal import Decimal
-from typing import List, Optional
 
 from pydantic import BaseModel, ConfigDict
 
@@ -10,11 +9,11 @@ from app.modules.publicaciones.models import EstadoPublicacion
 
 class PublicacionBase(BaseModel):
     titulo: str
-    descripcion: Optional[str] = None
+    descripcion: str | None = None
     estado: EstadoPublicacion = EstadoPublicacion.activa
-    precio_publicado: Optional[Decimal] = None
+    precio_publicado: Decimal | None = None
     moneda_publicada: str = "ARS"
-    slug: Optional[str] = None
+    slug: str | None = None
 
 
 class PublicacionCreate(PublicacionBase):
@@ -22,22 +21,22 @@ class PublicacionCreate(PublicacionBase):
 
 
 class PublicacionUpdate(BaseModel):
-    titulo: Optional[str] = None
-    descripcion: Optional[str] = None
-    estado: Optional[EstadoPublicacion] = None
-    precio_publicado: Optional[Decimal] = None
-    moneda_publicada: Optional[str] = None
-    slug: Optional[str] = None
+    titulo: str | None = None
+    descripcion: str | None = None
+    estado: EstadoPublicacion | None = None
+    precio_publicado: Decimal | None = None
+    moneda_publicada: str | None = None
+    slug: str | None = None
 
 
 class PublicacionResponse(PublicacionBase):
     id: int
     propiedad_id: int
-    publicada_en: Optional[datetime] = None
+    publicada_en: datetime | None = None
     creado_en: datetime
     actualizado_en: datetime
-    eliminado_en: Optional[datetime] = None
-    propiedad: Optional[PropiedadListItem] = None
+    eliminado_en: datetime | None = None
+    propiedad: PropiedadListItem | None = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -47,11 +46,11 @@ class PublicacionListItem(BaseModel):
     propiedad_id: int
     titulo: str
     estado: EstadoPublicacion
-    precio_publicado: Optional[Decimal] = None
+    precio_publicado: Decimal | None = None
     moneda_publicada: str = "ARS"
-    slug: Optional[str] = None
-    publicada_en: Optional[datetime] = None
+    slug: str | None = None
+    publicada_en: datetime | None = None
     creado_en: datetime
-    propiedad: Optional[PropiedadListItem] = None
+    propiedad: PropiedadListItem | None = None
 
     model_config = ConfigDict(from_attributes=True)

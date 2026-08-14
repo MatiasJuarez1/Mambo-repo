@@ -1,0 +1,13 @@
+/* Espera de la verificación de sesión. Es una pantalla de tránsito de unos
+   pocos cientos de milisegundos: se busca que no sobresalte, no que informe. */
+.ruta-protegida-espera {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bone);
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}

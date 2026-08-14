@@ -1,7 +1,7 @@
 """Lógica de negocio: CRUD reservations con reglas de estado."""
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session as DBSession
@@ -71,7 +71,10 @@ def create_reservation(
     if existing_active:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail=f"La propiedad {data.property_id} ya tiene una reserva activa (id={existing_active.id})",
+            detail=(
+                f"La propiedad {data.property_id} ya tiene una reserva activa "
+                f"(id={existing_active.id})"
+            ),
         )
 
     reservation = Reservation(
@@ -97,7 +100,7 @@ def update_reservation(db: DBSession, reservation_id: int, data: ReservationUpda
     for field, value in data.model_dump(exclude_unset=True).items():
         setattr(reservation, field, value)
 
-    reservation.updated_at = datetime.now(timezone.utc)
+    reservation.updated_at = datetime.now(UTC)
     db.commit()
     db.refresh(reservation)
     return reservation
@@ -114,7 +117,7 @@ def change_status(db: DBSession, reservation_id: int, new_status: str) -> Reserv
         )
 
     reservation.status = new_status
-    reservation.updated_at = datetime.now(timezone.utc)
+    reservation.updated_at = datetime.now(UTC)
     db.commit()
     db.refresh(reservation)
     return reservation
