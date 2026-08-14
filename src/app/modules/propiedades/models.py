@@ -2,6 +2,7 @@ from datetime import datetime
 from enum import StrEnum
 
 from sqlalchemy import (
+    JSON,
     BigInteger,
     Boolean,
     Column,
@@ -152,6 +153,21 @@ class PropiedadMedio(Base):
     # Nulo en los medios que apuntan a una URL de un tercero (p. ej. el seed): esos
     # archivos no son nuestros y no hay nada que borrar.
     storage_key = Column(String(512), nullable=True)
+    # Copias reducidas de la misma foto: {"400": "https://…", "800": "…"}. La clave
+    # es el ancho real en píxeles (string, porque JSON no tiene otras) y el valor,
+    # la URL pública, con la misma forma que `url`.
+    #
+    # `JSON` genérico de SQLAlchemy y no el `JSONB` de PostgreSQL: se compila al
+    # tipo nativo de cada motor, así que la suite en memoria (SQLite) lo cubre sin
+    # adaptaciones. Acá no se consulta por adentro del documento, que es lo único
+    # que justificaría atarse a JSONB.
+    #
+    # Nulo a propósito en las filas anteriores a esta columna y en las que no
+    # generaron ninguna variante (una foto de 300px ya es más chica que la más
+    # chica): el frontend cae al `url` de siempre y nunca queda una foto rota.
+    # Las claves de almacenamiento de las variantes NO se guardan acá: se derivan
+    # de `storage_key` (ver `app.storage.clave_de_variante`).
+    variantes = Column(JSON, nullable=True)
     descripcion = Column(String(255), nullable=True)
     orden = Column(Integer, nullable=False, default=0)
     es_principal = Column(Boolean, nullable=False, default=False)

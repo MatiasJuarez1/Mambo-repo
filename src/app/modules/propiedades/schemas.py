@@ -7,6 +7,7 @@ from app.modules.propiedades.models import EstadoComercial, TipoMedio, TipoOpera
 
 # ── Ubicación ────────────────────────────────────────────────────────────────
 
+
 class UbicacionBase(BaseModel):
     direccion: str | None = None
     ciudad: str | None = None
@@ -35,6 +36,7 @@ class UbicacionResponse(UbicacionBase):
 
 # ── Medios ────────────────────────────────────────────────────────────────────
 
+
 class MedioBase(BaseModel):
     tipo_medio: TipoMedio = TipoMedio.imagen
     url: str
@@ -59,11 +61,18 @@ class MedioResponse(MedioBase):
     id: int
     propiedad_id: int
     creado_en: datetime
+    # Copias reducidas de la foto, por ancho: {"400": "…", "800": "…", "1600": "…"}.
+    # `None` en los medios que no las tienen (los anteriores a la columna, los del
+    # seed y las fotos ya más chicas que 400px); ahí el frontend usa `url` a secas.
+    # No está en `MedioBase` porque no se recibe del cliente: la genera el backend
+    # al subir el archivo.
+    variantes: dict[str, str] | None = None
 
     model_config = ConfigDict(from_attributes=True)
 
 
 # ── Características ───────────────────────────────────────────────────────────
+
 
 class CaracteristicaBase(BaseModel):
     clave: str
@@ -83,6 +92,7 @@ class CaracteristicaResponse(CaracteristicaBase):
 
 
 # ── Propiedad ─────────────────────────────────────────────────────────────────
+
 
 class PropiedadBase(BaseModel):
     titulo: str

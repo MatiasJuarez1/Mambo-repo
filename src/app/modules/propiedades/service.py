@@ -33,7 +33,7 @@ from app.modules.propiedades.schemas import (
     PropiedadCreate,
     PropiedadUpdate,
 )
-from app.storage import borrar_imagen, guardar_imagen
+from app.storage import borrar_imagen, guardar_imagen, guardar_variante, leer_archivo
 
 
 def listar_propiedades(
@@ -117,10 +117,14 @@ def listar_ciudades(db: Session) -> list[str]:
 
 
 def obtener_propiedad(db: Session, propiedad_id: int) -> Propiedad:
-    prop = db.query(Propiedad).filter(
-        Propiedad.id == propiedad_id,
-        Propiedad.eliminado_en.is_(None),
-    ).first()
+    prop = (
+        db.query(Propiedad)
+        .filter(
+            Propiedad.id == propiedad_id,
+            Propiedad.eliminado_en.is_(None),
+        )
+        .first()
+    )
     if not prop:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Propiedad no encontrada")
     return prop
@@ -198,6 +202,12 @@ MAX_BYTES_IMAGEN = 8 * 1024 * 1024  # 8 MB
 # no se agrandan. Mantiene las fotos livianas sin depender del navegador.
 MAX_LADO_PX = 1920
 
+# Anchos de las copias reducidas que se generan junto al original, para que el
+# navegador se baje la que corresponde a su pantalla vía `srcset` en vez de la de
+# 1920px siempre. El original sigue siendo el `url` del medio: esto se agrega, no
+# lo reemplaza.
+ANCHOS_VARIANTES = (400, 800, 1600)
+
 # Formato real detectado por Pillow (imagen.format) -> extensión de guardado.
 # Nos basamos en el contenido del archivo, NO en el content_type del navegador:
 # en Windows suele llegar vacío o como "application/octet-stream" para imágenes
@@ -260,6 +270,90 @@ def _procesar_imagen(contenido: bytes) -> tuple[bytes, str]:
     return salida.getvalue(), extension
 
 
+def _generar_variantes(contenido: bytes) -> dict[int, bytes]:
+    """Genera las copias reducidas de una imagen ya procesada, una por ancho.
+
+    Recibe los bytes que devolvió `_procesar_imagen` —orientación EXIF ya
+    corregida, formato y modo definitivos—, así que las variantes salen del mismo
+    original que se va a guardar y conservan su formato (y con él su ContentType).
+
+    **Se saltean los anchos mayores o iguales al de la imagen.** Una foto de
+    600px genera solo la de 400. Sin ese corte se guardarían tres copias del
+    mismo archivo, cada una anunciada en el `srcset` como si fuera más grande de
+    lo que es.
+
+    Se redimensiona por ancho exacto (`resize`) y no con `thumbnail`, que encaja
+    la imagen en una caja cuadrada: en una foto vertical, `thumbnail((800, 800))`
+    devuelve 533px de ancho. Como la clave termina siendo el descriptor `w` del
+    `srcset` y el navegador elige por ese número, anunciar 800 sobre un archivo
+    de 533 le hace bajar el equivocado.
+    """
+    imagen = Image.open(io.BytesIO(contenido))
+    imagen.load()
+
+    # Los GIF pueden estar animados y por eso `_procesar_imagen` los devuelve
+    # intactos; acá vale lo mismo. Redimensionarlos con Pillow aplastaría la
+    # animación a un solo fotograma, así que se quedan sin variantes.
+    if imagen.format == "GIF":
+        return {}
+
+    variantes: dict[int, bytes] = {}
+    for ancho in ANCHOS_VARIANTES:
+        if ancho >= imagen.width:
+            continue
+        alto = max(1, round(imagen.height * ancho / imagen.width))
+        salida = io.BytesIO()
+        imagen.resize((ancho, alto), Image.LANCZOS).save(
+            salida, format=imagen.format, optimize=True
+        )
+        variantes[ancho] = salida.getvalue()
+
+    return variantes
+
+
+def _guardar_variantes(contenido: bytes, clave: str | None) -> dict[str, str] | None:
+    """Guarda las variantes junto al original y arma el `dict` de la columna.
+
+    Devuelve `None` —y no `{}`— cuando no hay ninguna que guardar, para que la
+    columna quede en NULL: es el valor que el frontend interpreta como "usá `url`
+    a secas". Un diccionario vacío lo obligaría a distinguir dos casos que
+    significan lo mismo.
+
+    Sin `clave` no hay de dónde derivar las de las variantes (son los medios que
+    apuntan a una URL de un tercero), así que tampoco se generan.
+    """
+    if not clave:
+        return None
+
+    variantes = {
+        str(ancho): guardar_variante(bytes_variante, clave, ancho)
+        for ancho, bytes_variante in _generar_variantes(contenido).items()
+    }
+    return variantes or None
+
+
+def reprocesar_variantes(clave: str) -> dict[str, str] | None:
+    """Regenera las variantes de una foto **ya guardada**, a partir de su original.
+
+    Es lo que necesita el backfill (`scripts/regenerar_variantes.py`) para las
+    fotos subidas antes de que existieran las variantes: baja el original del
+    almacenamiento por su `storage_key`, genera las copias reducidas y las
+    guarda al lado. Devuelve el `dict` listo para la columna `variantes` —o
+    `None` si no se generó ninguna, con el mismo criterio que `_guardar_variantes`.
+
+    **No vuelve a pasar el original por `_procesar_imagen`.** Ese archivo ya
+    pasó por ahí cuando se subió: tiene la orientación EXIF aplicada, el lado
+    máximo de 1920 y el formato final. Reprocesarlo lo re-codificaría por nada
+    (en JPEG cada vuelta pierde calidad) y podría cambiarle la extensión,
+    dejando el `storage_key` de la base apuntando a un archivo que ya no está.
+
+    Los errores de lectura suben tal cual (ver `app.storage.leer_archivo`): sin
+    original no hay nada que regenerar, y es el llamador el que decide si eso
+    aborta o solo se anota.
+    """
+    return _guardar_variantes(leer_archivo(clave), clave)
+
+
 def subir_medio(
     db: Session,
     propiedad_id: int,
@@ -271,7 +365,8 @@ def subir_medio(
 
     Dónde queda el binario lo decide `app.storage` según `STORAGE_BACKEND`: en
     disco durante el desarrollo, en Cloudflare R2 en producción. Acá solo se guardan
-    la URL pública y la clave con la que después se lo puede borrar.
+    la URL pública, la clave con la que después se lo puede borrar y las URLs de
+    las copias reducidas (`variantes`).
     """
     obtener_propiedad(db, propiedad_id)
 
@@ -287,6 +382,11 @@ def subir_medio(
 
     guardado = guardar_imagen(contenido, extension)
 
+    # Las variantes van después del original y por separado: el `url` del medio es
+    # siempre el de la imagen completa, así que si esto fallara la foto seguiría
+    # viéndose.
+    variantes = _guardar_variantes(contenido, guardado.clave)
+
     # El orden es la cantidad de medios ya existentes; si es la primera foto de la
     # propiedad se marca como principal por defecto.
     medios_existentes = (
@@ -298,6 +398,7 @@ def subir_medio(
         tipo_medio=TipoMedio.imagen,
         url=guardado.url,
         storage_key=guardado.clave,
+        variantes=variantes,
         descripcion=descripcion,
         orden=medios_existentes,
         es_principal=es_principal or medios_existentes == 0,
@@ -310,17 +411,25 @@ def subir_medio(
 
 def eliminar_medio(db: Session, propiedad_id: int, medio_id: int) -> None:
     obtener_propiedad(db, propiedad_id)
-    medio = db.query(PropiedadMedio).filter(
-        PropiedadMedio.id == medio_id,
-        PropiedadMedio.propiedad_id == propiedad_id,
-    ).first()
+    medio = (
+        db.query(PropiedadMedio)
+        .filter(
+            PropiedadMedio.id == medio_id,
+            PropiedadMedio.propiedad_id == propiedad_id,
+        )
+        .first()
+    )
     if not medio:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Medio no encontrado")
 
     # Se borra primero el archivo y después la fila. `borrar_imagen` no propaga
     # errores del proveedor a propósito (ver su docstring): dejar la foto rota en
     # la web sería peor que dejar un archivo huérfano en el CDN.
-    borrar_imagen(medio.url, medio.storage_key)
+    #
+    # `variantes` va tal cual: iterarlo da los anchos, que son de donde salen las
+    # claves de las copias reducidas. En NULL (las filas viejas) no se intenta
+    # borrar ninguna, porque no se generó ninguna.
+    borrar_imagen(medio.url, medio.storage_key, medio.variantes)
 
     db.delete(medio)
     db.commit()
@@ -339,10 +448,14 @@ def agregar_caracteristica(
 
 def eliminar_caracteristica(db: Session, propiedad_id: int, caracteristica_id: int) -> None:
     obtener_propiedad(db, propiedad_id)
-    caract = db.query(PropiedadCaracteristica).filter(
-        PropiedadCaracteristica.id == caracteristica_id,
-        PropiedadCaracteristica.propiedad_id == propiedad_id,
-    ).first()
+    caract = (
+        db.query(PropiedadCaracteristica)
+        .filter(
+            PropiedadCaracteristica.id == caracteristica_id,
+            PropiedadCaracteristica.propiedad_id == propiedad_id,
+        )
+        .first()
+    )
     if not caract:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Característica no encontrada"
