@@ -206,3 +206,14 @@
     text-align: center;
   }
 }
+
+/* El formulario de carga es la pantalla que más se toca del panel, y es la que
+   más chance tiene de usarse desde el teléfono parado frente a una propiedad.
+   Los campos venían en 38px (inputs) y 40px (selects). */
+@media (max-width: 860px) {
+  .form-field input,
+  .form-field select,
+  .form-field textarea {
+    min-height: var(--tap-min);
+  }
+}

@@ -163,4 +163,20 @@
   .qs-tabs { padding: 0.3rem 0.5rem; }
   .qs-field { border-radius: var(--radius-md); }
   .qs-buscar { padding: 0.8rem; border-radius: var(--radius-md); }
+
+  /* Los cinco controles de la barra quedaban muy por debajo del mínimo táctil:
+     los <select> en 20px, las pestañas en 22px y el botón en 43px. Es la
+     primera cosa que se toca en el sitio, así que es donde más se nota.
+     Los <select> necesitan el `min-height` y no padding: el alto de un select
+     lo fija el navegador y el padding vertical lo ignora en varios de ellos. */
+  .qs-select,
+  .qs-tab,
+  .qs-buscar {
+    min-height: var(--tap-min);
+  }
+
+  .qs-tab {
+    display: inline-flex;
+    align-items: center;
+  }
 }

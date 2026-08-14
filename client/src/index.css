@@ -413,6 +413,10 @@ body {
 @media (max-width: 860px) {
   .navbar-logo-img { height: 26px; }
 
+  /* El logo es un enlace al home, y con la imagen en 26px era un target de 26px
+     de alto. La navbar mide 60px acá, así que los 44 entran sin descuadrar. */
+  .navbar-logo { min-height: var(--tap-min); }
+
   /* Bajo 860px la navbar queda en logo + hamburguesa: en 375px la fila entera
      (logo + "Quiénes somos" + dos desplegables + pastilla + icono, con
      gap: 2.25rem) no entra ni recortando el gap. Todo eso pasa al drawer, que
@@ -431,16 +435,19 @@ body {
   .navbar-drawer-overlay {
     display: block;
     position: fixed;
-    /* Arranca debajo de la navbar en vez de taparla: el drawer y el overlay son
-       descendientes de `.navbar` —que con z-index: 100 y position: fixed abre su
-       propio contexto de apilamiento—, así que a pantalla completa se comerían
-       el logo y la hamburguesa. Dejando la barra a la vista, además, la misma
-       hamburguesa que abrió el menú sirve para cerrarlo. */
+    /* Arranca debajo de la navbar en vez de taparla, y se queda por debajo de
+       ella en z-index (100): así el logo y la hamburguesa siguen a la vista, y
+       la misma hamburguesa que abrió el menú sirve para cerrarlo.
+       El drawer y el overlay viven FUERA de `.navbar` en el DOM —ver el
+       comentario en Navbar.tsx—, así que estos `inset` se resuelven contra la
+       ventana. Adentro no funcionaban: el `backdrop-filter` de la navbar la
+       convierte en bloque contenedor de los `position: fixed` que cuelgan de
+       ella. */
     inset: var(--navbar-h) 0 0 0;
     /* Petróleo profundo translúcido en vez de negro: el oscurecido queda dentro
        de la paleta y no ensucia el magenta de la pastilla de Contacto. */
     background: rgba(7, 31, 32, 0.55);
-    z-index: 1;
+    z-index: 90;
   }
 
   .navbar-drawer {
@@ -452,21 +459,26 @@ body {
     background: var(--white);
     border-left: 1px solid var(--line);
     box-shadow: -18px 0 40px rgba(7, 31, 32, 0.18);
-    z-index: 2;
+    z-index: 95;
     /* Fuera de pantalla, no `display: none`: la animación necesita un punto de
        partida. El `visibility: hidden` es lo que lo saca del orden de tabulación
-       mientras está cerrado —un panel desplazado sigue siendo enfocable— y se
-       anima junto al transform: `visibility` pasa a visible apenas arranca la
-       transición y recién vuelve a hidden cuando termina, así que la salida se
-       ve completa. */
+       mientras está cerrado — un panel meramente desplazado sigue siendo
+       enfocable con el teclado.
+       El retardo de 0.25s va sólo al cerrar: así el panel sigue visible durante
+       todo el deslizamiento de salida y recién entonces desaparece. Al abrir
+       (ver `.abierto`) el cambio es instantáneo, porque el efecto que manda el
+       foco al primer enlace corre en ese mismo frame y a un elemento
+       `visibility: hidden` el navegador no le da foco. */
     transform: translateX(100%);
     visibility: hidden;
-    transition: transform 0.25s ease, visibility 0.25s;
+    transition: transform 0.25s ease, visibility 0s linear 0.25s;
   }
 
   .navbar-drawer.abierto {
     transform: translateX(0);
     visibility: visible;
+    /* Sin retardo: visible ya, para que el foco pueda entrar. */
+    transition: transform 0.25s ease, visibility 0s;
   }
 }
 
@@ -899,6 +911,12 @@ body {
   color: var(--white);
   text-decoration: none;
   transition: color 0.2s;
+  /* `info@mambogroups.com` es una sola palabra sin espacios: en la columna de
+     ~118px del footer a 320px no tiene dónde cortar y se sale de su caja,
+     generando scroll horizontal en todas las páginas (el footer es compartido).
+     `anywhere` la parte donde haga falta; el resto de los valores son cortos y
+     no se ven afectados. */
+  overflow-wrap: anywhere;
 }
 
 /* Solo los accionables reaccionan: el horario es un <span>, no un <a>. */
@@ -977,6 +995,22 @@ a.datos-contacto-valor:hover {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 1.25rem;
     width: 100%;
+  }
+
+  /* Teléfonos y mail son enlaces de tocar (`tel:` / `mailto:`) y quedaban en
+     22px de alto. El `flex` es lo que hace que el mínimo se note: como `block`
+     el alto lo fija la línea de texto. El horario es un <span> y no entra. */
+  a.datos-contacto-valor {
+    display: flex;
+    align-items: center;
+    min-height: var(--tap-min);
+  }
+
+  /* "Ver todas →" es la única salida de la sección y medía 15px de alto. */
+  .destacadas-header .destacadas-link {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--tap-min);
   }
 }
 

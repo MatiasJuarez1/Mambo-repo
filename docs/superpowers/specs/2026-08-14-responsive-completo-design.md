@@ -304,6 +304,46 @@ En cada uno, para cada pantalla (`/`, `/propiedades`, `/propiedades/:id`, `/noso
 3. Todo lo que se toca mide al menos 44×44.
 4. Los drawers abren, cierran y no dejan el `body` bloqueado.
 
+### 8.3 Resultado de la verificación (2026-08-14)
+
+La checklist se corrió con Chrome real vía `playwright-core` **instalado fuera
+del repo** (en un directorio temporal), así que `package.json` no cambió: la
+decisión de §3 sigue en pie — Playwright no es parte del proyecto, se usó como
+herramienta de una vez para hacer la revisión manual de forma exhaustiva.
+
+Encontró **cuatro defectos que los 163 tests de Vitest no podían ver**, tres de
+ellos reales para el usuario:
+
+1. **El menú móvil no se veía.** El drawer estaba dentro de `<nav class="navbar">`,
+   y el `backdrop-filter` de la navbar la convierte en bloque contenedor de sus
+   descendientes `position: fixed`. El `top: var(--navbar-h); bottom: 0` del
+   panel se resolvía contra los 61px de la barra y no contra la ventana: alto 0,
+   contenido recortado por su propio `overflow`. La hamburguesa alternaba
+   `aria-expanded`, el foco entraba y el scroll se bloqueaba — todo lo que los
+   tests comprueban— y en pantalla no aparecía nada. **Se movió el drawer fuera
+   de `.navbar`**, con un test de regresión que fija esa condición estructural.
+2. **El foco no entraba al panel.** `visibility` estaba en la lista de
+   propiedades transicionadas, así que en el frame en que corre el efecto el
+   panel seguía `hidden`, y a un elemento `visibility: hidden` el navegador no
+   le da foco. El retardo pasó a aplicarse sólo al cerrar.
+3. **Scroll horizontal de 18px en las cinco páginas públicas a 320px.** El
+   culpable era el footer: `info@mambogroups.com` es una sola palabra sin
+   espacios y no entraba en la columna de ~118px de la grilla de dos columnas.
+   Se resolvió con `overflow-wrap: anywhere`.
+4. **El panel admin desbordaba a 1024px.** `.admin-main` es un ítem flex y
+   arrancaba con `min-width: auto`, negándose a achicarse por debajo del ancho
+   intrínseco de la tabla. `min-width: 0` lo devuelve al `overflow-x` del
+   `.tabla-wrapper`, que era de quien tenía que ser el scroll.
+
+Además, **23 controles por debajo del mínimo táctil** que las tareas originales
+no habían cubierto: los cinco de la barra de búsqueda del hero (`<select>` en
+20px, pestañas en 22px), los enlaces `tel:`/`mailto:` del footer (22px), el
+índice de servicios (34px), los campos del formulario del admin (38-40px), el
+logo de la navbar (26px) y el breadcrumb de la ficha (15px).
+
+Estado final: **0 desbordes y 0 targets por debajo de 44px** en 9 pantallas ×
+6 anchos, y las dieciséis conductas de los dos drawers en verde.
+
 ## 9. Escotilla de escape a Tailwind
 
 Adoptar Tailwind **a medias** —unos componentes con utilidades y otros con el CSS actual—

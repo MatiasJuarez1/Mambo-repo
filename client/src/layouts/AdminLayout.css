@@ -183,6 +183,13 @@
 .admin-main {
   margin-left: 220px;
   flex: 1;
+  /* Un ítem flex arranca con `min-width: auto`, o sea que se niega a achicarse
+     por debajo del ancho intrínseco de su contenido. Con la tabla de
+     propiedades adentro eso empujaba el main a ~1130px y desbordaba la ventana
+     a 1024px, que es donde el sidebar todavía ocupa sus 220px. El `0` lo deja
+     achicarse y el `overflow-x: auto` de `.tabla-wrapper` vuelve a hacerse
+     cargo del scroll, que era su trabajo. */
+  min-width: 0;
   background: var(--bone);
   min-height: 100vh;
   padding: 2.5rem;
@@ -281,11 +288,15 @@
        partida, y el subárbol sigue existiendo para el foco al abrir.
        El `visibility: hidden` es lo que impide que un panel meramente
        desplazado siga siendo tabulable: sin él, con el teclado se entra a un
-       menú que no se ve. Se interpola de forma que la animación de salida se
-       ve completa igual. */
+       menú que no se ve.
+       El retardo de 0.25s va sólo al cerrar, para que el panel siga visible
+       durante todo el deslizamiento de salida. Al abrir el cambio es
+       instantáneo: el efecto que manda el foco al primer enlace corre en ese
+       mismo frame, y a un elemento `visibility: hidden` el navegador no le da
+       foco. */
     transform: translateX(-100%);
     visibility: hidden;
-    transition: transform 0.25s ease, visibility 0.25s;
+    transition: transform 0.25s ease, visibility 0s linear 0.25s;
     z-index: 60;
     box-shadow: 0 18px 40px rgba(7, 31, 32, 0.35);
   }
@@ -293,6 +304,8 @@
   .admin-sidebar.abierto {
     transform: translateX(0);
     visibility: visible;
+    /* Sin retardo: visible ya, para que el foco pueda entrar. */
+    transition: transform 0.25s ease, visibility 0s;
   }
 
   .admin-overlay {

@@ -176,3 +176,27 @@
 .detalle-form input:focus, .detalle-form textarea:focus { border-color: var(--petrol); }
 .detalle-btn-enviar { background: var(--petrol); color: var(--white); border: none; }
 .detalle-btn-enviar:hover { background: var(--petrol-deep); }
+
+/* ── Targets táctiles ─────────────────────────────────────────── */
+
+/* Los tres botones de la ficha quedaban entre 42 y 43px: a un pelo del mínimo,
+   pero es la pantalla desde la que alguien consulta por una propiedad y el de
+   WhatsApp es la conversión de la página. Los enlaces del breadcrumb, en 15px,
+   estaban mucho más lejos. */
+@media (max-width: 860px) {
+  .detalle-btn-wsp,
+  .detalle-btn-visita,
+  .detalle-btn-enviar {
+    min-height: var(--tap-min);
+  }
+
+  .detalle-form input {
+    min-height: var(--tap-min);
+  }
+
+  .detalle-breadcrumb a {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--tap-min);
+  }
+}

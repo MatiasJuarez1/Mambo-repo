@@ -17,6 +17,7 @@ export default function Navbar() {
   const cerrarMenu = useCallback(() => setMenuAbierto(false), [])
 
   return (
+    <>
     <nav className="navbar">
       <div className="navbar-inner">
         <div className="navbar-left">
@@ -71,8 +72,16 @@ export default function Navbar() {
           <span className="navbar-hamburguesa-barra" aria-hidden="true" />
         </button>
       </div>
-
-      <NavbarDrawer id={ID_DRAWER} abierto={menuAbierto} alCerrar={cerrarMenu} />
     </nav>
+
+    {/* El drawer va FUERA de `.navbar`, y no es un detalle de gusto: `.navbar`
+        tiene `backdrop-filter`, y esa propiedad convierte al elemento en bloque
+        contenedor de sus descendientes `position: fixed`. Adentro, el
+        `top: var(--navbar-h); bottom: 0` del panel se resolvía contra los 61px
+        de la navbar en vez de contra la ventana: quedaba de alto 0 y su
+        `overflow: auto` recortaba el menú entero. Se abría sin verse nada.
+        Ningún test lo detectó porque jsdom no calcula layout. */}
+    <NavbarDrawer id={ID_DRAWER} abierto={menuAbierto} alCerrar={cerrarMenu} />
+    </>
   )
 }

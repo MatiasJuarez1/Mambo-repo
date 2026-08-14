@@ -274,3 +274,13 @@
     padding: 3.5rem 1.25rem 3rem;
   }
 }
+
+/* El índice es la brújula de la página —el argumento de la clienta es que se
+   vean los cinco servicios de un vistazo— así que sus enlaces son lo que más se
+   toca acá. Quedaban en 34px por el padding de 0.7rem. */
+@media (max-width: 860px) {
+  .servicios-indice-item {
+    min-height: var(--tap-min);
+    align-items: center;
+  }
+}

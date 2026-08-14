@@ -294,4 +294,27 @@ describe('Navbar — drawer móvil', () => {
     expect(panel.getByRole('button', { name: /Propiedades/ })).toBeInTheDocument()
     expect(panel.getByRole('button', { name: /Servicios/ })).toBeInTheDocument()
   })
+
+  /**
+   * Regresión de un bug que ningún test podía ver y que dejaba el menú móvil
+   * inservible: con el drawer adentro de `<nav class="navbar">`, el
+   * `backdrop-filter` de la navbar la convierte en bloque contenedor de sus
+   * descendientes `position: fixed`. El `top: var(--navbar-h); bottom: 0` del
+   * panel se resolvía entonces contra los 61px de la barra en lugar de contra
+   * la ventana: quedaba de alto 0 y su `overflow` recortaba el menú entero. El
+   * botón alternaba `aria-expanded` y el foco entraba, pero no se veía nada.
+   *
+   * jsdom no calcula layout, así que no puede reproducir el síntoma. Lo que sí
+   * puede es fijar la condición estructural que lo causaba.
+   */
+  it('el drawer se monta fuera de .navbar (el backdrop-filter lo colapsaría)', () => {
+    const { container } = renderNavbar()
+
+    const barra = container.querySelector('.navbar')
+    const panel = container.querySelector('.navbar-drawer')
+
+    expect(barra).not.toBeNull()
+    expect(panel).not.toBeNull()
+    expect(barra!.contains(panel!)).toBe(false)
+  })
 })
