@@ -111,11 +111,23 @@ sola vez**.
 En el bucket → **Settings** → **Public Development URL** → **Enable** (pide
 escribir `allow`).
 
-> Sin este paso el bucket responde **403 a todo**, incluso a su raíz. Es fácil de
-> confundir con un problema de credenciales, pero se distinguen: si las
-> credenciales estuvieran mal, la *subida* fallaría; acá sube bien y falla solo
-> la lectura. Y un 403 en una ruta inexistente —en vez de un 404— es la firma de
-> que el acceso público está apagado.
+Sin este paso el bucket responde 403 a todo, incluso a su raíz.
+
+> ⚠️ **Un 403 no alcanza para concluir que está apagado.** `r2.dev` está detrás
+> de la protección de bots de Cloudflare, que devuelve 403 a los user-agents que
+> no parecen un navegador — `Python-urllib/x.y`, el de `requests` sin configurar,
+> y varios clientes de línea de comandos. Probar el acceso público con un script
+> da 403 aunque esté perfectamente habilitado.
+>
+> Para verificarlo de verdad, abrir la URL **en el navegador**, o mandar un
+> user-agent de navegador:
+>
+> ```powershell
+> curl.exe -I -A "Mozilla/5.0" https://pub-<hash>.r2.dev/<archivo>
+> ```
+>
+> Lo que sí distingue los dos casos es qué responde una **ruta inexistente**: con
+> el acceso público encendido da **404**; apagado, da 403 igual que todo lo demás.
 
 Queda una URL `https://pub-<hash>.r2.dev`. Cloudflare limita su ancho de banda y
 no la recomienda para producción: cuando haya dominio propio, se conecta en
