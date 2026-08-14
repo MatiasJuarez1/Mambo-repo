@@ -214,7 +214,7 @@
 
 /* ── Responsive ───────────────────────────────────────────────── */
 
-@media (max-width: 900px) {
+@media (max-width: 860px) {
   .servicios-cuerpo {
     padding: var(--space-7) 1.25rem var(--space-8);
   }

@@ -87,9 +87,12 @@
   margin-bottom: 1rem;
 }
 
+/* `min(100%, 120px)` y no `120px` a secas: cuando el contenedor mide menos que
+   el mínimo —320px de viewport menos los padding del main y de la tarjeta— una
+   pista de 120px fijos desborda la grilla en vez de encogerse. */
 .fotos-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 120px), 1fr));
   gap: 0.75rem;
 }
 
@@ -167,4 +170,39 @@
 .foto-agregar-icono {
   font-size: 1.6rem;
   line-height: 1;
+}
+
+/* ── Tablet: targets táctiles ─────────────────────────────────── */
+
+@media (max-width: 860px) {
+  /* 24×24 es poco más de la mitad del mínimo táctil, y es un botón destructivo:
+     errarle con el pulgar sale caro. Crece a 44×44 pero se ancla más al borde
+     (4px en lugar de 6px) para no comerse la miniatura: sobre la pista más
+     angosta posible —120px de ancho, 90px de alto por el aspect-ratio 4/3— el
+     círculo tapa alrededor de un cuarto del área, y arranca a la derecha de
+     donde termina la pastilla "Principal". */
+  .foto-quitar {
+    top: 4px;
+    right: 4px;
+    width: var(--tap-min);
+    height: var(--tap-min);
+    font-size: 1.3rem;
+  }
+}
+
+/* ── Móvil: acciones apiladas ─────────────────────────────────── */
+
+@media (max-width: 640px) {
+  /* Alineados a la derecha y a ancho de contenido, "Cancelar" y "Guardar
+     cambios" quedan pegados uno al otro en el borde de la pantalla. Apilados a
+     ancho completo el primario queda abajo, que es donde llega el pulgar. */
+  .form-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .form-actions .btn {
+    width: 100%;
+    text-align: center;
+  }
 }

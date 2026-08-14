@@ -58,7 +58,12 @@ export const propiedadesApi = {
     api.delete<void>(`${BASE}/${id}`),
 
   // Medios
-  agregarMedio: (propiedadId: number, data: Omit<Medio, 'id' | 'propiedad_id' | 'creado_en'>) =>
+  // `variantes` se omite junto con los campos que asigna la base: las genera el
+  // backend al procesar el archivo, no se mandan desde acá.
+  agregarMedio: (
+    propiedadId: number,
+    data: Omit<Medio, 'id' | 'propiedad_id' | 'creado_en' | 'variantes'>,
+  ) =>
     api.post<Medio>(`${BASE}/${propiedadId}/medios`, data),
 
   // Sube un archivo de imagen (multipart) y lo asocia a la propiedad.

@@ -117,3 +117,139 @@
   display: flex;
   gap: 0.5rem;
 }
+
+/* ── Tablet: targets táctiles ─────────────────────────────────── */
+
+@media (max-width: 860px) {
+  /* Con el alto que traen del escritorio (~35px) quedan por debajo del mínimo
+     de 44px. Los `.btn` de las acciones los cubre la regla global de
+     AdminLayout.css. */
+  .filtros-bar select,
+  .filtros-bar input {
+    min-height: var(--tap-min);
+  }
+}
+
+/* ── Móvil: filtros apilados ──────────────────────────────────── */
+
+@media (max-width: 640px) {
+  /* Cinco controles con `min-width` de 160/220px sobre ~250px útiles entran de a
+     uno igual, pero envueltos por `flex-wrap` quedan de anchos distintos según
+     cuál caiga en cada línea. En columna todos miden lo mismo. */
+  .filtros-bar {
+    flex-direction: column;
+    padding: 0.9rem 1rem;
+  }
+
+  .filtros-bar select,
+  .filtros-bar input {
+    min-width: 0;
+    width: 100%;
+  }
+
+  /* El `flex: 1` del buscador repartía el ancho sobrante; en columna repartiría
+     el alto, que no es lo que se quiere. */
+  .filtros-bar .filtros-buscar { flex: none; }
+}
+
+/* ── Móvil: la tabla pasa a tarjetas apiladas ─────────────────────
+   Siete columnas no entran en un teléfono, y el `overflow-x` del wrapper las
+   deja accesibles pero a costa de scrollear en dos ejes. Bajo 640 cada fila se
+   convierte en una tarjeta: es la misma tabla, con `display: block` desarmando
+   el layout tabular y cada celda rotulándose sola con su `data-label`. No hay
+   un segundo render: duplicar el `<tbody>` en una lista aparte obligaría a
+   mantener dos veces las mismas siete celdas. */
+
+@media (max-width: 640px) {
+  /* El wrapper es un `.admin-card`: su marco blanco alrededor de tarjetas
+     blancas con borde sería un recuadro dentro de otro. Acá el fondo lo pone la
+     página (--bone) y el marco cada tarjeta. */
+  .tabla-wrapper {
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    overflow-x: visible;
+  }
+
+  .tabla,
+  .tabla thead,
+  .tabla tbody,
+  .tabla tr,
+  .tabla td {
+    display: block;
+    width: 100%;
+  }
+
+  /* Recortado y no `display: none`: los `th` siguen siendo los encabezados que
+     los lectores de pantalla anuncian al recorrer la tabla, y sacarlos del
+     árbol de accesibilidad dejaría las celdas sin nombre justo cuando el
+     `::before` que las rotula es puramente decorativo (el contenido generado no
+     es texto seleccionable ni necesariamente anunciado). */
+  .tabla thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: none;
+  }
+
+  .tabla tbody tr {
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 0 0.9rem;
+  }
+
+  .tabla tbody tr + tr { margin-top: 0.75rem; }
+
+  .tabla td {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.6rem 0;
+    text-align: right;
+  }
+
+  /* La regla base saca el borde a toda la última fila —correcto en una tabla,
+     donde el separador sobra contra el marco—. En tarjetas el separador va
+     entre celdas, así que se restituye y se quita sólo en la última de cada
+     tarjeta. */
+  .tabla tbody tr:last-child td { border-bottom: 1px solid var(--line); }
+  .tabla tbody tr td:last-child { border-bottom: none; }
+
+  .tabla td::before {
+    content: attr(data-label);
+    flex-shrink: 0;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    text-align: left;
+  }
+
+  /* Primera y última celda son el encabezado y el pie de la tarjeta: la
+     miniatura con el título ya dice qué propiedad es, y dos botones rotulados
+     "Editar" y "Baja" ya dicen que son las acciones. Rotularlas sería repetir
+     en versalita lo que la celda muestra al lado. */
+  .tabla td:first-child,
+  .tabla td:last-child {
+    display: block;
+    padding: 0.85rem 0;
+  }
+
+  .tabla td:first-child::before,
+  .tabla td:last-child::before { content: none; }
+
+  /* El recorte a 200px se calculó contra una columna de tabla; en la tarjeta el
+     título dispone del ancho entero. La elipsis sigue vigente para los títulos
+     largos. */
+  .tabla-titulo { max-width: none; }
+
+  .tabla-acciones .btn { flex: 1; }
+}

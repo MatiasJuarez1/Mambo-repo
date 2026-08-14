@@ -37,6 +37,7 @@ function renderPanel() {
           <Route path="/admin" element={<RutaProtegida />}>
             <Route element={<AdminLayout />}>
               <Route index element={<p>Dashboard del panel</p>} />
+              <Route path="propiedades" element={<p>Listado de propiedades</p>} />
             </Route>
           </Route>
         </Routes>
@@ -93,5 +94,107 @@ describe('AdminLayout — sesión', () => {
 
     expect(screen.getByText('Pantalla de login')).toBeInTheDocument()
     expect(screen.queryByText('Dashboard del panel')).not.toBeInTheDocument()
+  })
+})
+
+// jsdom no calcula CSS: acá no se puede verificar que el sidebar esté fuera de
+// pantalla ni que la topbar esté oculta en escritorio (eso va a la checklist
+// manual). Lo que sí se puede verificar —y es lo que se rompe en silencio— es
+// el contrato de comportamiento del drawer.
+describe('AdminLayout — drawer móvil', () => {
+  const hamburguesa = () => screen.getByRole('button', { name: 'Menú' })
+
+  async function abrirMenu() {
+    const usuario = userEvent.setup()
+    renderPanel()
+    await screen.findByText('Dashboard del panel')
+
+    await usuario.click(hamburguesa())
+    expect(hamburguesa()).toHaveAttribute('aria-expanded', 'true')
+
+    return usuario
+  }
+
+  it('la hamburguesa apunta al sidebar y alterna aria-expanded', async () => {
+    const usuario = userEvent.setup()
+    renderPanel()
+    await screen.findByText('Dashboard del panel')
+
+    const sidebar = screen.getByRole('complementary', { name: 'Navegación del panel' })
+    expect(hamburguesa()).toHaveAttribute('aria-controls', sidebar.id)
+    expect(hamburguesa()).toHaveAttribute('aria-expanded', 'false')
+
+    await usuario.click(hamburguesa())
+    expect(hamburguesa()).toHaveAttribute('aria-expanded', 'true')
+
+    await usuario.click(hamburguesa())
+    expect(hamburguesa()).toHaveAttribute('aria-expanded', 'false')
+  })
+
+  it('al abrir, el foco va al primer enlace de la navegación', async () => {
+    await abrirMenu()
+
+    expect(screen.getByRole('link', { name: 'Dashboard' })).toHaveFocus()
+  })
+
+  it('cierra con Escape', async () => {
+    const usuario = await abrirMenu()
+
+    await usuario.keyboard('{Escape}')
+
+    expect(hamburguesa()).toHaveAttribute('aria-expanded', 'false')
+  })
+
+  it('cierra al hacer clic en el overlay', async () => {
+    const usuario = await abrirMenu()
+
+    await usuario.click(screen.getByTestId('admin-overlay'))
+
+    expect(hamburguesa()).toHaveAttribute('aria-expanded', 'false')
+    expect(screen.queryByTestId('admin-overlay')).not.toBeInTheDocument()
+  })
+
+  it('cierra al navegar a otra sección', async () => {
+    const usuario = await abrirMenu()
+
+    await usuario.click(screen.getByRole('link', { name: 'Propiedades' }))
+
+    await screen.findByText('Listado de propiedades')
+    expect(hamburguesa()).toHaveAttribute('aria-expanded', 'false')
+  })
+
+  it('bloquea el scroll del body mientras está abierto y lo restaura al cerrar', async () => {
+    const usuario = await abrirMenu()
+
+    expect(document.body.style.overflow).toBe('hidden')
+
+    await usuario.keyboard('{Escape}')
+
+    expect(document.body.style.overflow).toBe('')
+  })
+
+  it('no deja el body bloqueado si el panel se desmonta con el menú abierto', async () => {
+    const usuario = userEvent.setup()
+    const { unmount } = renderPanel()
+    await screen.findByText('Dashboard del panel')
+
+    await usuario.click(hamburguesa())
+    expect(document.body.style.overflow).toBe('hidden')
+
+    unmount()
+
+    expect(document.body.style.overflow).toBe('')
+  })
+
+  it('la topbar rotula la sección en la que está el usuario', async () => {
+    const usuario = await abrirMenu()
+    expect(screen.getByText('Dashboard', { selector: '.admin-topbar-titulo' })).toBeInTheDocument()
+
+    await usuario.click(screen.getByRole('link', { name: 'Propiedades' }))
+    await screen.findByText('Listado de propiedades')
+
+    expect(
+      screen.getByText('Propiedades', { selector: '.admin-topbar-titulo' }),
+    ).toBeInTheDocument()
   })
 })

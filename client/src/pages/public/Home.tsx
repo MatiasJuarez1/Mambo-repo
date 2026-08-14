@@ -10,14 +10,20 @@ import { linkWhatsApp } from '../../config/contacto'
 const MENSAJE_WSP = 'Hola Mambo Groups! Vi la web y quería hacerles una consulta.'
 
 // Loop mudo de fondo. El poster es el frame 0, así no hay salto al arrancar.
-// En mobile y con "reducir movimiento" activado el CSS oculta el video y deja
-// el poster: ver .hero-col-photo en index.css.
+// Con "reducir movimiento" activado el CSS oculta el video y deja el poster
+// (en mobile ya no: el video se ve, con un encode más liviano). Ver
+// .hero-col-photo y .hero-video en index.css.
 //
 // El archivo viene recortado a 720x860 desde el original vertical de 720x1280:
 // el object-fit: cover descartaba techo y mesa igual, y no encodearlos permite
 // gastar esos bits en la franja que sí se ve.
-const heroVideo  = '/hero.mp4'
-const heroPoster = '/hero-poster.jpg'
+//
+// hero-mobile.mp4 es el mismo material a 480px de ancho, crf 35, 24fps y sin
+// pista de audio: 1.3MB contra los 5.4MB del de escritorio. En una columna de
+// ~45vh de alto la diferencia de resolución no se nota, la de datos móviles sí.
+const heroVideo       = '/hero.mp4'
+const heroVideoMobile = '/hero-mobile.mp4'
+const heroPoster      = '/hero-poster.jpg'
 
 const categorias = [
   { num: '01', label: 'Lotes',         desc: 'Terrenos estratégicamente ubicados en las mejores zonas de Tucumán.' },
@@ -60,9 +66,25 @@ export default function Home() {
           </Link>
         </div>
         <div className="hero-col-photo" style={{ backgroundImage: `url(${heroPoster})` }}>
+          {/* El navegador se queda con el PRIMER <source> cuyo `media` matchea,
+              así que el de mobile va antes que el de escritorio; invertirlos
+              serviría el pesado en todos lados.
+
+              Salvedad: `media` en <source> se evalúa UNA sola vez, al cargar el
+              elemento. No se reevalúa al redimensionar la ventana ni al girar el
+              teléfono, así que un visitante que rota el celular sigue viendo el
+              encode que le tocó al entrar. Es aceptable —peor caso, un móvil
+              apaisado se queda con el archivo liviano— pero conviene saberlo
+              antes de perseguir el fantasma de "el media query no responde".
+
+              preload="metadata" se queda: donde el autoplay está permitido el
+              navegador baja el video igual (autoplay le gana al hint), y donde
+              está bloqueado —data saver, ahorro de batería, iOS en low power—
+              limita la descarga a los metadatos en vez de traerse el archivo
+              entero para nada. Con el video ahora visible en móvil, ese es
+              justo el caso que conviene proteger. */}
           <video
             className="hero-video"
-            src={heroVideo}
             poster={heroPoster}
             autoPlay
             muted
@@ -71,7 +93,10 @@ export default function Home() {
             preload="metadata"
             aria-hidden="true"
             tabIndex={-1}
-          />
+          >
+            <source media="(max-width: 860px)" src={heroVideoMobile} type="video/mp4" />
+            <source src={heroVideo} type="video/mp4" />
+          </video>
         </div>
 
         <BuscadorHero />

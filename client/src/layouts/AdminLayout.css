@@ -3,6 +3,51 @@
   min-height: 100vh;
 }
 
+/* ── Topbar móvil ──────────────────────────────────────────────
+   No existe en escritorio: con el sidebar siempre a la vista sería una franja
+   vacía comiéndose alto de contenido. Se enciende en la query de 860px. */
+
+.admin-topbar { display: none; }
+
+.admin-hamburguesa {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  /* El botón llega al mínimo táctil por sí solo: es el único control de la
+     topbar y errarle no tiene segundo intento cómodo. */
+  min-width: var(--tap-min);
+  min-height: var(--tap-min);
+  padding: 0 0.5rem;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.admin-hamburguesa:hover { background: rgba(255,255,255,0.08); }
+
+.admin-hamburguesa-barra {
+  display: block;
+  width: 20px;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--white);
+}
+
+.admin-topbar-titulo {
+  font-family: var(--font-serif);
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--white);
+  letter-spacing: 0.02em;
+}
+
+/* Fondo oscuro del drawer. Sólo se monta con el menú abierto, así que no hace
+   falta apagarlo por CSS; la regla de escritorio es un cinturón por si alguna
+   vez se abre el estado sin hamburguesa a la vista. */
+.admin-overlay { display: none; }
+
 /* ── Sidebar ───────────────────────────────────────────────── */
 
 .admin-sidebar {
@@ -207,4 +252,82 @@
 .btn-danger:hover {
   background: var(--estado-baja);
   color: var(--white);
+}
+
+/* ── Shell bajo 860px (tablet y teléfono) ──────────────────────
+   El sidebar de 220px fijo dejaba el contenido en ~150px útiles en un teléfono.
+   Acá sale de pantalla y vuelve como drawer desde la izquierda, y el ancho
+   completo pasa a ser del contenido. */
+
+@media (max-width: 860px) {
+  /* El sidebar es `position: fixed`, así que los únicos hijos en flujo son la
+     topbar y el main: en fila quedarían uno al lado del otro. */
+  .admin-shell { flex-direction: column; }
+
+  .admin-topbar {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    /* Pegada arriba: el acceso al menú no se pierde al scrollear una lista larga. */
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    padding: 0.4rem 0.75rem;
+    background: var(--petrol-deep);
+  }
+
+  .admin-sidebar {
+    /* Fuera de pantalla, no `display: none`: la animación necesita un punto de
+       partida, y el subárbol sigue existiendo para el foco al abrir.
+       El `visibility: hidden` es lo que impide que un panel meramente
+       desplazado siga siendo tabulable: sin él, con el teclado se entra a un
+       menú que no se ve. Se interpola de forma que la animación de salida se
+       ve completa igual. */
+    transform: translateX(-100%);
+    visibility: hidden;
+    transition: transform 0.25s ease, visibility 0.25s;
+    z-index: 60;
+    box-shadow: 0 18px 40px rgba(7, 31, 32, 0.35);
+  }
+
+  .admin-sidebar.abierto {
+    transform: translateX(0);
+    visibility: visible;
+  }
+
+  .admin-overlay {
+    display: block;
+    position: fixed;
+    inset: 0;
+    /* Petróleo profundo translúcido en vez de negro: el oscurecido queda dentro
+       de la paleta y no ensucia el magenta del ítem activo que se ve al lado. */
+    background: rgba(7, 31, 32, 0.55);
+    z-index: 50;
+  }
+
+  .admin-main {
+    margin-left: 0;
+    padding: 1rem;
+    /* El `min-height: 100vh` de escritorio sumado al alto de la topbar dejaba
+       un scroll vertical de sobra en páginas cortas. Con la shell en columna,
+       el `flex: 1` ya le da el alto que queda. */
+    min-height: auto;
+  }
+
+  /* Los `.btn` del admin viven acá aunque los usen las pantallas de propiedades:
+     con `padding: 0.6rem` y texto de 0.8rem quedaban en ~35px de alto. El
+     `inline-flex` es lo que hace que el `min-height` se note en los `<a>`, que
+     como `inline-block` ignoran la altura del contenido vacío alrededor. */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: var(--tap-min);
+  }
+}
+
+/* El drawer sigue funcionando sin el deslizamiento: quien pidió menos
+   movimiento lo ve aparecer y desaparecer, no viajar. */
+@media (prefers-reduced-motion: reduce) {
+  .admin-sidebar { transition: none; }
 }

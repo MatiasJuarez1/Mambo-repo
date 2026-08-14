@@ -1,5 +1,6 @@
 import type {
   EstadoComercial,
+  Medio,
   PropiedadListItem,
   TipoPropiedad,
   TipoOperacion,
@@ -128,8 +129,14 @@ export function etiquetaEstado(estado: EstadoComercial, operacion: TipoOperacion
   return operacion === 'venta' ? 'Vendida' : 'Alquilada'
 }
 
-/** URL de la imagen principal (o la primera), o null si no hay medios. */
-export function imagenPrincipal(p: PropiedadListItem): string | null {
-  const m = p.medios.find(x => x.es_principal) ?? p.medios[0]
-  return m ? mediaUrl(m.url) : null
+/**
+ * El medio destacado de una propiedad: el marcado como principal o, si ninguno
+ * lo está, el primero. `undefined` si no tiene fotos.
+ *
+ * Devuelve el medio entero y no su URL porque quien lo pinta necesita también
+ * las `variantes` para armar el `srcset` (ver `lib/imagen.ts`). La regla de
+ * elección vive acá y no en cada componente para que no se duplique.
+ */
+export function medioPrincipal(p: PropiedadListItem): Medio | undefined {
+  return p.medios.find(m => m.es_principal) ?? p.medios[0]
 }

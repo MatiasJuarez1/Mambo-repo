@@ -89,7 +89,7 @@
   color: var(--text-muted);
 }
 
-@media (max-width: 600px) {
+@media (max-width: 640px) {
   .prop-card-faja {
     font-size: 0.78rem;
     letter-spacing: 0.16em;

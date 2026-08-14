@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type CSSProperties } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { propiedadesApi } from '../../api/propiedades'
 import type { Propiedad } from '../../types/propiedad'
@@ -9,8 +9,26 @@ import {
   LABEL_TIPO,
   mediaUrl,
 } from '../../lib/propiedad'
+import { srcSetDeMedio } from '../../lib/imagen'
 import { EMAIL_CONTACTO, linkWhatsApp } from '../../config/contacto'
 import './Detalle.css'
+
+/**
+ * La `<img>` es un detalle interno de los botones de la galería: el contenedor ya
+ * define tamaño, radio y recorte, y la foto solo tiene que llenarlo. Antes las
+ * fotos eran `background-image`, que no admite `srcset`.
+ *
+ * `borderRadius: inherit` no es adorno: `.detalle-gal-thumb` redondea el botón
+ * pero no tiene `overflow: hidden`, así que sin esto la foto le saldría por las
+ * cuatro esquinas.
+ */
+const FOTO_LLENA: CSSProperties = {
+  display: 'block',
+  width: '100%',
+  height: '100%',
+  objectFit: 'cover',
+  borderRadius: 'inherit',
+}
 
 export default function Detalle() {
   const { id } = useParams()
@@ -52,6 +70,8 @@ export default function Detalle() {
   }
 
   const imagenes = prop.medios.filter(m => m.tipo_medio === 'imagen')
+  // La que se ve grande: la elegida con las miniaturas, o la primera.
+  const principal = imagenes[imgIdx] ?? imagenes[0]
   const ubicStr = [prop.ubicacion?.direccion, prop.ubicacion?.ciudad, prop.ubicacion?.provincia]
     .filter(Boolean).join(' · ')
 
@@ -85,9 +105,24 @@ export default function Detalle() {
             <button
               className="detalle-gal-principal"
               onClick={() => setImgIdx(0)}
-              style={{ backgroundImage: `url(${mediaUrl(imagenes[imgIdx]?.url ?? imagenes[0].url)})` }}
               aria-label={`Foto principal de ${prop.titulo}`}
             >
+              <img
+                src={mediaUrl(principal.url)}
+                srcSet={srcSetDeMedio(principal)}
+                /* A pantalla completa en móvil; arriba de 860 ocupa las 2/3
+                   partes de la galería, que a su vez es casi todo el ancho. */
+                sizes="(max-width: 860px) 100vw, 60vw"
+                alt={prop.titulo}
+                /* Es lo primero que se ve al abrir la ficha (el LCP de esta
+                   pantalla): diferir su carga sería empeorarla a propósito. */
+                loading="eager"
+                /* Proporción del hueco, no medidas reales de la foto: la API no
+                   expone dimensiones. El alto lo fija `.detalle-gal-principal`. */
+                width={1200}
+                height={800}
+                style={FOTO_LLENA}
+              />
               <span className="detalle-badge">{LABEL_OPERACION[prop.tipo_operacion]}</span>
               {cierre && <span className="detalle-faja">{cierre}</span>}
             </button>
@@ -99,9 +134,22 @@ export default function Detalle() {
                     key={m.id}
                     className="detalle-gal-thumb"
                     onClick={() => setImgIdx(i + 1)}
-                    style={{ backgroundImage: `url(${mediaUrl(m.url)})` }}
                     aria-label={`Foto ${i + 2} de ${prop.titulo}`}
                   >
+                    <img
+                      src={mediaUrl(m.url)}
+                      srcSet={srcSetDeMedio(m)}
+                      /* Cuatro en fila bajo 860; arriba son dos columnas dentro
+                         del tercio derecho de la galería (~15vw cada una). */
+                      sizes="(max-width: 860px) 25vw, 15vw"
+                      /* El nombre accesible ya lo da el `aria-label` del botón;
+                         repetirlo acá lo diría dos veces. */
+                      alt=""
+                      loading="lazy"
+                      width={300}
+                      height={200}
+                      style={FOTO_LLENA}
+                    />
                     {esUltima && <span className="detalle-gal-mas">+{imagenes.length - 5} fotos</span>}
                   </button>
                 )
