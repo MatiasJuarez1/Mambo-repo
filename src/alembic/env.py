@@ -18,7 +18,13 @@ from app.platform.people import models as _people_models  # noqa: F401
 from app.platform.reservations import models as _reservations_models  # noqa: F401
 
 config = context.config
-config.set_main_option("sqlalchemy.url", settings.sqlalchemy_database_url)
+
+# El `%%` no es un typo. `set_main_option` guarda el valor en un ConfigParser, que
+# trata `%` como sintaxis de interpolacion y hay que escaparlo duplicandolo. Salta
+# apenas la contrasena de la base tiene un caracter especial: al percent-encodearla
+# para meterla en la URL aparecen `%3F`, `%2B`… y Alembic muere con un
+# `invalid interpolation syntax` que no menciona ni la contrasena ni la URL.
+config.set_main_option("sqlalchemy.url", settings.sqlalchemy_database_url.replace("%", "%%"))
 
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)

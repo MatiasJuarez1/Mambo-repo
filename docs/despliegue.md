@@ -28,8 +28,23 @@ El orden importa: cada paso necesita un dato del anterior.
    `postgresql+psycopg2://`:
 
 ```
-postgresql+psycopg2://postgres.<ref>:<password>@aws-0-sa-east-1.pooler.supabase.com:5432/postgres
+postgresql+psycopg2://postgres.<ref>:<password>@aws-0-<region>.pooler.supabase.com:5432/postgres
 ```
+
+> ⚠️ **La contraseña que genera Supabase casi siempre necesita percent-encoding.**
+> Dentro de una URL, `?` abre la query string, `+` significa espacio y `/`, `@`,
+> `#`, `:` y `%` tienen cada uno su significado. Una contraseña del estilo
+> `aB3?x+Kd=7=1` se corta en el `?`, y lo que llega al servidor es un pedazo:
+> el error que devuelve habla de credenciales inválidas y manda a buscar el
+> problema donde no está. Para obtener la forma correcta:
+>
+> ```powershell
+> python -c "from urllib.parse import quote_plus; print(quote_plus(input('password: ')))"
+> ```
+>
+> Ese resultado es el que va en la URL. La contraseña original, sin tocar, es la
+> que se usa en el formulario de Supabase o en cualquier cliente que pida los
+> datos por separado.
 
 ### Crear el esquema
 
@@ -38,7 +53,7 @@ pre-deploy hooks, así que la migración no puede correr sola en el deploy.
 
 ```powershell
 cd C:\Users\matia\Mambo-repo\src
-$env:DATABASE_URL = "postgresql+psycopg2://postgres.<ref>:<password>@aws-0-sa-east-1.pooler.supabase.com:5432/postgres"
+$env:DATABASE_URL = "postgresql+psycopg2://postgres.<ref>:<password>@aws-0-<region>.pooler.supabase.com:5432/postgres"
 alembic upgrade head
 ```
 
