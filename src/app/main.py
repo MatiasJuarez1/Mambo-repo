@@ -52,14 +52,16 @@ app.mount(
 app.include_router(propiedades_router, prefix="/api/v1")
 app.include_router(publicaciones_router, prefix="/api/v1")
 
-# Plataforma / CRM
+# Plataforma / CRM. Bajo /api/v1 como el catálogo: `client/vercel.json` solo
+# reenvía `/api/*` y `/auth/*` a Render, así que cualquier router montado en la
+# raíz responde en local y da 404 en producción. `auth` se queda en la raíz.
 app.include_router(auth_router)
-app.include_router(people_router)
-app.include_router(activities_router)
-app.include_router(reservations_router)
-app.include_router(deals_router)
-app.include_router(notes_router)
-app.include_router(audit_router)
+app.include_router(people_router, prefix="/api/v1")
+app.include_router(activities_router, prefix="/api/v1")
+app.include_router(reservations_router, prefix="/api/v1")
+app.include_router(deals_router, prefix="/api/v1")
+app.include_router(notes_router, prefix="/api/v1")
+app.include_router(audit_router, prefix="/api/v1")
 
 
 @app.get("/health")
