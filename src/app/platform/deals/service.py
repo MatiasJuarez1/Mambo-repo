@@ -7,6 +7,7 @@ from fastapi import HTTPException, status
 from sqlalchemy.orm import Session as DBSession
 
 from app.platform.deals.models import Deal, DealParty, Pipeline, PipelineStage
+from app.platform.deals.pipelines_base import PIPELINES_BASE
 from app.platform.deals.schemas import (
     DealCreate,
     DealMoveStage,
@@ -91,6 +92,28 @@ def delete_pipeline(db: DBSession, pipeline_id: int) -> None:
     db.commit()
 
 
+def sembrar_pipelines_base(db: DBSession) -> None:
+    """Crea Venta y Alquiler con sus etapas si la tabla está vacía.
+
+    Idempotente. La migración 0004 hace lo mismo en producción; esta versión es
+    para los tests y para un entorno de desarrollo recién creado.
+    """
+    if db.query(Pipeline).count() > 0:
+        return
+    for nombre, etapas in PIPELINES_BASE:
+        pipeline = Pipeline(name=nombre)
+        db.add(pipeline)
+        db.flush()
+        for etapa, posicion, is_won, is_lost in etapas:
+            db.add(
+                PipelineStage(
+                    pipeline_id=pipeline.id, name=etapa, position=posicion,
+                    is_won=is_won, is_lost=is_lost,
+                )
+            )
+    db.commit()
+
+
 # ---------------------------------------------------------------------------
 # PipelineStage
 # ---------------------------------------------------------------------------
@@ -133,13 +156,20 @@ def update_stage(
 
 def remove_stage(db: DBSession, pipeline_id: int, stage_id: int) -> None:
     stage = get_stage_or_404(db, pipeline_id, stage_id)
-    deals_in_stage = db.query(Deal).filter(
-        Deal.stage_id == stage_id, Deal.deleted_at.is_(None)
-    ).count()
-    if deals_in_stage:
+    if stage.is_won or stage.is_lost:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail=f"La etapa tiene {deals_in_stage} deal(s) activo(s); moverlos antes de eliminar",
+            detail="No se puede borrar la etapa ganada ni la perdida: el tablero las necesita",
+        )
+    abiertos = (
+        db.query(Deal)
+        .filter(Deal.stage_id == stage_id, Deal.deleted_at.is_(None))
+        .count()
+    )
+    if abiertos:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"La etapa tiene {abiertos} operación(es); movelas antes de borrarla",
         )
     db.delete(stage)
     db.commit()
