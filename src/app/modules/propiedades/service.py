@@ -2,6 +2,7 @@ import io
 from collections.abc import Sequence
 from datetime import datetime
 from decimal import Decimal
+from enum import StrEnum
 
 from fastapi import HTTPException, UploadFile, status
 from PIL import Image, ImageOps, UnidentifiedImageError
@@ -33,6 +34,8 @@ from app.modules.propiedades.schemas import (
     PropiedadCreate,
     PropiedadUpdate,
 )
+from app.platform.deals.models import Deal
+from app.platform.reservations.models import Reservation
 from app.storage import borrar_imagen, guardar_imagen, guardar_variante, leer_archivo
 
 
@@ -130,6 +133,81 @@ def obtener_propiedad(db: Session, propiedad_id: int) -> Propiedad:
     return prop
 
 
+class EventoOperacion(StrEnum):
+    """Lo que le puede pasar a una propiedad desde el CRM."""
+
+    reserva_creada = "reserva_creada"
+    reserva_liberada = "reserva_liberada"  # cancelada o vencida
+    deal_ganado = "deal_ganado"
+    deal_perdido = "deal_perdido"
+    deal_reabierto = "deal_reabierto"  # de ganada/perdida a una etapa abierta
+
+
+def aplicar_evento_de_operacion(
+    db: Session, propiedad_id: int, evento: EventoOperacion
+) -> Propiedad:
+    """Mueve `estado_comercial` según un evento del CRM (spec 4.5).
+
+    No hace commit: corre dentro de la transacción del servicio que la llama,
+    para que reserva (o deal) y propiedad cambien juntos o no cambie nada.
+    Los eventos que no corresponden al estado actual se ignoran, salvo los dos
+    que serían un error del operador, que devuelven 409.
+    """
+    prop = obtener_propiedad(db, propiedad_id)
+    estado = prop.estado_comercial
+
+    if evento == EventoOperacion.reserva_creada:
+        if estado in (EstadoComercial.cerrada, EstadoComercial.baja):
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail=f"La propiedad no está disponible (estado: {estado})",
+            )
+        prop.estado_comercial = EstadoComercial.reservada
+    elif evento == EventoOperacion.reserva_liberada:
+        if estado == EstadoComercial.reservada:
+            prop.estado_comercial = EstadoComercial.disponible
+    elif evento == EventoOperacion.deal_ganado:
+        if estado == EstadoComercial.baja:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="La propiedad está dada de baja",
+            )
+        prop.estado_comercial = EstadoComercial.cerrada
+    elif evento == EventoOperacion.deal_perdido:
+        if estado == EstadoComercial.reservada:
+            prop.estado_comercial = EstadoComercial.disponible
+    elif evento == EventoOperacion.deal_reabierto:
+        if estado == EstadoComercial.cerrada:
+            prop.estado_comercial = EstadoComercial.disponible
+
+    db.flush()
+    return prop
+
+
+def _verificar_liberacion_manual(db: Session, prop: Propiedad) -> None:
+    """Un operador no puede poner `disponible` lo que el CRM tiene tomado."""
+    reserva = (
+        db.query(Reservation)
+        .filter(Reservation.property_id == prop.id, Reservation.status == "activa")
+        .first()
+    )
+    if reserva:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"La propiedad tiene la reserva {reserva.id} activa",
+        )
+    deal = (
+        db.query(Deal)
+        .filter(Deal.property_id == prop.id, Deal.is_won.is_(True), Deal.deleted_at.is_(None))
+        .first()
+    )
+    if deal:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"La propiedad tiene la operación {deal.id} ganada",
+        )
+
+
 def crear_propiedad(db: Session, data: PropiedadCreate) -> Propiedad:
     prop = Propiedad(
         titulo=data.titulo,
@@ -166,6 +244,9 @@ def actualizar_propiedad(db: Session, propiedad_id: int, data: PropiedadUpdate) 
     prop = obtener_propiedad(db, propiedad_id)
 
     campos = data.model_dump(exclude_unset=True, exclude={"ubicacion"})
+    if campos.get("estado_comercial") == EstadoComercial.disponible:
+        _verificar_liberacion_manual(db, prop)
+
     for field, value in campos.items():
         setattr(prop, field, value)
 
