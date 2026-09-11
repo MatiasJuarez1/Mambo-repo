@@ -31,6 +31,7 @@ from app.modules.propiedades import models as propiedades_models  # noqa: F401
 from app.platform.auth.dependencies import COOKIE_NAME
 from app.platform.auth.models import Role, User, UserRole
 from app.platform.auth.service import hash_password
+from app.platform.inmobiliaria import models as inmobiliaria_models  # noqa: F401
 
 
 @compiles(BigInteger, "sqlite")

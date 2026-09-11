@@ -39,9 +39,11 @@ class Activity(Base):
     person_id: Mapped[int | None] = mapped_column(
         Integer, ForeignKey("people.id", ondelete="SET NULL"), nullable=True, index=True
     )
-    # property_id y listing_id referencian tablas del módulo catálogo (colega)
-    # Se validan a nivel de aplicación, no con FK hasta que ambos módulos compartan la misma DB
-    property_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    # listing_id referencia tabla del módulo catálogo (colega)
+    # Se valida a nivel de aplicación, no con FK hasta que ambos módulos compartan la misma DB
+    property_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("propiedades.id", ondelete="SET NULL"), nullable=True, index=True
+    )
     listing_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
     created_at: Mapped[datetime] = mapped_column(

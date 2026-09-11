@@ -62,8 +62,15 @@ class Propiedad(Base):
     __tablename__ = "propiedades"
 
     id = Column(BigInteger, primary_key=True, autoincrement=True)
-    # Sin FK: la tabla de personas (people) usa BIGINT UNSIGNED. Referencia lógica.
-    propietario_persona_id = Column(BigInteger, nullable=True)
+    # FK real desde el bloque CRM. El comentario viejo ("MySQL no permite FK entre
+    # signed/unsigned") ya no aplica: la base es PostgreSQL. SET NULL: borrar una
+    # persona no puede borrar su propiedad, solo la deja sin dueño cargado.
+    propietario_persona_id = Column(
+        BigInteger,
+        ForeignKey("people.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+    )
     titulo = Column(String(255), nullable=False)
     descripcion = Column(Text, nullable=True)
     tipo_propiedad = Column(
@@ -112,6 +119,11 @@ class Propiedad(Base):
         "PropiedadCaracteristica", back_populates="propiedad", cascade="all, delete-orphan"
     )
     publicaciones = relationship("Publicacion", back_populates="propiedad")
+    propietario = relationship("Person", foreign_keys=[propietario_persona_id])
+    # Del lado del CRM. Sin cascade: una propiedad con operaciones no se borra
+    # (la FK es RESTRICT), se da de baja.
+    reservas = relationship("Reservation", back_populates="propiedad")
+    deals = relationship("Deal", back_populates="propiedad")
 
 
 class PropiedadUbicacion(Base):

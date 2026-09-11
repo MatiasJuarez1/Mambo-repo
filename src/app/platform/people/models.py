@@ -35,10 +35,19 @@ class Person(Base):
     users: Mapped[list] = relationship(
         "User", back_populates="person", foreign_keys="User.person_id"
     )
+    tag_rows: Mapped[list[PersonTag]] = relationship(
+        "PersonTag", back_populates="person", cascade="all, delete-orphan",
+        order_by="PersonTag.nombre",
+    )
 
     @property
     def full_name(self) -> str:
         return f"{self.first_name} {self.last_name}"
+
+    @property
+    def tags(self) -> list[str]:
+        """Etiquetas como strings, que es lo que ve la API."""
+        return [t.nombre for t in self.tag_rows]
 
     @property
     def is_deleted(self) -> bool:
@@ -66,3 +75,23 @@ class PersonContact(Base):
     )
 
     person: Mapped[Person] = relationship("Person", back_populates="contacts")
+
+
+class PersonTag(Base):
+    """Etiqueta libre de una persona ("inversor", "busca depto zona norte").
+
+    Cubre lo que los roles derivados no pueden: una persona que todavía no está
+    vinculada a ninguna propiedad ni operación. La unicidad es por par y sin
+    distinguir mayúsculas: la aplica `service.set_tags`, no la base.
+    """
+
+    __tablename__ = "people_tags"
+    __table_args__ = (UniqueConstraint("person_id", "nombre", name="uq_person_tag"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    person_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("people.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    nombre: Mapped[str] = mapped_column(String(60), nullable=False)
+
+    person: Mapped[Person] = relationship("Person", back_populates="tag_rows")

@@ -79,8 +79,14 @@ class Deal(Base):
         Integer, ForeignKey("users.id", ondelete="RESTRICT"), nullable=False
     )
 
-    # property_id referencia tabla del módulo catálogo; sin FK dura
-    property_id: Mapped[int | None] = mapped_column(Integer, nullable=True, index=True)
+    property_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("propiedades.id", ondelete="RESTRICT"), nullable=True, index=True
+    )
+    # Cuándo entró a la etapa actual. Alimenta `dias_en_etapa` en el tablero; se
+    # setea al crear y en cada `move_stage`.
+    stage_changed_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(UTC), nullable=False
+    )
 
     amount: Mapped[Decimal | None] = mapped_column(Numeric(14, 2), nullable=True)
     currency: Mapped[str] = mapped_column(String(3), nullable=False, default="ARS")
@@ -107,6 +113,7 @@ class Deal(Base):
     stage: Mapped[PipelineStage] = relationship("PipelineStage", back_populates="deals")
     assigned_to: Mapped[object | None] = relationship("User", foreign_keys=[assigned_to_user_id])
     created_by: Mapped[object] = relationship("User", foreign_keys=[created_by_user_id])
+    propiedad: Mapped[object | None] = relationship("Propiedad", back_populates="deals")
     parties: Mapped[list[DealParty]] = relationship(
         "DealParty", back_populates="deal", cascade="all, delete-orphan"
     )
@@ -114,6 +121,14 @@ class Deal(Base):
     @property
     def is_closed(self) -> bool:
         return self.is_won or self.is_lost
+
+    @property
+    def dias_en_etapa(self) -> int:
+        # SQLite devuelve la fecha sin zona; se asume UTC, que es como se guardó.
+        desde = self.stage_changed_at
+        if desde.tzinfo is None:
+            desde = desde.replace(tzinfo=UTC)
+        return (datetime.now(UTC) - desde).days
 
     @property
     def is_deleted(self) -> bool:

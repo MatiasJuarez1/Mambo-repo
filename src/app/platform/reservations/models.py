@@ -26,8 +26,9 @@ class Reservation(Base):
         Integer, ForeignKey("users.id", ondelete="RESTRICT"), nullable=False
     )
 
-    # property_id referencia tabla del módulo catálogo (colega); sin FK dura por ahora
-    property_id: Mapped[int] = mapped_column(Integer, nullable=False, index=True)
+    property_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("propiedades.id", ondelete="RESTRICT"), nullable=False, index=True
+    )
 
     # Seña / monto acordado (opcional)
     amount: Mapped[Decimal | None] = mapped_column(Numeric(12, 2), nullable=True)
@@ -50,6 +51,7 @@ class Reservation(Base):
 
     person: Mapped[object] = relationship("Person", foreign_keys=[person_id])
     created_by: Mapped[object] = relationship("User", foreign_keys=[created_by_user_id])
+    propiedad: Mapped[object] = relationship("Propiedad", back_populates="reservas")
 
     @property
     def is_active(self) -> bool:
