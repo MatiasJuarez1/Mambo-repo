@@ -7,6 +7,8 @@ from typing import Literal
 
 from pydantic import BaseModel, Field, model_validator
 
+from app.modules.propiedades.schemas import PropiedadBrief
+
 ReservationStatus = Literal["activa", "cancelada", "vencida", "convertida"]
 
 
@@ -59,6 +61,7 @@ class ReservationOut(BaseModel):
     status: str
     person: PersonBrief
     property_id: int
+    propiedad: PropiedadBrief
     amount: Decimal | None
     currency: str
     notes: str | None

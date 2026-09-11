@@ -94,6 +94,16 @@ class CaracteristicaResponse(CaracteristicaBase):
 # ── Propiedad ─────────────────────────────────────────────────────────────────
 
 
+class PropiedadBrief(BaseModel):
+    """Lo mínimo para nombrar y linkear una propiedad desde el CRM."""
+
+    id: int
+    titulo: str
+    estado_comercial: EstadoComercial
+
+    model_config = ConfigDict(from_attributes=True)
+
+
 class PropiedadBase(BaseModel):
     titulo: str
     descripcion: str | None = None

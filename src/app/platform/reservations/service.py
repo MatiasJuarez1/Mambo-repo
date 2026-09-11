@@ -6,6 +6,7 @@ from datetime import UTC, datetime
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session as DBSession
 
+from app.modules.propiedades.service import EventoOperacion, aplicar_evento_de_operacion
 from app.platform.reservations.models import Reservation
 from app.platform.reservations.schemas import ReservationCreate, ReservationUpdate
 
@@ -77,6 +78,10 @@ def create_reservation(
             ),
         )
 
+    # Valida que la propiedad exista (404) y la deja `reservada`, en la misma
+    # transacción que la reserva: si algo falla, no queda ninguna de las dos.
+    aplicar_evento_de_operacion(db, data.property_id, EventoOperacion.reserva_creada)
+
     reservation = Reservation(
         **data.model_dump(),
         status="activa",
@@ -118,6 +123,10 @@ def change_status(db: DBSession, reservation_id: int, new_status: str) -> Reserv
 
     reservation.status = new_status
     reservation.updated_at = datetime.now(UTC)
+    if new_status in ("cancelada", "vencida"):
+        aplicar_evento_de_operacion(
+            db, reservation.property_id, EventoOperacion.reserva_liberada
+        )
     db.commit()
     db.refresh(reservation)
     return reservation
