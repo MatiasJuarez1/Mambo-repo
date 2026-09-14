@@ -25,6 +25,7 @@ import PublicacionesLista   from './pages/admin/publicaciones/Lista'
 import PublicacionFormulario from './pages/admin/publicaciones/Formulario'
 import PersonasLista        from './pages/admin/personas/Lista'
 import PersonaFormulario    from './pages/admin/personas/Formulario'
+import PersonaFicha         from './pages/admin/personas/Ficha'
 
 /** Ruta contenedora que le da contexto de sesión a toda la rama `/admin`. */
 function ProveedorSesionAdmin() {
@@ -79,6 +80,7 @@ export default function App() {
               <Route path="personas">
                 <Route index             element={<PersonasLista />} />
                 <Route path="nueva"      element={<PersonaFormulario />} />
+                <Route path=":id"        element={<PersonaFicha />} />
                 <Route path=":id/editar" element={<PersonaFormulario />} />
               </Route>
             </Route>

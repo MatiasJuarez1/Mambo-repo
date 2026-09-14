@@ -16,6 +16,9 @@ const colorMap: Record<string, Color> = {
   activa:     'ok',
   pausada:    'espera',
   eliminada:  'baja',
+  // estado de reserva (activa ya está mapeada arriba)
+  convertida: 'neutro',
+  vencida:    'baja',
 }
 
 const labelMap: Record<string, string> = {
@@ -29,6 +32,8 @@ const labelMap: Record<string, string> = {
   activa:     'Activa',
   pausada:    'Pausada',
   eliminada:  'Eliminada',
+  convertida: 'Convertida',
+  vencida:    'Vencida',
   casa:       'Casa',
   depto:      'Depto',
   local:      'Local',

@@ -1,0 +1,11 @@
+/* `.etiqueta` vive en `Lista.css`, pero el CSS de página es local a cada
+   archivo en este repo (no hay import compartido): se repite acá. */
+.etiqueta { padding: 0.1rem 0.5rem; border-radius: 4px; background: var(--bone); font-size: 0.78rem; }
+
+.ficha-cabecera { align-items: flex-start; }
+.ficha-meta { display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: center; margin-top: 0.5rem; }
+.ficha-contactos { list-style: none; margin: 0.75rem 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 1rem; }
+.ficha-notas { margin-bottom: 1.25rem; white-space: pre-wrap; }
+.ficha-grilla { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.25rem; }
+.ficha-etapa { font-size: 0.85rem; color: var(--text-muted); white-space: nowrap; }
+@media (max-width: 860px) { .ficha-grilla { grid-template-columns: 1fr; } }
