@@ -8,7 +8,13 @@ from app.config import get_settings
 from app.database import get_db
 from app.platform.auth.dependencies import COOKIE_NAME, get_current_user
 from app.platform.auth.models import User
-from app.platform.auth.schemas import LoginRequest, LoginResponse, LogoutResponse, UserMe
+from app.platform.auth.schemas import (
+    LoginRequest,
+    LoginResponse,
+    LogoutResponse,
+    UserBrief,
+    UserMe,
+)
 from app.platform.auth.service import (
     authenticate_user,
     crear_access_token,
@@ -94,3 +100,10 @@ def me(current_user: User = Depends(get_current_user)) -> UserMe:
     httponly, así que el JS no puede inspeccionarla y tiene que preguntar acá.
     """
     return UserMe.model_validate(current_user)
+
+
+@router.get("/users", response_model=list[UserBrief])
+def list_users(db: DBSession = Depends(get_db), _: User = Depends(get_current_user)):
+    """Staff activo, para el selector "asignado a" del CRM."""
+    usuarios = db.query(User).filter(User.is_active.is_(True)).order_by(User.name).all()
+    return [UserBrief.model_validate(u) for u in usuarios]

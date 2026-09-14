@@ -150,6 +150,16 @@ def guardar_imagen(contenido: bytes, extension: str) -> ArchivoGuardado:
     return ArchivoGuardado(url=_guardar(contenido, clave), clave=clave)
 
 
+# Subcarpeta (local) / prefijo de la key (R2) donde vive el logo de la inmobiliaria.
+CARPETA_INMOBILIARIA = "inmobiliaria"
+
+
+def guardar_logo(contenido: bytes, extension: str) -> ArchivoGuardado:
+    """El logo de la inmobiliaria va en su propia carpeta, sin variantes."""
+    clave = f"{CARPETA_INMOBILIARIA}/{uuid.uuid4().hex}{extension}"
+    return ArchivoGuardado(url=_guardar(contenido, clave), clave=clave)
+
+
 def guardar_variante(contenido: bytes, clave_original: str, ancho: int) -> str:
     """Guarda una copia reducida junto al original y devuelve su URL pública.
 

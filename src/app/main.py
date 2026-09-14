@@ -15,6 +15,7 @@ from app.platform.activities.router import router as activities_router
 from app.platform.audit.router import router as audit_router
 from app.platform.auth.router import router as auth_router
 from app.platform.deals.router import router as deals_router
+from app.platform.inmobiliaria.router import router as inmobiliaria_router
 from app.platform.notes.router import router as notes_router
 from app.platform.people.router import router as people_router
 from app.platform.reservations.router import router as reservations_router
@@ -62,6 +63,7 @@ app.include_router(reservations_router, prefix="/api/v1")
 app.include_router(deals_router, prefix="/api/v1")
 app.include_router(notes_router, prefix="/api/v1")
 app.include_router(audit_router, prefix="/api/v1")
+app.include_router(inmobiliaria_router, prefix="/api/v1")
 
 
 @app.get("/health")

@@ -328,7 +328,7 @@ FORMATOS_SOPORTADOS = {
 }
 
 
-def _procesar_imagen(contenido: bytes) -> tuple[bytes, str]:
+def procesar_imagen(contenido: bytes) -> tuple[bytes, str]:
     """Valida y normaliza una imagen en el servidor con Pillow.
 
     - Detecta el formato real leyendo los bytes (no confía en el content_type que
@@ -378,7 +378,7 @@ def _procesar_imagen(contenido: bytes) -> tuple[bytes, str]:
 def _generar_variantes(contenido: bytes) -> dict[int, bytes]:
     """Genera las copias reducidas de una imagen ya procesada, una por ancho.
 
-    Recibe los bytes que devolvió `_procesar_imagen` —orientación EXIF ya
+    Recibe los bytes que devolvió `procesar_imagen` —orientación EXIF ya
     corregida, formato y modo definitivos—, así que las variantes salen del mismo
     original que se va a guardar y conservan su formato (y con él su ContentType).
 
@@ -396,7 +396,7 @@ def _generar_variantes(contenido: bytes) -> dict[int, bytes]:
     imagen = Image.open(io.BytesIO(contenido))
     imagen.load()
 
-    # Los GIF pueden estar animados y por eso `_procesar_imagen` los devuelve
+    # Los GIF pueden estar animados y por eso `procesar_imagen` los devuelve
     # intactos; acá vale lo mismo. Redimensionarlos con Pillow aplastaría la
     # animación a un solo fotograma, así que se quedan sin variantes.
     if imagen.format == "GIF":
@@ -446,7 +446,7 @@ def reprocesar_variantes(clave: str) -> dict[str, str] | None:
     guarda al lado. Devuelve el `dict` listo para la columna `variantes` —o
     `None` si no se generó ninguna, con el mismo criterio que `_guardar_variantes`.
 
-    **No vuelve a pasar el original por `_procesar_imagen`.** Ese archivo ya
+    **No vuelve a pasar el original por `procesar_imagen`.** Ese archivo ya
     pasó por ahí cuando se subió: tiene la orientación EXIF aplicada, el lado
     máximo de 1920 y el formato final. Reprocesarlo lo re-codificaría por nada
     (en JPEG cada vuelta pierde calidad) y podría cambiarle la extensión,
@@ -483,7 +483,7 @@ def subir_medio(
         )
 
     # El backend detecta el formato real, valida y normaliza la imagen (no el navegador).
-    contenido, extension = _procesar_imagen(contenido)
+    contenido, extension = procesar_imagen(contenido)
 
     guardado = guardar_imagen(contenido, extension)
 

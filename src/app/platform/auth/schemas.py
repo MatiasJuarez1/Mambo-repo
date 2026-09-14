@@ -24,5 +24,15 @@ class LoginResponse(BaseModel):
     user: UserMe
 
 
+class UserBrief(BaseModel):
+    """Versión mínima de un usuario, para selectores (p. ej. "asignado a" del CRM)."""
+
+    id: int
+    name: str
+    email: str
+
+    model_config = {"from_attributes": True}
+
+
 class LogoutResponse(BaseModel):
     message: str = "Sesión cerrada"
