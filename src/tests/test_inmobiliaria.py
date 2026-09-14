@@ -7,6 +7,7 @@ variantes: es un solo archivo, no un `srcset`.
 """
 
 import io
+from pathlib import Path
 
 from PIL import Image
 
@@ -57,6 +58,48 @@ def test_subir_logo(client, crear_usuario, iniciar_sesion, tmp_path, monkeypatch
 
     assert r.status_code == 200, r.text
     assert r.json()["logo_url"].endswith(".jpg") or r.json()["logo_url"].endswith(".png")
+
+
+def test_subir_logo_reemplaza_el_anterior(
+    client, db, crear_usuario, iniciar_sesion, tmp_path, monkeypatch
+):
+    """Al subir un logo nuevo, el anterior se borra del almacenamiento."""
+    from app.config import get_settings
+    from app.platform.inmobiliaria.service import obtener as obtener_inmobiliaria
+
+    monkeypatch.setattr(get_settings(), "media_root", tmp_path)
+    crear_usuario()
+    iniciar_sesion()
+
+    # Primera subida
+    r1 = client.post(
+        "/api/v1/inmobiliaria/logo",
+        files={"archivo": ("logo.png", _png(), "image/png")},
+    )
+    assert r1.status_code == 200, r1.text
+    first_url = r1.json()["logo_url"]
+
+    # Guardar la clave del primer logo para verificar su borrado
+    inmobiliaria_antes = obtener_inmobiliaria(db)
+    first_storage_key = inmobiliaria_antes.logo_storage_key
+    first_file_path = Path(tmp_path) / first_storage_key
+
+    # Verificar que el primer archivo existe
+    assert first_file_path.exists(), "El primer logo debería existir"
+
+    # Segunda subida con contenido diferente
+    r2 = client.post(
+        "/api/v1/inmobiliaria/logo",
+        files={"archivo": ("logo2.png", _png(), "image/png")},
+    )
+    assert r2.status_code == 200, r2.text
+    second_url = r2.json()["logo_url"]
+
+    # URLs diferentes
+    assert first_url != second_url, "URLs del primer y segundo logo distintas"
+
+    # El archivo del primer logo debería haberse borrado
+    assert not first_file_path.exists(), "El primer logo debería haberse borrado"
 
 
 def test_listado_de_usuarios(client, crear_usuario, iniciar_sesion):
