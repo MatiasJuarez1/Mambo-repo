@@ -1,4 +1,5 @@
 import { api } from './client'
+import { construirQuery } from '../lib/query'
 import type {
   Contacto, ContactoPayload, EtiquetaConteo, Paginado, Persona, PersonaCreatePayload,
   PersonaListItem, PersonaUpdatePayload, Vinculos,
@@ -14,17 +15,8 @@ export interface ListarPersonasParams {
   limit?: number
 }
 
-function query(params: object): string {
-  const q = new URLSearchParams()
-  Object.entries(params).forEach(([k, v]) => {
-    if (v !== undefined && v !== '') q.set(k, String(v))
-  })
-  const s = q.toString()
-  return s ? `?${s}` : ''
-}
-
 export const personasApi = {
-  listar:   (params: ListarPersonasParams = {}) => api.get<Paginado<PersonaListItem>>(`${BASE}${query(params)}`),
+  listar:   (params: ListarPersonasParams = {}) => api.get<Paginado<PersonaListItem>>(`${BASE}${construirQuery(params)}`),
   obtener:  (id: number)                         => api.get<Persona>(`${BASE}/${id}`),
   vinculos: (id: number)                         => api.get<Vinculos>(`${BASE}/${id}/vinculos`),
   crear:    (data: PersonaCreatePayload)         => api.post<Persona>(BASE, data),

@@ -1,4 +1,5 @@
 import { api } from './client'
+import { construirQuery } from '../lib/query'
 import type { Paginado } from '../types/persona'
 import type {
   Operacion, OperacionCreatePayload, OperacionListItem, OperacionUpdatePayload,
@@ -15,20 +16,11 @@ export interface ListarOperacionesParams {
   limit?: number
 }
 
-function query(params: object): string {
-  const q = new URLSearchParams()
-  Object.entries(params).forEach(([k, v]) => {
-    if (v !== undefined && v !== '') q.set(k, String(v))
-  })
-  const s = q.toString()
-  return s ? `?${s}` : ''
-}
-
 export const operacionesApi = {
   pipelines:  ()                 => api.get<PipelineResumen[]>(`${BASE}/pipelines`),
   pipeline:   (id: number)       => api.get<Pipeline>(`${BASE}/pipelines/${id}`),
 
-  listar:     (params: ListarOperacionesParams = {}) => api.get<Paginado<OperacionListItem>>(`${BASE}/deals${query(params)}`),
+  listar:     (params: ListarOperacionesParams = {}) => api.get<Paginado<OperacionListItem>>(`${BASE}/deals${construirQuery(params)}`),
   obtener:    (id: number)                            => api.get<Operacion>(`${BASE}/deals/${id}`),
   crear:      (data: OperacionCreatePayload)          => api.post<Operacion>(`${BASE}/deals`, data),
   editar:     (id: number, data: OperacionUpdatePayload) => api.patch<Operacion>(`${BASE}/deals/${id}`, data),
