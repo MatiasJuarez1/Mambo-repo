@@ -19,6 +19,7 @@ function propiedad(over: Partial<PropiedadListItem> = {}): PropiedadListItem {
     creado_en: '2026-01-01T10:00:00',
     ubicacion: null,
     medios: [],
+    propietario: null,
     ...over,
   }
 }

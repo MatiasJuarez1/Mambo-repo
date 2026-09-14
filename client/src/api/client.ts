@@ -13,7 +13,7 @@
 export const BASE_URL =
   import.meta.env.VITE_API_URL ?? (import.meta.env.DEV ? 'http://localhost:8000' : '')
 
-type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE'
+type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
 
 export interface OpcionesRequest {
   /**
@@ -83,5 +83,6 @@ export const api = {
   get:    <T>(path: string, opciones?: OpcionesRequest)                 => request<T>('GET',    path, undefined, opciones),
   post:   <T>(path: string, body: unknown, opciones?: OpcionesRequest)  => request<T>('POST',   path, body,      opciones),
   put:    <T>(path: string, body: unknown, opciones?: OpcionesRequest)  => request<T>('PUT',    path, body,      opciones),
+  patch:  <T>(path: string, body?: unknown, opciones?: OpcionesRequest) => request<T>('PATCH',  path, body,      opciones),
   delete: <T>(path: string, opciones?: OpcionesRequest)                 => request<T>('DELETE', path, undefined, opciones),
 }

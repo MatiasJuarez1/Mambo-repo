@@ -11,6 +11,14 @@ const grupos = [
       { to: '/admin/publicaciones', label: 'Publicaciones' },
     ],
   },
+  {
+    titulo: 'CRM',
+    items: [
+      { to: '/admin/personas',    label: 'Personas' },
+      { to: '/admin/reservas',    label: 'Reservas' },
+      { to: '/admin/operaciones', label: 'Operaciones' },
+    ],
+  },
 ]
 
 // Los enlaces del sidebar son también la fuente del título de la topbar: si
@@ -131,9 +139,14 @@ export default function AdminLayout() {
             </div>
           ))}
 
-          <p className="admin-nav-group">CRM</p>
-          <span className="admin-nav-item admin-nav-item-soon">Contactos</span>
-          <span className="admin-nav-item admin-nav-item-soon">Consultas</span>
+          {usuario?.roles.includes('admin') && (
+            <div>
+              <p className="admin-nav-group">Ajustes</p>
+              <NavLink to="/admin/configuracion" className={({ isActive }) => `admin-nav-item${isActive ? ' active' : ''}`}>
+                Configuración
+              </NavLink>
+            </div>
+          )}
         </nav>
 
         <div className="admin-sidebar-footer">

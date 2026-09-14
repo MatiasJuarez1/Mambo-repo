@@ -61,6 +61,7 @@ export interface PropiedadListItem {
   creado_en: string
   ubicacion: Ubicacion | null
   medios: Medio[]
+  propietario: { id: number; full_name: string } | null
 }
 
 export interface Propiedad extends PropiedadListItem {
