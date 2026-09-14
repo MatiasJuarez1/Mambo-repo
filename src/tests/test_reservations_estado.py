@@ -21,7 +21,11 @@ def test_reservar_deja_la_propiedad_reservada(client, db, crear_usuario, iniciar
     r = _reservar(client, prop.id, persona.id)
 
     assert r.status_code == 201, r.text
-    assert r.json()["propiedad"] == {"id": prop.id, "titulo": prop.titulo, "estado_comercial": "reservada"}
+    assert r.json()["propiedad"] == {
+        "id": prop.id,
+        "titulo": prop.titulo,
+        "estado_comercial": "reservada",
+    }
     db.refresh(prop)
     assert prop.estado_comercial == E.reservada
 
