@@ -1,0 +1,34 @@
+.tarjeta-op {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.75rem;
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.tarjeta-op-titulo { font-weight: 600; color: var(--petrol); }
+
+.tarjeta-op-propiedad,
+.tarjeta-op-partes { margin: 0; font-size: 0.85rem; color: var(--text-muted); }
+
+.tarjeta-op-monto { margin: 0; font-size: 0.9rem; }
+
+.tarjeta-op-pie {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.35rem;
+}
+
+.tarjeta-op-dias { font-size: 0.78rem; color: var(--text-muted); }
+
+.tarjeta-op-pie select {
+  font-size: 0.8rem;
+  padding: 0.25rem 0.4rem;
+  border: 1px solid var(--line);
+  background: var(--white);
+  color: var(--text);
+}

@@ -28,6 +28,7 @@ import PersonaFormulario    from './pages/admin/personas/Formulario'
 import PersonaFicha         from './pages/admin/personas/Ficha'
 import ReservasLista        from './pages/admin/reservas/Lista'
 import ReservaFormulario    from './pages/admin/reservas/Formulario'
+import Tablero              from './pages/admin/operaciones/Tablero'
 
 /** Ruta contenedora que le da contexto de sesión a toda la rama `/admin`. */
 function ProveedorSesionAdmin() {
@@ -89,6 +90,10 @@ export default function App() {
               <Route path="reservas">
                 <Route index        element={<ReservasLista />} />
                 <Route path="nueva" element={<ReservaFormulario />} />
+              </Route>
+
+              <Route path="operaciones">
+                <Route index element={<Tablero />} />
               </Route>
             </Route>
           </Route>

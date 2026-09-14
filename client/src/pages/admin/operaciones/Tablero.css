@@ -1,0 +1,86 @@
+.tablero-cabecera {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+}
+
+/* Selector Venta / Alquiler: pestañas dentro de una píldora. */
+.tablero-pipelines {
+  display: inline-flex;
+  gap: 0.25rem;
+  padding: 0.2rem;
+  background: var(--bone);
+  border-radius: 8px;
+}
+
+.tablero-pipeline {
+  border: 0;
+  background: transparent;
+  padding: 0.35rem 0.9rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.tablero-pipeline.activo {
+  background: var(--white);
+  color: var(--petrol);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Columnas abiertas: una por etapa, con scroll horizontal si no entran. */
+.tablero {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(240px, 1fr);
+  gap: 1rem;
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+}
+
+.tablero-columna { min-width: 0; }
+
+.tablero-columna-titulo {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  margin: 0 0 0.5rem;
+}
+
+.tablero-columna-titulo span { color: var(--text-muted); font-weight: 400; }
+
+.tablero-tarjetas {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* Ganada / Perdida: plegadas debajo del tablero. */
+.tablero-cerradas {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin-top: 1.25rem;
+}
+
+.tablero-cerrada-toggle {
+  width: 100%;
+  text-align: left;
+  border: 0;
+  background: transparent;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  color: var(--text);
+  cursor: pointer;
+  padding: 0;
+}
+
+.tablero-cerradas .tablero-tarjetas { margin-top: 0.75rem; }
+
+@media (max-width: 640px) {
+  .tablero-cerradas { grid-template-columns: 1fr; }
+}
