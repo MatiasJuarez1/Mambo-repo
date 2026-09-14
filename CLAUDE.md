@@ -80,7 +80,7 @@ FastAPI app assembled in [src/app/main.py](src/app/main.py): each domain module 
 Features live under **two** package trees, both following the same four-file pattern:
 
 - `src/app/modules/<module>/` — the property-inventory side (`propiedades`, `publicaciones`), mounted under `/api/v1`.
-- `src/app/platform/<module>/` — the CRM/platform side (`auth`, `people`, `activities`, …), mounted at the root.
+- `src/app/platform/<module>/` — the CRM/platform side (`auth`, `people`, `activities`, …), mounted under `/api/v1` **except `auth`**, which stays at the root. That exception is not cosmetic: [client/vercel.json](client/vercel.json) only proxies `/api/*` and `/auth/*`, so a platform router mounted anywhere else 404s in production while working locally.
 
 The four-file layered pattern: 
 
@@ -89,7 +89,7 @@ The four-file layered pattern:
 - **`service.py`** — business logic; functions take a `Session` as first arg and own commits.
 - **`router.py`** — `APIRouter` with a `prefix`/`tags`; endpoints depend on `get_db` and (when protected) auth dependencies. Keep DB/business logic in `service.py`, not routers.
 
-Modules: `auth`, `people`, `activities`, `reservations`, `deals`, `notes`, `audit`. Several are partially stubbed (e.g. [audit/service.py](src/app/platform/audit/service.py) is a TODO; `notes`/`audit` models are empty). Per [docs/README.md](docs/README.md), the schema is intentionally "CRM-ready" but the MVP priority is property inventory + minimal staff auth; the CRM modules (deals/pipeline, activities, reservations) are scaffolding ahead of that.
+Modules: `auth`, `people`, `activities`, `reservations`, `deals`, `notes`, `audit`, `inmobiliaria` (single-row configuration of the agency: name, logo, tax data, default commission rates — the only place the agency's name lives in the backend). Several are partially stubbed (e.g. [audit/service.py](src/app/platform/audit/service.py) is a TODO; `notes`/`audit` models are empty). Per [docs/README.md](docs/README.md), the schema is intentionally "CRM-ready" but the MVP priority is property inventory + minimal staff auth; the CRM modules (deals/pipeline, activities, reservations) are scaffolding ahead of that.
 
 ### Authentication
 

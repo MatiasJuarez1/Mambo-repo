@@ -4,6 +4,7 @@ Es la única tabla del backend que sabe cómo se llama la inmobiliaria. Está en
 tabla y no en código para que convertir el producto en multi-inmobiliaria sea
 agregar un `inmobiliaria_id` a las demás, no rehacer módulos.
 """
+
 from __future__ import annotations
 
 from datetime import UTC, datetime

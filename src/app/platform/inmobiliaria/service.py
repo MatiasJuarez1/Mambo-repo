@@ -1,4 +1,5 @@
 """Configuración de la inmobiliaria: siempre la fila id=1."""
+
 from __future__ import annotations
 
 from fastapi import HTTPException, UploadFile, status

@@ -13,16 +13,32 @@ def test_vinculos_trae_las_cuatro_listas(client, db, crear_usuario, iniciar_sesi
     db.add(Reservation(person_id=persona.id, property_id=ajena.id, created_by_user_id=usuario.id))
     venta = pipeline_por_nombre(db, "Venta")
     deal = Deal(
-        title="Compra casa", pipeline_id=venta.id, stage_id=etapa(venta, "Visita").id,
-        created_by_user_id=usuario.id, property_id=ajena.id,
+        title="Compra casa",
+        pipeline_id=venta.id,
+        stage_id=etapa(venta, "Visita").id,
+        created_by_user_id=usuario.id,
+        property_id=ajena.id,
     )
     db.add(deal)
     db.flush()
     db.add(DealParty(deal_id=deal.id, person_id=persona.id, role="comprador"))
-    db.add(Activity(activity_type="visita", title="Visitar", created_by_user_id=usuario.id,
-                    person_id=persona.id))
-    db.add(Activity(activity_type="llamada", title="Hecha", status="hecha",
-                    created_by_user_id=usuario.id, person_id=persona.id))
+    db.add(
+        Activity(
+            activity_type="visita",
+            title="Visitar",
+            created_by_user_id=usuario.id,
+            person_id=persona.id,
+        )
+    )
+    db.add(
+        Activity(
+            activity_type="llamada",
+            title="Hecha",
+            status="hecha",
+            created_by_user_id=usuario.id,
+            person_id=persona.id,
+        )
+    )
     db.commit()
 
     r = client.get(f"/api/v1/people/{persona.id}/vinculos")
@@ -32,7 +48,9 @@ def test_vinculos_trae_las_cuatro_listas(client, db, crear_usuario, iniciar_sesi
     assert [p["titulo"] for p in v["propiedades"]] == ["Depto propio"]
     assert v["propiedades"][0]["foto_principal"] is None
     assert v["reservas"][0]["propiedad"] == {
-        "id": ajena.id, "titulo": "Casa ajena", "estado_comercial": "disponible"
+        "id": ajena.id,
+        "titulo": "Casa ajena",
+        "estado_comercial": "disponible",
     }
     assert v["deals"][0]["role"] == "comprador"
     assert v["deals"][0]["stage"] == "Visita"

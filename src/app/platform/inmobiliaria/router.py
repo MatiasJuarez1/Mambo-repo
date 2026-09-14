@@ -1,4 +1,5 @@
 """Router: GET/PUT /inmobiliaria y POST /inmobiliaria/logo."""
+
 from __future__ import annotations
 
 from fastapi import APIRouter, Depends, File, UploadFile

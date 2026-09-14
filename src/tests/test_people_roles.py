@@ -1,4 +1,5 @@
 """Roles derivados de persona: propietario, comprador, vendedor, inquilino, interesado."""
+
 from __future__ import annotations
 
 from app.platform.deals.models import Deal, DealParty
@@ -12,8 +13,12 @@ def _deal(db, usuario, pipeline, etapa_nombre, partes):
     p = pipeline_por_nombre(db, pipeline)
     e = etapa(p, etapa_nombre)
     deal = Deal(
-        title="x", pipeline_id=p.id, stage_id=e.id, created_by_user_id=usuario.id,
-        is_won=e.is_won, is_lost=e.is_lost,
+        title="x",
+        pipeline_id=p.id,
+        stage_id=e.id,
+        created_by_user_id=usuario.id,
+        is_won=e.is_won,
+        is_lost=e.is_lost,
     )
     db.add(deal)
     db.flush()

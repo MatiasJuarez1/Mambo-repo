@@ -1,4 +1,5 @@
 """DTOs de la configuración de la inmobiliaria."""
+
 from __future__ import annotations
 
 from datetime import datetime

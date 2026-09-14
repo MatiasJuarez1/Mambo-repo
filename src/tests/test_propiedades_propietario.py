@@ -21,9 +21,7 @@ def test_propietario_inexistente_da_404(client, db, crear_usuario, iniciar_sesio
     crear_usuario()
     iniciar_sesion()
 
-    r = client.post(
-        "/api/v1/propiedades", json={"titulo": "Casa", "propietario_persona_id": 9999}
-    )
+    r = client.post("/api/v1/propiedades", json={"titulo": "Casa", "propietario_persona_id": 9999})
     assert r.status_code == 404
     assert r.json()["detail"] == "La persona 9999 no existe"
 

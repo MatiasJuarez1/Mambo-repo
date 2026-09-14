@@ -32,8 +32,11 @@ def test_reserva_y_deal_conocen_a_su_propiedad(db, crear_usuario):
     db.flush()
     reserva = Reservation(person_id=persona.id, property_id=prop.id, created_by_user_id=usuario.id)
     deal = Deal(
-        title="Venta casa", pipeline_id=pipeline.id, stage_id=etapa.id,
-        created_by_user_id=usuario.id, property_id=prop.id,
+        title="Venta casa",
+        pipeline_id=pipeline.id,
+        stage_id=etapa.id,
+        created_by_user_id=usuario.id,
+        property_id=prop.id,
     )
     db.add_all([reserva, deal])
     db.commit()
@@ -53,7 +56,10 @@ def test_dias_en_etapa_sale_de_stage_changed_at(db, crear_usuario):
     db.add(etapa)
     db.flush()
     deal = Deal(
-        title="x", pipeline_id=pipeline.id, stage_id=etapa.id, created_by_user_id=usuario.id,
+        title="x",
+        pipeline_id=pipeline.id,
+        stage_id=etapa.id,
+        created_by_user_id=usuario.id,
         stage_changed_at=datetime.now(UTC) - timedelta(days=3, hours=1),
     )
     db.add(deal)

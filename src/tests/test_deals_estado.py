@@ -10,8 +10,11 @@ def _deal(client, db, prop_id, persona_id, etapa_nombre="Consulta", pipeline="Ve
     r = client.post(
         "/api/v1/deals",
         json={
-            "title": "Op", "pipeline_id": p.id, "stage_id": etapa(p, etapa_nombre).id,
-            "property_id": prop_id, "amount": 100000,
+            "title": "Op",
+            "pipeline_id": p.id,
+            "stage_id": etapa(p, etapa_nombre).id,
+            "property_id": prop_id,
+            "amount": 100000,
             "parties": [{"person_id": persona_id, "role": "comprador"}],
         },
     )
@@ -106,7 +109,8 @@ def test_deal_sin_propiedad_no_toca_nada(client, db, crear_usuario, iniciar_sesi
     r = client.post(
         "/api/v1/deals",
         json={
-            "title": "Compró por afuera", "pipeline_id": p.id,
+            "title": "Compró por afuera",
+            "pipeline_id": p.id,
             "stage_id": etapa(p, "Consulta").id,
         },
     )

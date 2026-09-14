@@ -40,27 +40,41 @@ def upgrade() -> None:
         "ix_propiedades_propietario_persona_id", "propiedades", ["propietario_persona_id"]
     )
     op.create_foreign_key(
-        "fk_propiedades_propietario_persona", "propiedades", "people",
-        ["propietario_persona_id"], ["id"], ondelete="SET NULL",
+        "fk_propiedades_propietario_persona",
+        "propiedades",
+        "people",
+        ["propietario_persona_id"],
+        ["id"],
+        ondelete="SET NULL",
     )
     op.create_foreign_key(
-        "fk_reservations_property", "reservations", "propiedades",
-        ["property_id"], ["id"], ondelete="RESTRICT",
+        "fk_reservations_property",
+        "reservations",
+        "propiedades",
+        ["property_id"],
+        ["id"],
+        ondelete="RESTRICT",
     )
     op.create_foreign_key(
-        "fk_deals_property", "deals", "propiedades",
-        ["property_id"], ["id"], ondelete="RESTRICT",
+        "fk_deals_property",
+        "deals",
+        "propiedades",
+        ["property_id"],
+        ["id"],
+        ondelete="RESTRICT",
     )
     op.create_index("ix_activities_property_id", "activities", ["property_id"])
     op.create_foreign_key(
-        "fk_activities_property", "activities", "propiedades",
-        ["property_id"], ["id"], ondelete="SET NULL",
+        "fk_activities_property",
+        "activities",
+        "propiedades",
+        ["property_id"],
+        ["id"],
+        ondelete="SET NULL",
     )
 
     # --- deals.stage_changed_at: las filas existentes arrancan en updated_at ---
-    op.add_column(
-        "deals", sa.Column("stage_changed_at", sa.DateTime(timezone=True), nullable=True)
-    )
+    op.add_column("deals", sa.Column("stage_changed_at", sa.DateTime(timezone=True), nullable=True))
     op.execute("UPDATE deals SET stage_changed_at = updated_at")
     op.alter_column("deals", "stage_changed_at", nullable=False)
 
@@ -69,8 +83,10 @@ def upgrade() -> None:
         "people_tags",
         sa.Column("id", sa.Integer(), primary_key=True, autoincrement=True),
         sa.Column(
-            "person_id", sa.Integer(),
-            sa.ForeignKey("people.id", ondelete="CASCADE"), nullable=False,
+            "person_id",
+            sa.Integer(),
+            sa.ForeignKey("people.id", ondelete="CASCADE"),
+            nullable=False,
         ),
         sa.Column("nombre", sa.String(60), nullable=False),
         sa.UniqueConstraint("person_id", "nombre", name="uq_person_tag"),

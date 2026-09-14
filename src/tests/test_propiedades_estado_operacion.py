@@ -84,8 +84,12 @@ def test_no_se_libera_a_mano_con_deal_ganado(client, db, crear_usuario, iniciar_
     prop = crear_propiedad(db, estado=E.cerrada)
     venta = pipeline_por_nombre(db, "Venta")
     deal = Deal(
-        title="x", pipeline_id=venta.id, stage_id=etapa(venta, "Ganada").id,
-        created_by_user_id=usuario.id, property_id=prop.id, is_won=True,
+        title="x",
+        pipeline_id=venta.id,
+        stage_id=etapa(venta, "Ganada").id,
+        created_by_user_id=usuario.id,
+        property_id=prop.id,
+        is_won=True,
     )
     db.add(deal)
     db.commit()
