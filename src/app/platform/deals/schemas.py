@@ -7,7 +7,12 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
-PartyRole = Literal["comprador", "vendedor", "interesado", "propietario", "otro"]
+from app.modules.propiedades.schemas import PropiedadBrief
+from app.platform.reservations.schemas import PersonBrief
+
+PartyRole = Literal[
+    "comprador", "vendedor", "inquilino", "propietario", "garante", "interesado", "otro"
+]
 
 
 # ---------------------------------------------------------------------------
@@ -90,6 +95,7 @@ class DealPartyOut(BaseModel):
     id: int
     deal_id: int
     person_id: int
+    person: PersonBrief
     role: str
     notes: str | None
     created_at: datetime
@@ -134,6 +140,9 @@ class DealOut(DealBase):
     is_won: bool
     is_lost: bool
     closed_at: datetime | None
+    propiedad: PropiedadBrief | None = None
+    stage_changed_at: datetime
+    dias_en_etapa: int
     parties: list[DealPartyOut] = []
     created_at: datetime
     updated_at: datetime
@@ -152,6 +161,10 @@ class DealListOut(BaseModel):
     currency: str
     is_won: bool
     is_lost: bool
+    propiedad: PropiedadBrief | None = None
+    stage_changed_at: datetime
+    dias_en_etapa: int
+    parties: list[DealPartyOut] = []
     created_at: datetime
 
     model_config = {"from_attributes": True}

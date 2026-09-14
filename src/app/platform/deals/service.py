@@ -6,6 +6,7 @@ from datetime import UTC, datetime
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session as DBSession
 
+from app.modules.propiedades.service import EventoOperacion, aplicar_evento_de_operacion
 from app.platform.deals.models import Deal, DealParty, Pipeline, PipelineStage
 from app.platform.deals.pipelines_base import PIPELINES_BASE
 from app.platform.deals.schemas import (
@@ -18,6 +19,7 @@ from app.platform.deals.schemas import (
     PipelineStageUpdate,
     PipelineUpdate,
 )
+from app.platform.reservations.models import Reservation
 
 # ---------------------------------------------------------------------------
 # Pipeline
@@ -230,8 +232,15 @@ def create_deal(db: DBSession, data: DealCreate, created_by_user_id: int) -> Dea
     db.flush()
 
     for party_data in data.parties:
-        party = DealParty(deal_id=deal.id, **party_data.model_dump())
-        db.add(party)
+        db.add(DealParty(deal_id=deal.id, **party_data.model_dump()))
+
+    # Crear directo en Ganada/Perdida es raro pero legal: aplica las mismas reglas.
+    stage = db.query(PipelineStage).filter(PipelineStage.id == data.stage_id).first()
+    deal.is_won = stage.is_won
+    deal.is_lost = stage.is_lost
+    if stage.is_won or stage.is_lost:
+        deal.closed_at = datetime.now(UTC)
+    _aplicar_cierre(db, deal, stage, estaba_cerrado=False)
 
     db.commit()
     db.refresh(deal)
@@ -252,15 +261,18 @@ def move_stage(db: DBSession, deal_id: int, data: DealMoveStage) -> Deal:
     deal = get_deal_or_404(db, deal_id)
     _validate_stage_belongs_to_pipeline(db, data.stage_id, deal.pipeline_id)
     stage = db.query(PipelineStage).filter(PipelineStage.id == data.stage_id).first()
+    estaba_cerrado = deal.is_closed
+    ahora = datetime.now(UTC)
 
     deal.stage_id = data.stage_id
+    deal.stage_changed_at = ahora
     deal.is_won = stage.is_won
     deal.is_lost = stage.is_lost
-    if stage.is_won or stage.is_lost:
-        deal.closed_at = datetime.now(UTC)
-    else:
-        deal.closed_at = None
-    deal.updated_at = datetime.now(UTC)
+    deal.closed_at = ahora if (stage.is_won or stage.is_lost) else None
+    deal.updated_at = ahora
+
+    # Antes del commit: si la propiedad rechaza el cierre (409), el deal no se mueve.
+    _aplicar_cierre(db, deal, stage, estaba_cerrado)
 
     db.commit()
     db.refresh(deal)
@@ -326,6 +338,50 @@ def _get_party_or_404(db: DBSession, deal_id: int, party_id: int) -> DealParty:
     if not party:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Parte no encontrada")
     return party
+
+
+def _reserva_activa(db: DBSession, property_id: int) -> Reservation | None:
+    return (
+        db.query(Reservation)
+        .filter(Reservation.property_id == property_id, Reservation.status == "activa")
+        .first()
+    )
+
+
+def _aplicar_cierre(db: DBSession, deal: Deal, stage: PipelineStage, estaba_cerrado: bool) -> None:
+    """Refleja en la propiedad (y en su reserva activa) que el deal cambió de etapa.
+
+    Sin commit: lo hace quien llama. Un deal sin propiedad no dispara nada. Si la
+    propiedad rechaza el evento (409), se revierte la sesión entera: el deal ya
+    tiene la etapa nueva en memoria y sin rollback un lector de la misma sesión
+    (los tests, o el `refresh` de un error posterior) la vería como aplicada.
+    """
+    if deal.property_id is None:
+        return
+    try:
+        _aplicar_cierre_sin_proteccion(db, deal, stage, estaba_cerrado)
+    except HTTPException:
+        db.rollback()
+        raise
+
+
+def _aplicar_cierre_sin_proteccion(
+    db: DBSession, deal: Deal, stage: PipelineStage, estaba_cerrado: bool
+) -> None:
+    if stage.is_won:
+        aplicar_evento_de_operacion(db, deal.property_id, EventoOperacion.deal_ganado)
+        reserva = _reserva_activa(db, deal.property_id)
+        if reserva:
+            reserva.status = "convertida"
+            reserva.updated_at = datetime.now(UTC)
+    elif stage.is_lost:
+        reserva = _reserva_activa(db, deal.property_id)
+        if reserva:
+            reserva.status = "cancelada"
+            reserva.updated_at = datetime.now(UTC)
+        aplicar_evento_de_operacion(db, deal.property_id, EventoOperacion.deal_perdido)
+    elif estaba_cerrado:
+        aplicar_evento_de_operacion(db, deal.property_id, EventoOperacion.deal_reabierto)
 
 
 def _validate_stage_belongs_to_pipeline(
