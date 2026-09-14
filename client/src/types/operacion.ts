@@ -82,6 +82,8 @@ export interface OperacionCreatePayload {
   parties?: PartePayload[]
 }
 
+// `assigned_to_user_id: null` desasigna (el backend aplica sólo los campos
+// presentes, así que omitirlo no alcanza para limpiarlo).
 export type OperacionUpdatePayload = Partial<
-  Pick<OperacionCreatePayload, 'title' | 'assigned_to_user_id' | 'property_id' | 'amount' | 'currency' | 'notes'>
->
+  Pick<OperacionCreatePayload, 'title' | 'property_id' | 'amount' | 'currency' | 'notes'>
+> & { assigned_to_user_id?: number | null }

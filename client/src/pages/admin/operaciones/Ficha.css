@@ -1,0 +1,47 @@
+/* Ficha y alta de operación comparten la lista de partes (`.partes-lista`,
+   `.partes-alta`); el resto de la ficha es propio. */
+
+.ficha-op-grilla {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.25rem;
+}
+
+.ficha-op-datos {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.4rem 1rem;
+  align-items: center;
+  margin: 1rem 0 0;
+}
+
+.ficha-op-datos dt { color: var(--text-muted); font-size: 0.85rem; }
+.ficha-op-datos dd { margin: 0; }
+
+.ficha-op-notas { white-space: pre-wrap; margin-top: 1rem; }
+
+.partes-lista {
+  list-style: none;
+  margin: 0 0 1rem;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.partes-lista li {
+  display: flex;
+  gap: 0.6rem;
+  align-items: center;
+}
+
+.partes-lista small { color: var(--text-muted); }
+
+.ficha-op-vacio { color: var(--text-muted); }
+
+/* El botón Agregar queda alineado con los controles, no con sus rótulos. */
+.partes-alta { align-items: flex-end; }
+
+@media (max-width: 860px) {
+  .ficha-op-grilla { grid-template-columns: 1fr; }
+}
