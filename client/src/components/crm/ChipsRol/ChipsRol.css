@@ -1,0 +1,8 @@
+.chips-rol { display: inline-flex; flex-wrap: wrap; gap: 0.3rem; }
+.chip-rol {
+  display: inline-block; padding: 0.15rem 0.55rem; border-radius: 999px;
+  font-size: 0.78rem; font-weight: 600; background: var(--bone); color: var(--text);
+}
+.chip-rol-propietario { background: var(--estado-ok-bg); color: var(--estado-ok); }
+.chip-rol-comprador, .chip-rol-inquilino { background: var(--petrol); color: var(--white); }
+.chips-rol-vacio { font-size: 0.8rem; color: var(--text-muted); }
