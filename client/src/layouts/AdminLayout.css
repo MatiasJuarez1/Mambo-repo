@@ -344,3 +344,297 @@
 @media (prefers-reduced-motion: reduce) {
   .admin-sidebar { transition: none; }
 }
+
+/* ════════════════════════════════════════════════════════════════
+   Helpers compartidos por las páginas del panel
+   ════════════════════════════════════════════════════════════════
+   AdminLayout envuelve toda la rama /admin (menos el login), así que las
+   clases de acá quedan disponibles para cualquier página admin sin que
+   cada una tenga que importarlas o redefinirlas. Antes de este bloque
+   `.lista-estado`, la familia `form*`, `.etiqueta`/`.etiquetas` y
+   `.btn-chico` estaban copiadas entre las hojas de propiedades y personas
+   (y una página nueva, Ficha, directamente se quedó sin ellas). Lo que es
+   específico de una sola pantalla (`.tabla-thumb`, `.prop-form`,
+   `.ficha-grilla`, `.selector-persona-*`, etc.) sigue viviendo en el CSS
+   de esa página. */
+
+/* ── Listas: estado de carga/error y contador ──────────────────── */
+
+.lista-estado {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  padding: 2rem 0;
+  text-align: center;
+}
+
+.lista-error { color: var(--estado-baja); }
+
+.lista-total { margin: 0.75rem 0 0; color: var(--text-muted); font-size: 0.85rem; }
+
+/* ── Tabla base ───────────────────────────────────────────────── */
+
+.tabla-wrapper { padding: 0; overflow-x: auto; }
+
+.tabla {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.tabla thead {
+  background: var(--bone);
+  border-bottom: 2px solid var(--line);
+}
+
+.tabla th {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.tabla td {
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid var(--line);
+  color: var(--text);
+  vertical-align: middle;
+}
+
+.tabla tbody tr:last-child td { border-bottom: none; }
+
+.tabla tbody tr:hover { background: var(--petrol-soft); }
+
+.tabla-titulo {
+  font-weight: 500;
+  color: var(--text);
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── Etiquetas ────────────────────────────────────────────────── */
+
+.etiquetas { display: inline-flex; flex-wrap: wrap; gap: 0.3rem; }
+.etiqueta { padding: 0.1rem 0.5rem; border-radius: 4px; background: var(--bone); font-size: 0.78rem; }
+
+/* ── Botón chico ──────────────────────────────────────────────── */
+
+.btn-chico { padding: 0.3rem 0.7rem; font-size: 0.85rem; }
+
+/* ── Formularios ──────────────────────────────────────────────── */
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.form-section-title {
+  font-family: var(--font-serif);
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--petrol);
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 0.25rem;
+}
+
+.form-row {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  flex: 1;
+  min-width: 160px;
+}
+
+.form-field.full { flex: 1 1 100%; }
+
+.form-field label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.form-field input,
+.form-field select,
+.form-field textarea {
+  padding: 0.6rem 0.75rem;
+  font-size: 0.9rem;
+  font-family: var(--font-sans);
+  color: var(--text);
+  border: 1px solid var(--line);
+  background: var(--white);
+  outline: none;
+  width: 100%;
+  transition: border-color 0.2s;
+  border-radius: 4px;
+}
+
+.form-field input:focus,
+.form-field select:focus,
+.form-field textarea:focus {
+  border-color: var(--petrol);
+}
+
+.form-field textarea { resize: vertical; }
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding-top: 0.5rem;
+}
+
+.form-error {
+  background: var(--estado-baja-bg);
+  color: var(--estado-baja);
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+}
+
+.form-hint {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-bottom: 1rem;
+}
+
+/* ── Tablet: targets táctiles en campos de formulario ──────────── */
+
+@media (max-width: 860px) {
+  .form-field input,
+  .form-field select,
+  .form-field textarea {
+    min-height: var(--tap-min);
+  }
+}
+
+/* ── Móvil: acciones de formulario apiladas ────────────────────── */
+
+@media (max-width: 640px) {
+  /* Alineados a la derecha y a ancho de contenido, dos botones quedan
+     pegados uno al otro en el borde de la pantalla. Apilados a ancho
+     completo el primario queda abajo, que es donde llega el pulgar. */
+  .form-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .form-actions .btn {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+/* ── Móvil: la tabla pasa a tarjetas apiladas ─────────────────────
+   Siete columnas no entran en un teléfono, y el `overflow-x` del wrapper las
+   deja accesibles pero a costa de scrollear en dos ejes. Bajo 640 cada fila se
+   convierte en una tarjeta: es la misma tabla, con `display: block` desarmando
+   el layout tabular y cada celda rotulándose sola con su `data-label`. No hay
+   un segundo render: duplicar el `<tbody>` en una lista aparte obligaría a
+   mantener dos veces las mismas celdas. */
+
+@media (max-width: 640px) {
+  /* El wrapper es un `.admin-card`: su marco blanco alrededor de tarjetas
+     blancas con borde sería un recuadro dentro de otro. Acá el fondo lo pone la
+     página (--bone) y el marco cada tarjeta. */
+  .tabla-wrapper {
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    overflow-x: visible;
+  }
+
+  .tabla,
+  .tabla thead,
+  .tabla tbody,
+  .tabla tr,
+  .tabla td {
+    display: block;
+    width: 100%;
+  }
+
+  /* Recortado y no `display: none`: los `th` siguen siendo los encabezados que
+     los lectores de pantalla anuncian al recorrer la tabla, y sacarlos del
+     árbol de accesibilidad dejaría las celdas sin nombre justo cuando el
+     `::before` que las rotula es puramente decorativo (el contenido generado no
+     es texto seleccionable ni necesariamente anunciado). */
+  .tabla thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: none;
+  }
+
+  .tabla tbody tr {
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 0 0.9rem;
+  }
+
+  .tabla tbody tr + tr { margin-top: 0.75rem; }
+
+  .tabla td {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.6rem 0;
+    text-align: right;
+  }
+
+  /* La regla base saca el borde a toda la última fila —correcto en una tabla,
+     donde el separador sobra contra el marco—. En tarjetas el separador va
+     entre celdas, así que se restituye y se quita sólo en la última de cada
+     tarjeta. */
+  .tabla tbody tr:last-child td { border-bottom: 1px solid var(--line); }
+  .tabla tbody tr td:last-child { border-bottom: none; }
+
+  .tabla td::before {
+    content: attr(data-label);
+    flex-shrink: 0;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    text-align: left;
+  }
+
+  /* Primera y última celda suelen ser el encabezado y el pie de la tarjeta
+     (miniatura+título, o el nombre; acciones al final): no hace falta
+     rotularlas, ya se explican solas. */
+  .tabla td:first-child,
+  .tabla td:last-child {
+    display: block;
+    padding: 0.85rem 0;
+  }
+
+  .tabla td:first-child::before,
+  .tabla td:last-child::before { content: none; }
+
+  /* El recorte a 200px se calculó contra una columna de tabla; en la tarjeta el
+     título dispone del ancho entero. La elipsis sigue vigente para los títulos
+     largos. */
+  .tabla-titulo { max-width: none; }
+}

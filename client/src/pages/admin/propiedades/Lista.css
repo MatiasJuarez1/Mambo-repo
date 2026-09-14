@@ -36,49 +36,9 @@
   border-color: var(--petrol);
 }
 
-.lista-estado {
-  color: var(--text-muted);
-  font-size: 0.9rem;
-  padding: 2rem 0;
-  text-align: center;
-}
-
-.lista-error { color: var(--estado-baja); }
-
-.tabla-wrapper { padding: 0; overflow-x: auto; }
-
-.tabla {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.875rem;
-}
-
-.tabla thead {
-  background: var(--bone);
-  border-bottom: 2px solid var(--line);
-}
-
-.tabla th {
-  padding: 0.75rem 1rem;
-  text-align: left;
-  font-size: 0.72rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--text-muted);
-  white-space: nowrap;
-}
-
-.tabla td {
-  padding: 0.85rem 1rem;
-  border-bottom: 1px solid var(--line);
-  color: var(--text);
-  vertical-align: middle;
-}
-
-.tabla tbody tr:last-child td { border-bottom: none; }
-
-.tabla tbody tr:hover { background: var(--petrol-soft); }
+/* `.lista-estado`, `.lista-error`, `.tabla`/`.tabla-wrapper` base y el bloque
+   responsive de tarjetas viven en AdminLayout.css: los usa cada lista del
+   panel. Acá quedan sólo las clases propias de esta pantalla. */
 
 .tabla-propiedad {
   display: flex;
@@ -97,15 +57,6 @@
 .tabla-thumb-empty {
   background: var(--bone);
   border-radius: 4px;
-}
-
-.tabla-titulo {
-  font-weight: 500;
-  color: var(--text);
-  max-width: 200px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .tabla-precio {
@@ -152,104 +103,11 @@
   .filtros-bar .filtros-buscar { flex: none; }
 }
 
-/* ── Móvil: la tabla pasa a tarjetas apiladas ─────────────────────
-   Siete columnas no entran en un teléfono, y el `overflow-x` del wrapper las
-   deja accesibles pero a costa de scrollear en dos ejes. Bajo 640 cada fila se
-   convierte en una tarjeta: es la misma tabla, con `display: block` desarmando
-   el layout tabular y cada celda rotulándose sola con su `data-label`. No hay
-   un segundo render: duplicar el `<tbody>` en una lista aparte obligaría a
-   mantener dos veces las mismas siete celdas. */
+/* ── Móvil: acciones de la tarjeta ────────────────────────────────
+   El resto del pasaje tabla→tarjetas (`.tabla-wrapper`, `.tabla`, los
+   `data-label`, etc.) es la regla compartida de AdminLayout.css; acá sólo
+   queda lo que le agrega esta página al mismo breakpoint. */
 
 @media (max-width: 640px) {
-  /* El wrapper es un `.admin-card`: su marco blanco alrededor de tarjetas
-     blancas con borde sería un recuadro dentro de otro. Acá el fondo lo pone la
-     página (--bone) y el marco cada tarjeta. */
-  .tabla-wrapper {
-    background: transparent;
-    border: none;
-    border-radius: 0;
-    overflow-x: visible;
-  }
-
-  .tabla,
-  .tabla thead,
-  .tabla tbody,
-  .tabla tr,
-  .tabla td {
-    display: block;
-    width: 100%;
-  }
-
-  /* Recortado y no `display: none`: los `th` siguen siendo los encabezados que
-     los lectores de pantalla anuncian al recorrer la tabla, y sacarlos del
-     árbol de accesibilidad dejaría las celdas sin nombre justo cuando el
-     `::before` que las rotula es puramente decorativo (el contenido generado no
-     es texto seleccionable ni necesariamente anunciado). */
-  .tabla thead {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    overflow: hidden;
-    clip: rect(0 0 0 0);
-    clip-path: inset(50%);
-    white-space: nowrap;
-    border: none;
-  }
-
-  .tabla tbody tr {
-    background: var(--white);
-    border: 1px solid var(--line);
-    border-radius: 8px;
-    padding: 0 0.9rem;
-  }
-
-  .tabla tbody tr + tr { margin-top: 0.75rem; }
-
-  .tabla td {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
-    padding: 0.6rem 0;
-    text-align: right;
-  }
-
-  /* La regla base saca el borde a toda la última fila —correcto en una tabla,
-     donde el separador sobra contra el marco—. En tarjetas el separador va
-     entre celdas, así que se restituye y se quita sólo en la última de cada
-     tarjeta. */
-  .tabla tbody tr:last-child td { border-bottom: 1px solid var(--line); }
-  .tabla tbody tr td:last-child { border-bottom: none; }
-
-  .tabla td::before {
-    content: attr(data-label);
-    flex-shrink: 0;
-    font-size: 0.72rem;
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--text-muted);
-    text-align: left;
-  }
-
-  /* Primera y última celda son el encabezado y el pie de la tarjeta: la
-     miniatura con el título ya dice qué propiedad es, y dos botones rotulados
-     "Editar" y "Baja" ya dicen que son las acciones. Rotularlas sería repetir
-     en versalita lo que la celda muestra al lado. */
-  .tabla td:first-child,
-  .tabla td:last-child {
-    display: block;
-    padding: 0.85rem 0;
-  }
-
-  .tabla td:first-child::before,
-  .tabla td:last-child::before { content: none; }
-
-  /* El recorte a 200px se calculó contra una columna de tabla; en la tarjeta el
-     título dispone del ancho entero. La elipsis sigue vigente para los títulos
-     largos. */
-  .tabla-titulo { max-width: none; }
-
   .tabla-acciones .btn { flex: 1; }
 }

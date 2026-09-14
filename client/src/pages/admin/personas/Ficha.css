@@ -1,6 +1,5 @@
-/* `.etiqueta` vive en `Lista.css`, pero el CSS de página es local a cada
-   archivo en este repo (no hay import compartido): se repite acá. */
-.etiqueta { padding: 0.1rem 0.5rem; border-radius: 4px; background: var(--bone); font-size: 0.78rem; }
+/* `.lista-estado`/`.lista-error` (carga y error) y `.etiqueta` viven en
+   AdminLayout.css. */
 
 .ficha-cabecera { align-items: flex-start; }
 .ficha-meta { display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: center; margin-top: 0.5rem; }

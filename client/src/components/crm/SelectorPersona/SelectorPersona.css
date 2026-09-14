@@ -33,6 +33,5 @@
 .selector-persona-nueva { display: flex; flex-direction: column; gap: 0.4rem; padding: 0.75rem; border-top: 1px solid var(--line); }
 .selector-persona-acciones { display: flex; gap: 0.5rem; }
 
-/* No existe una clase .btn-chico global (el único tamaño de .btn en el panel es
-   el de AdminLayout.css); se define acá, junto al único lugar que hoy la usa. */
-.btn-chico { padding: 0.3rem 0.7rem; font-size: 0.85rem; }
+/* `.btn-chico` vive en AdminLayout.css junto con el resto de los helpers
+   compartidos del panel. */

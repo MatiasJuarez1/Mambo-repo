@@ -6,86 +6,11 @@
 
 .form-section { display: flex; flex-direction: column; gap: 1rem; }
 
-.form-section-title {
-  font-family: var(--font-serif);
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: var(--petrol);
-  padding-bottom: 0.75rem;
-  border-bottom: 1px solid var(--line);
-  margin-bottom: 0.25rem;
-}
-
-.form-row {
-  display: flex;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
-
-.form-field {
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-  flex: 1;
-  min-width: 160px;
-}
-
-.form-field.full { flex: 1 1 100%; }
-
-.form-field label {
-  font-size: 0.78rem;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--text-muted);
-}
-
-.form-field input,
-.form-field select,
-.form-field textarea {
-  padding: 0.6rem 0.75rem;
-  font-size: 0.9rem;
-  font-family: var(--font-sans);
-  color: var(--text);
-  border: 1px solid var(--line);
-  background: var(--white);
-  outline: none;
-  width: 100%;
-  transition: border-color 0.2s;
-  border-radius: 4px;
-}
-
-.form-field input:focus,
-.form-field select:focus,
-.form-field textarea:focus {
-  border-color: var(--petrol);
-}
-
-.form-field textarea { resize: vertical; }
-
-.form-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 0.75rem;
-  padding-top: 0.5rem;
-}
-
-.form-error {
-  background: var(--estado-baja-bg);
-  color: var(--estado-baja);
-  padding: 0.75rem 1rem;
-  font-size: 0.875rem;
-  border-radius: 4px;
-  margin-bottom: 1rem;
-}
+/* El resto de la familia `form*` (`.form-section-title`, `.form-row`,
+   `.form-field`, `.form-actions`, `.form-error`, `.form-hint`, etc.) vive en
+   AdminLayout.css: la usa cualquier formulario del panel. */
 
 /* ── Fotos ────────────────────────────────────────────────── */
-
-.form-hint {
-  font-size: 0.8rem;
-  color: var(--text-muted);
-  margin-bottom: 1rem;
-}
 
 /* `min(100%, 120px)` y no `120px` a secas: cuando el contenedor mide menos que
    el mínimo —320px de viewport menos los padding del main y de la tarjeta— una
@@ -187,33 +112,5 @@
     width: var(--tap-min);
     height: var(--tap-min);
     font-size: 1.3rem;
-  }
-}
-
-/* ── Móvil: acciones apiladas ─────────────────────────────────── */
-
-@media (max-width: 640px) {
-  /* Alineados a la derecha y a ancho de contenido, "Cancelar" y "Guardar
-     cambios" quedan pegados uno al otro en el borde de la pantalla. Apilados a
-     ancho completo el primario queda abajo, que es donde llega el pulgar. */
-  .form-actions {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .form-actions .btn {
-    width: 100%;
-    text-align: center;
-  }
-}
-
-/* El formulario de carga es la pantalla que más se toca del panel, y es la que
-   más chance tiene de usarse desde el teléfono parado frente a una propiedad.
-   Los campos venían en 38px (inputs) y 40px (selects). */
-@media (max-width: 860px) {
-  .form-field input,
-  .form-field select,
-  .form-field textarea {
-    min-height: var(--tap-min);
   }
 }
