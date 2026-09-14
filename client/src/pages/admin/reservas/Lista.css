@@ -1,0 +1,4 @@
+/* Filas de reservas activas según cuánto falta para que venzan. Los tokens
+   son los mismos que usa Badge para "espera" y "baja". */
+.reserva-por-vencer td { background: var(--estado-espera-bg); }
+.reserva-vencida td    { background: var(--estado-baja-bg); }

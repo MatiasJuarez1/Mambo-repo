@@ -4,7 +4,6 @@ import { personasApi, type ListarPersonasParams } from '../../../api/personas'
 import type { EtiquetaConteo, PersonaListItem, Rol } from '../../../types/persona'
 import ChipsRol from '../../../components/crm/ChipsRol/ChipsRol'
 import { LABEL_ROL } from '../../../lib/crm'
-import './Lista.css'
 
 const ROLES: Rol[] = ['propietario', 'comprador', 'vendedor', 'inquilino', 'interesado']
 const POR_PAGINA = 50
