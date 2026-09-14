@@ -1,0 +1,166 @@
+/* Clases `form*` copiadas de `propiedades/Formulario.css` (son locales a esa
+   página, no globales): se traen solo las que usa este formulario. */
+
+.form-section-title {
+  font-family: var(--font-serif);
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--petrol);
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 0.25rem;
+}
+
+.form-row {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  flex: 1;
+  min-width: 160px;
+}
+
+.form-field.full { flex: 1 1 100%; }
+
+.form-field label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.form-field input,
+.form-field select,
+.form-field textarea {
+  padding: 0.6rem 0.75rem;
+  font-size: 0.9rem;
+  font-family: var(--font-sans);
+  color: var(--text);
+  border: 1px solid var(--line);
+  background: var(--white);
+  outline: none;
+  width: 100%;
+  transition: border-color 0.2s;
+  border-radius: 4px;
+}
+
+.form-field input:focus,
+.form-field select:focus,
+.form-field textarea:focus {
+  border-color: var(--petrol);
+}
+
+.form-field textarea { resize: vertical; }
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding-top: 0.5rem;
+}
+
+.form-error {
+  background: var(--estado-baja-bg);
+  color: var(--estado-baja);
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+/* `.btn-chico` tampoco es global (ver `components/crm/SelectorPersona`): el
+   botón "Quitar" de cada contacto necesita un tamaño más chico que el `.btn`
+   de base. */
+.btn-chico { padding: 0.3rem 0.7rem; font-size: 0.85rem; }
+
+/* ── Contactos ──────────────────────────────────────────────── */
+
+.contactos-lista {
+  list-style: none;
+  margin: 0 0 0.75rem;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.contactos-lista li { display: flex; gap: 0.75rem; align-items: center; }
+
+.contacto-tipo { font-size: 0.8rem; color: var(--text-muted); min-width: 70px; }
+
+.contacto-principal { font-size: 0.75rem; color: var(--estado-ok); }
+
+/* ── Etiquetas ──────────────────────────────────────────────── */
+
+.etiquetas-editor {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+.etiquetas-editor .etiqueta {
+  padding: 0.1rem 0.5rem;
+  border-radius: 4px;
+  background: var(--bone);
+  font-size: 0.78rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.etiquetas-editor .etiqueta button {
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  line-height: 1;
+}
+
+.etiquetas-editor input {
+  padding: 0.4rem 0.6rem;
+  font-size: 0.85rem;
+  font-family: var(--font-sans);
+  border: 1px solid var(--line);
+  background: var(--white);
+  color: var(--text);
+  outline: none;
+  border-radius: 4px;
+}
+
+/* ── Tablet: targets táctiles ─────────────────────────────────── */
+
+@media (max-width: 860px) {
+  .form-field input,
+  .form-field select,
+  .form-field textarea {
+    min-height: var(--tap-min);
+  }
+}
+
+/* ── Móvil: acciones apiladas ─────────────────────────────────── */
+
+@media (max-width: 640px) {
+  .form-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .form-actions .btn {
+    width: 100%;
+    text-align: center;
+  }
+}

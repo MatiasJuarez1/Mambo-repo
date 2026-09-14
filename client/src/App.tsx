@@ -23,6 +23,8 @@ import PropiedadesLista     from './pages/admin/propiedades/Lista'
 import PropiedadFormulario  from './pages/admin/propiedades/Formulario'
 import PublicacionesLista   from './pages/admin/publicaciones/Lista'
 import PublicacionFormulario from './pages/admin/publicaciones/Formulario'
+import PersonasLista        from './pages/admin/personas/Lista'
+import PersonaFormulario    from './pages/admin/personas/Formulario'
 
 /** Ruta contenedora que le da contexto de sesión a toda la rama `/admin`. */
 function ProveedorSesionAdmin() {
@@ -72,6 +74,12 @@ export default function App() {
                 <Route index              element={<PublicacionesLista />} />
                 <Route path="nueva"       element={<PublicacionFormulario />} />
                 <Route path=":id/editar"  element={<PublicacionFormulario />} />
+              </Route>
+
+              <Route path="personas">
+                <Route index             element={<PersonasLista />} />
+                <Route path="nueva"      element={<PersonaFormulario />} />
+                <Route path=":id/editar" element={<PersonaFormulario />} />
               </Route>
             </Route>
           </Route>
