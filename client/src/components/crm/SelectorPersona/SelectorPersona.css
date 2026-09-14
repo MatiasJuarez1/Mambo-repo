@@ -1,0 +1,38 @@
+/* Tokens de la paleta "Petróleo y tinta" (ver client/src/index.css): esta hoja no
+   define ninguno nuevo, solo los reutiliza. --surface/--surface-hover/--border/
+   --danger del brief no existen en el proyecto; se mapean a los reales:
+   --white (fondo de paneles flotantes, como .navbar-dropdown-menu),
+   --bone (hover de ítem, como .navbar-dropdown-menu a:hover),
+   --line (bordes) y --estado-baja (el color "negativo" del sistema, el que usa
+   .form-error / .btn-danger). --text y --text-muted sí existen con esos nombres. */
+
+.selector-persona { position: relative; display: flex; flex-direction: column; gap: 0.35rem; }
+.selector-persona-label { font-size: 0.85rem; color: var(--text-muted); }
+.selector-persona-input { width: 100%; }
+.selector-persona-elegida {
+  display: flex; align-items: center; justify-content: space-between; gap: 0.75rem;
+  padding: 0.5rem 0.75rem; border: 1px solid var(--line); border-radius: var(--radius-sm);
+}
+.selector-persona-panel {
+  position: absolute; top: 100%; left: 0; right: 0; z-index: 20; margin-top: 0.25rem;
+  background: var(--white); border: 1px solid var(--line); border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-card);
+}
+.selector-persona-lista { list-style: none; margin: 0; padding: 0; max-height: 240px; overflow-y: auto; }
+.selector-persona-opcion {
+  display: flex; justify-content: space-between; gap: 0.5rem; padding: 0.5rem 0.75rem; cursor: pointer;
+}
+.selector-persona-opcion:hover { background: var(--bone); }
+.selector-persona-opcion small { color: var(--text-muted); }
+.selector-persona-estado { margin: 0; padding: 0.5rem 0.75rem; font-size: 0.85rem; color: var(--text-muted); }
+.selector-persona-error { color: var(--estado-baja); }
+.selector-persona-crear {
+  width: 100%; text-align: left; padding: 0.6rem 0.75rem; border: 0; border-top: 1px solid var(--line);
+  background: transparent; cursor: pointer; font-weight: 600; color: var(--text);
+}
+.selector-persona-nueva { display: flex; flex-direction: column; gap: 0.4rem; padding: 0.75rem; border-top: 1px solid var(--line); }
+.selector-persona-acciones { display: flex; gap: 0.5rem; }
+
+/* No existe una clase .btn-chico global (el único tamaño de .btn en el panel es
+   el de AdminLayout.css); se define acá, junto al único lugar que hoy la usa. */
+.btn-chico { padding: 0.3rem 0.7rem; font-size: 0.85rem; }
