@@ -4,10 +4,10 @@ from __future__ import annotations
 from datetime import UTC, datetime
 
 from fastapi import HTTPException, status
-from sqlalchemy import or_
+from sqlalchemy import func, or_
 from sqlalchemy.orm import Session as DBSession
 
-from app.platform.people.models import Person, PersonContact
+from app.platform.people.models import Person, PersonContact, PersonTag
 from app.platform.people.schemas import (
     PersonContactCreate,
     PersonContactUpdate,
@@ -22,6 +22,7 @@ from app.platform.people.schemas import (
 def list_people(
     db: DBSession,
     search: str | None = None,
+    tag: str | None = None,
     skip: int = 0,
     limit: int = 50,
 ) -> tuple[int, list[Person]]:
@@ -35,6 +36,8 @@ def list_people(
                 Person.document_number.ilike(term),
             )
         )
+    if tag:
+        q = q.join(PersonTag).filter(func.lower(PersonTag.nombre) == tag.strip().lower())
     total = q.count()
     items = q.order_by(Person.last_name, Person.first_name).offset(skip).limit(limit).all()
     return total, items
@@ -165,3 +168,36 @@ def _clear_primary(db: DBSession, person_id: int, contact_type: str) -> None:
         PersonContact.type == contact_type,
         PersonContact.is_primary.is_(True),
     ).update({"is_primary": False})
+
+
+# ---------------------------------------------------------------------------
+# Tags
+# ---------------------------------------------------------------------------
+
+def set_tags(db: DBSession, person_id: int, tags: list[str]) -> Person:
+    """Reemplaza el conjunto entero. Recorta, descarta vacíos y deduplica sin
+    distinguir mayúsculas conservando la primera forma escrita."""
+    person = get_person_or_404(db, person_id)
+    unicos: dict[str, str] = {}
+    for crudo in tags:
+        limpio = crudo.strip()
+        if limpio:
+            unicos.setdefault(limpio.lower(), limpio)
+    person.tag_rows = [PersonTag(nombre=nombre) for nombre in unicos.values()]
+    person.updated_at = datetime.now(UTC)
+    db.commit()
+    db.refresh(person)
+    return person
+
+
+def list_tags(db: DBSession) -> list[tuple[str, int]]:
+    """Etiquetas distintas en uso (en minúsculas) con cuántas personas las tienen."""
+    filas = (
+        db.query(func.lower(PersonTag.nombre), func.count(PersonTag.id))
+        .join(Person)
+        .filter(Person.deleted_at.is_(None))
+        .group_by(func.lower(PersonTag.nombre))
+        .order_by(func.count(PersonTag.id).desc(), func.lower(PersonTag.nombre))
+        .all()
+    )
+    return [(nombre, cantidad) for nombre, cantidad in filas]

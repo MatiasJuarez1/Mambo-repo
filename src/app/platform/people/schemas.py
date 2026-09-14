@@ -63,6 +63,7 @@ class PersonOut(PersonBase):
     id: int
     full_name: str
     contacts: list[PersonContactOut] = []
+    tags: list[str] = []
     created_at: datetime
     updated_at: datetime
 
@@ -74,6 +75,7 @@ class PersonListOut(BaseModel):
     full_name: str
     document_type: str | None
     document_number: str | None
+    tags: list[str] = []
     created_at: datetime
 
     model_config = {"from_attributes": True}
@@ -82,3 +84,16 @@ class PersonListOut(BaseModel):
 class PaginatedPeople(BaseModel):
     total: int
     items: list[PersonListOut]
+
+
+# ---------------------------------------------------------------------------
+# Tags
+# ---------------------------------------------------------------------------
+
+class TagsUpdate(BaseModel):
+    tags: list[str]
+
+
+class TagCount(BaseModel):
+    nombre: str
+    cantidad: int

@@ -16,6 +16,8 @@ from app.platform.people.schemas import (
     PersonListOut,
     PersonOut,
     PersonUpdate,
+    TagCount,
+    TagsUpdate,
 )
 
 router = APIRouter(prefix="/people", tags=["people"])
@@ -31,16 +33,25 @@ _staff = Depends(require_role("staff", "admin"))
 @router.get("", response_model=PaginatedPeople)
 def list_people(
     search: str | None = Query(default=None, description="Buscar por nombre o documento"),
+    tag: str | None = Query(default=None, description="Filtrar por etiqueta"),
     skip: int = Query(default=0, ge=0),
     limit: int = Query(default=50, ge=1, le=200),
     db: DBSession = Depends(get_db),
     _: object = Depends(get_current_user),
 ) -> PaginatedPeople:
-    total, items = service.list_people(db, search=search, skip=skip, limit=limit)
+    total, items = service.list_people(db, search=search, tag=tag, skip=skip, limit=limit)
     return PaginatedPeople(
         total=total,
         items=[PersonListOut.model_validate(p) for p in items],
     )
+
+
+@router.get("/tags", response_model=list[TagCount])
+def list_tags(
+    db: DBSession = Depends(get_db),
+    _: object = Depends(get_current_user),
+) -> list[TagCount]:
+    return [TagCount(nombre=n, cantidad=c) for n, c in service.list_tags(db)]
 
 
 @router.get("/{person_id}", response_model=PersonOut)
@@ -83,6 +94,15 @@ def delete_person(
     db: DBSession = Depends(get_db),
 ) -> None:
     service.soft_delete_person(db, person_id)
+
+
+@router.put("/{person_id}/tags", response_model=PersonOut, dependencies=[_staff])
+def set_tags(
+    person_id: int,
+    body: TagsUpdate,
+    db: DBSession = Depends(get_db),
+) -> PersonOut:
+    return PersonOut.model_validate(service.set_tags(db, person_id, body.tags))
 
 
 # ---------------------------------------------------------------------------
