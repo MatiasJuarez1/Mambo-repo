@@ -1,0 +1,6 @@
+.config-logo {
+  max-height: 80px;
+  max-width: 240px;
+  object-fit: contain;
+  margin-bottom: 0.5rem;
+}
