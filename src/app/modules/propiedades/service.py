@@ -35,8 +35,26 @@ from app.modules.propiedades.schemas import (
     PropiedadUpdate,
 )
 from app.platform.deals.models import Deal
+from app.platform.people.models import Person
 from app.platform.reservations.models import Reservation
 from app.storage import borrar_imagen, guardar_imagen, guardar_variante, leer_archivo
+
+
+def _verificar_persona(db: Session, persona_id: int | None) -> None:
+    """Verifica que una persona exista y no esté eliminada.
+
+    Llamada desde crear/actualizar propiedad para validar el `propietario_persona_id`.
+    Si el id es None, no hace nada. Si la persona no existe o está soft-deleted, lanza 404.
+    """
+    if persona_id is None:
+        return
+    existe = db.query(Person.id).filter(
+        Person.id == persona_id, Person.deleted_at.is_(None)
+    ).first()
+    if not existe:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=f"La persona {persona_id} no existe"
+        )
 
 
 def listar_propiedades(
@@ -47,6 +65,7 @@ def listar_propiedades(
     ciudad: str | None = None,
     precio_min: Decimal | None = None,
     precio_max: Decimal | None = None,
+    propietario_persona_id: int | None = None,
     skip: int = 0,
     limit: int = 20,
     estados: Sequence[EstadoComercial] | None = None,
@@ -73,6 +92,8 @@ def listar_propiedades(
         query = query.filter(Propiedad.precio >= precio_min)
     if precio_max is not None:
         query = query.filter(Propiedad.precio <= precio_max)
+    if propietario_persona_id is not None:
+        query = query.filter(Propiedad.propietario_persona_id == propietario_persona_id)
     if ciudad:
         query = query.join(PropiedadUbicacion).filter(
             PropiedadUbicacion.ciudad.ilike(f"%{ciudad}%")
@@ -209,6 +230,7 @@ def _verificar_liberacion_manual(db: Session, prop: Propiedad) -> None:
 
 
 def crear_propiedad(db: Session, data: PropiedadCreate) -> Propiedad:
+    _verificar_persona(db, data.propietario_persona_id)
     prop = Propiedad(
         titulo=data.titulo,
         descripcion=data.descripcion,
@@ -244,6 +266,8 @@ def actualizar_propiedad(db: Session, propiedad_id: int, data: PropiedadUpdate) 
     prop = obtener_propiedad(db, propiedad_id)
 
     campos = data.model_dump(exclude_unset=True, exclude={"ubicacion"})
+    if "propietario_persona_id" in campos:
+        _verificar_persona(db, campos["propietario_persona_id"])
     if campos.get("estado_comercial") == EstadoComercial.disponible:
         _verificar_liberacion_manual(db, prop)
 

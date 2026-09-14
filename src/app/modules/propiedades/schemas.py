@@ -94,6 +94,15 @@ class CaracteristicaResponse(CaracteristicaBase):
 # ── Propiedad ─────────────────────────────────────────────────────────────────
 
 
+class PersonaBrief(BaseModel):
+    """Lo mínimo para nombrar y linkear una persona desde la propiedad."""
+
+    id: int
+    full_name: str
+
+    model_config = ConfigDict(from_attributes=True)
+
+
 class PropiedadBrief(BaseModel):
     """Lo mínimo para nombrar y linkear una propiedad desde el CRM."""
 
@@ -149,6 +158,7 @@ class PropiedadResponse(PropiedadBase):
     ubicacion: UbicacionResponse | None = None
     medios: list[MedioResponse] = []
     caracteristicas: list[CaracteristicaResponse] = []
+    propietario: PersonaBrief | None = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -168,5 +178,6 @@ class PropiedadListItem(BaseModel):
     creado_en: datetime
     ubicacion: UbicacionResponse | None = None
     medios: list[MedioResponse] = []
+    propietario: PersonaBrief | None = None
 
     model_config = ConfigDict(from_attributes=True)
