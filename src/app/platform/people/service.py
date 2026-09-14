@@ -8,13 +8,20 @@ from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session as DBSession
 
 from app.modules.propiedades.models import Propiedad
+from app.platform.activities.models import Activity
 from app.platform.deals.models import Deal, DealParty
 from app.platform.people.models import Person, PersonContact, PersonTag
 from app.platform.people.schemas import (
+    ActividadVinculoOut,
+    DealVinculoOut,
     PersonContactCreate,
     PersonContactUpdate,
     PersonCreate,
+    PersonLinksOut,
     PersonUpdate,
+    PropiedadRef,
+    PropiedadVinculoOut,
+    ReservaVinculoOut,
 )
 from app.platform.reservations.models import Reservation
 
@@ -275,3 +282,81 @@ def _ids_con_rol(rol: str):
         )
     sub = _consulta_rol(rol).subquery()
     return select(sub.c.person_id)
+
+
+# ---------------------------------------------------------------------------
+# Vínculos (lo que carga la ficha de una persona en una sola llamada)
+# ---------------------------------------------------------------------------
+
+def get_person_links(db: DBSession, person_id: int) -> PersonLinksOut:
+    get_person_or_404(db, person_id)
+
+    propiedades = (
+        db.query(Propiedad)
+        .filter(Propiedad.propietario_persona_id == person_id, Propiedad.eliminado_en.is_(None))
+        .order_by(Propiedad.creado_en.desc())
+        .all()
+    )
+    reservas = (
+        db.query(Reservation)
+        .filter(Reservation.person_id == person_id)
+        .order_by(Reservation.created_at.desc())
+        .all()
+    )
+    partes = (
+        db.query(DealParty)
+        .join(Deal, Deal.id == DealParty.deal_id)
+        .filter(DealParty.person_id == person_id, Deal.deleted_at.is_(None))
+        .order_by(Deal.created_at.desc())
+        .all()
+    )
+    actividades = (
+        db.query(Activity)
+        .filter(Activity.person_id == person_id, Activity.status == "pendiente")
+        .order_by(Activity.due_at.asc().nulls_last(), Activity.created_at.desc())
+        .all()
+    )
+
+    return PersonLinksOut(
+        propiedades=[
+            PropiedadVinculoOut(
+                id=p.id, titulo=p.titulo, tipo_operacion=p.tipo_operacion,
+                estado_comercial=p.estado_comercial, foto_principal=_foto_principal(p),
+            )
+            for p in propiedades
+        ],
+        reservas=[
+            ReservaVinculoOut(
+                id=r.id, status=r.status, amount=r.amount, currency=r.currency,
+                expires_at=r.expires_at,
+                propiedad=PropiedadRef(id=r.propiedad.id, titulo=r.propiedad.titulo),
+            )
+            for r in reservas
+        ],
+        deals=[
+            DealVinculoOut(
+                id=pt.deal.id, title=pt.deal.title, pipeline=pt.deal.pipeline.name,
+                stage=pt.deal.stage.name, is_won=pt.deal.is_won, is_lost=pt.deal.is_lost,
+                amount=pt.deal.amount, currency=pt.deal.currency, role=pt.role,
+                propiedad=(
+                    PropiedadRef(id=pt.deal.propiedad.id, titulo=pt.deal.propiedad.titulo)
+                    if pt.deal.propiedad else None
+                ),
+            )
+            for pt in partes
+        ],
+        actividades=[
+            ActividadVinculoOut(
+                id=a.id, activity_type=a.activity_type, status=a.status, title=a.title,
+                due_at=a.due_at,
+            )
+            for a in actividades
+        ],
+    )
+
+
+def _foto_principal(prop: Propiedad) -> str | None:
+    principal = next((m for m in prop.medios if m.es_principal), None) or (
+        prop.medios[0] if prop.medios else None
+    )
+    return principal.url if principal else None

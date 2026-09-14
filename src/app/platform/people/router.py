@@ -13,6 +13,7 @@ from app.platform.people.schemas import (
     PersonContactOut,
     PersonContactUpdate,
     PersonCreate,
+    PersonLinksOut,
     PersonListOut,
     PersonOut,
     PersonUpdate,
@@ -114,6 +115,15 @@ def set_tags(
     db: DBSession = Depends(get_db),
 ) -> PersonOut:
     return _con_roles(db, service.set_tags(db, person_id, body.tags))
+
+
+@router.get("/{person_id}/vinculos", response_model=PersonLinksOut)
+def get_person_links(
+    person_id: int,
+    db: DBSession = Depends(get_db),
+    _: object = Depends(get_current_user),
+) -> PersonLinksOut:
+    return service.get_person_links(db, person_id)
 
 
 # ---------------------------------------------------------------------------

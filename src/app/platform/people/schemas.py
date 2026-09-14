@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from datetime import datetime
+from decimal import Decimal
 from typing import Literal
 
 from pydantic import BaseModel, Field
@@ -99,3 +100,57 @@ class TagsUpdate(BaseModel):
 class TagCount(BaseModel):
     nombre: str
     cantidad: int
+
+
+# ---------------------------------------------------------------------------
+# Vínculos (ficha)
+# ---------------------------------------------------------------------------
+
+class PropiedadVinculoOut(BaseModel):
+    id: int
+    titulo: str
+    tipo_operacion: str
+    estado_comercial: str
+    foto_principal: str | None
+
+
+class PropiedadRef(BaseModel):
+    id: int
+    titulo: str
+
+
+class ReservaVinculoOut(BaseModel):
+    id: int
+    status: str
+    amount: Decimal | None
+    currency: str
+    expires_at: datetime | None
+    propiedad: PropiedadRef
+
+
+class DealVinculoOut(BaseModel):
+    id: int
+    title: str
+    pipeline: str
+    stage: str
+    is_won: bool
+    is_lost: bool
+    amount: Decimal | None
+    currency: str
+    role: str
+    propiedad: PropiedadRef | None
+
+
+class ActividadVinculoOut(BaseModel):
+    id: int
+    activity_type: str
+    status: str
+    title: str
+    due_at: datetime | None
+
+
+class PersonLinksOut(BaseModel):
+    propiedades: list[PropiedadVinculoOut]
+    reservas: list[ReservaVinculoOut]
+    deals: list[DealVinculoOut]
+    actividades: list[ActividadVinculoOut]
