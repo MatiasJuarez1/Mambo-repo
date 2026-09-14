@@ -259,3 +259,30 @@ declaran y el esquema inicial nunca creó. Uno de ellos, `ix_sessions_token_hash
 es **UNIQUE**: si en producción hubiera `token_hash` duplicados, el
 `CREATE INDEX` falla y hay que limpiar esas filas de `sessions` antes (borrarlas
 solo desloguea a quien las tenga).
+
+### Referencias huérfanas (una sola vez, antes de la migración `0004`)
+
+La revisión **`0004_crm_en_el_panel`** formaliza cuatro claves foráneas que las
+columnas nunca tuvieron (`propiedades.propietario_persona_id`,
+`reservations.property_id`, `deals.property_id` y `activities.property_id`). Si
+en producción hay filas apuntando a un id que ya no existe, el `CREATE` de esa
+FK falla y la migración se corta a la mitad. Antes de `alembic upgrade head`,
+correr contra Supabase:
+
+```sql
+SELECT id FROM propiedades WHERE propietario_persona_id IS NOT NULL
+  AND propietario_persona_id NOT IN (SELECT id FROM people);
+SELECT id FROM reservations WHERE property_id NOT IN (SELECT id FROM propiedades);
+SELECT id FROM deals WHERE property_id IS NOT NULL
+  AND property_id NOT IN (SELECT id FROM propiedades);
+SELECT id FROM activities WHERE property_id IS NOT NULL
+  AND property_id NOT IN (SELECT id FROM propiedades);
+```
+
+Las cuatro tienen que devolver cero filas. Si alguna devuelve algo, poner esa
+columna en `NULL` (o borrar la fila, en el caso de `reservations`, cuya
+propiedad es obligatoria) y recién entonces migrar.
+
+La misma revisión siembra los pipelines **Venta** y **Alquiler** con sus etapas,
+pero sólo si la tabla `pipelines` está vacía: si ya hay alguno cargado, no
+agrega nada.
