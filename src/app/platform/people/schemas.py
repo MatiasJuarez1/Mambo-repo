@@ -7,6 +7,8 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
+from app.modules.propiedades.schemas import PropiedadBrief
+
 ContactType = Literal["email", "phone", "whatsapp", "other"]
 
 
@@ -114,18 +116,13 @@ class PropiedadVinculoOut(BaseModel):
     foto_principal: str | None
 
 
-class PropiedadRef(BaseModel):
-    id: int
-    titulo: str
-
-
 class ReservaVinculoOut(BaseModel):
     id: int
     status: str
     amount: Decimal | None
     currency: str
     expires_at: datetime | None
-    propiedad: PropiedadRef
+    propiedad: PropiedadBrief
 
 
 class DealVinculoOut(BaseModel):
@@ -138,7 +135,7 @@ class DealVinculoOut(BaseModel):
     amount: Decimal | None
     currency: str
     role: str
-    propiedad: PropiedadRef | None
+    propiedad: PropiedadBrief | None
 
 
 class ActividadVinculoOut(BaseModel):

@@ -8,6 +8,7 @@ from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session as DBSession
 
 from app.modules.propiedades.models import Propiedad
+from app.modules.propiedades.schemas import PropiedadBrief
 from app.platform.activities.models import Activity
 from app.platform.deals.models import Deal, DealParty
 from app.platform.people.models import Person, PersonContact, PersonTag
@@ -19,7 +20,6 @@ from app.platform.people.schemas import (
     PersonCreate,
     PersonLinksOut,
     PersonUpdate,
-    PropiedadRef,
     PropiedadVinculoOut,
     ReservaVinculoOut,
 )
@@ -329,7 +329,10 @@ def get_person_links(db: DBSession, person_id: int) -> PersonLinksOut:
             ReservaVinculoOut(
                 id=r.id, status=r.status, amount=r.amount, currency=r.currency,
                 expires_at=r.expires_at,
-                propiedad=PropiedadRef(id=r.propiedad.id, titulo=r.propiedad.titulo),
+                propiedad=PropiedadBrief(
+                    id=r.propiedad.id, titulo=r.propiedad.titulo,
+                    estado_comercial=r.propiedad.estado_comercial,
+                ),
             )
             for r in reservas
         ],
@@ -339,7 +342,10 @@ def get_person_links(db: DBSession, person_id: int) -> PersonLinksOut:
                 stage=pt.deal.stage.name, is_won=pt.deal.is_won, is_lost=pt.deal.is_lost,
                 amount=pt.deal.amount, currency=pt.deal.currency, role=pt.role,
                 propiedad=(
-                    PropiedadRef(id=pt.deal.propiedad.id, titulo=pt.deal.propiedad.titulo)
+                    PropiedadBrief(
+                        id=pt.deal.propiedad.id, titulo=pt.deal.propiedad.titulo,
+                        estado_comercial=pt.deal.propiedad.estado_comercial,
+                    )
                     if pt.deal.propiedad else None
                 ),
             )

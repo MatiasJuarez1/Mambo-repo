@@ -31,7 +31,9 @@ def test_vinculos_trae_las_cuatro_listas(client, db, crear_usuario, iniciar_sesi
     v = r.json()
     assert [p["titulo"] for p in v["propiedades"]] == ["Depto propio"]
     assert v["propiedades"][0]["foto_principal"] is None
-    assert v["reservas"][0]["propiedad"] == {"id": ajena.id, "titulo": "Casa ajena"}
+    assert v["reservas"][0]["propiedad"] == {
+        "id": ajena.id, "titulo": "Casa ajena", "estado_comercial": "disponible"
+    }
     assert v["deals"][0]["role"] == "comprador"
     assert v["deals"][0]["stage"] == "Visita"
     assert v["deals"][0]["pipeline"] == "Venta"
