@@ -86,7 +86,8 @@ export interface PropiedadCreatePayload {
   banos?: number
   m2_cubiertos?: number
   m2_totales?: number
-  propietario_persona_id?: number
+  // `null` al editar quita el propietario; al crear no tiene sentido mandarlo.
+  propietario_persona_id?: number | null
   ubicacion?: {
     direccion?: string
     ciudad?: string

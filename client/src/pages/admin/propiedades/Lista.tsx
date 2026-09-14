@@ -156,6 +156,7 @@ export default function PropiedadesLista() {
                     <th>Operación</th>
                     <th>Estado</th>
                     <th>Precio</th>
+                    <th>Propietario</th>
                     <th>Ciudad</th>
                     <th>Acciones</th>
                   </tr>
@@ -196,9 +197,21 @@ export default function PropiedadesLista() {
                           />
                         </td>
                         <td data-label="Precio" className="tabla-precio">{formatPrecio(p.precio, p.moneda)}</td>
+                        <td data-label="Propietario">
+                          {p.propietario
+                            ? <Link to={`/admin/personas/${p.propietario.id}`}>{p.propietario.full_name}</Link>
+                            : '—'}
+                        </td>
                         <td data-label="Ciudad">{p.ubicacion?.ciudad ?? '—'}</td>
                         <td data-label="Acciones">
                           <div className="tabla-acciones">
+                            {/* Solo una propiedad disponible se puede reservar: las demás ya
+                                están reservadas, cerradas o dadas de baja. */}
+                            {p.estado_comercial === 'disponible' && (
+                              <Link to={`/admin/reservas/nueva?propiedad=${p.id}`} className="btn btn-outline">
+                                Reservar
+                              </Link>
+                            )}
                             <button
                               className="btn btn-outline"
                               onClick={() => navigate(`/admin/propiedades/${p.id}/editar`)}

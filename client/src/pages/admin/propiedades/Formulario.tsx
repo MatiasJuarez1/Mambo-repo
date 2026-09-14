@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { propiedadesApi } from '../../../api/propiedades'
 import type { TipoPropiedad, TipoOperacion, EstadoComercial, Medio } from '../../../types/propiedad'
+import type { PersonaBrief } from '../../../types/persona'
+import SelectorPersona from '../../../components/crm/SelectorPersona/SelectorPersona'
 import { etiquetaEstado, mediaUrl } from '../../../lib/propiedad'
 import './Formulario.css'
 
@@ -53,6 +55,10 @@ export default function PropiedadFormulario() {
   const [medios, setMedios]     = useState<Medio[]>([])
   const [subiendo, setSubiendo] = useState(false)
 
+  // Dueño de la propiedad. Va aparte del FormState porque no es un string
+  // sino una persona elegida con el buscador.
+  const [propietario, setPropietario] = useState<PersonaBrief | null>(null)
+
   // ── Cargar datos en modo edición ──
   useEffect(() => {
     if (!esEdicion) return
@@ -78,6 +84,7 @@ export default function PropiedadFormulario() {
           codigo_postal:    p.ubicacion?.codigo_postal ?? '',
         })
         setMedios([...p.medios].sort((a, b) => a.orden - b.orden))
+        setPropietario(p.propietario)
       })
       .catch(e => setError(e.message))
       .finally(() => setLoading(false))
@@ -133,6 +140,9 @@ export default function PropiedadFormulario() {
       banos:            num(form.banos),
       m2_cubiertos:     num(form.m2_cubiertos),
       m2_totales:       num(form.m2_totales),
+      // `null` (y no `undefined`) para que al editar el backend borre el
+      // propietario que había; `undefined` lo dejaría como estaba.
+      propietario_persona_id: propietario?.id ?? null,
       ubicacion: {
         direccion:     form.direccion || undefined,
         ciudad:        form.ciudad    || undefined,
@@ -237,6 +247,15 @@ export default function PropiedadFormulario() {
               </p>
             </div>
           </div>
+        </div>
+
+        {/* ── Propietario ── */}
+        <div className="admin-card form-section">
+          <h2 className="form-section-title">Propietario</h2>
+          <SelectorPersona valor={propietario} onChange={setPropietario} label="Propietario" />
+          <p className="form-hint">
+            La persona que figura como dueña. Aparece en su ficha como "Propietario".
+          </p>
         </div>
 
         {/* ── Precio ── */}
