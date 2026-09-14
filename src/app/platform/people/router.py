@@ -26,6 +26,13 @@ router = APIRouter(prefix="/people", tags=["people"])
 _staff = Depends(require_role("staff", "admin"))
 
 
+def _con_roles(db: DBSession, person) -> PersonOut:
+    """Arma el PersonOut con los roles derivados de esta persona."""
+    out = PersonOut.model_validate(person)
+    out.roles = service.roles_de_personas(db, [person.id])[person.id]
+    return out
+
+
 # ---------------------------------------------------------------------------
 # People
 # ---------------------------------------------------------------------------
@@ -34,16 +41,20 @@ _staff = Depends(require_role("staff", "admin"))
 def list_people(
     search: str | None = Query(default=None, description="Buscar por nombre o documento"),
     tag: str | None = Query(default=None, description="Filtrar por etiqueta"),
+    rol: str | None = Query(default=None, description="Filtrar por rol derivado"),
     skip: int = Query(default=0, ge=0),
     limit: int = Query(default=50, ge=1, le=200),
     db: DBSession = Depends(get_db),
     _: object = Depends(get_current_user),
 ) -> PaginatedPeople:
-    total, items = service.list_people(db, search=search, tag=tag, skip=skip, limit=limit)
-    return PaginatedPeople(
-        total=total,
-        items=[PersonListOut.model_validate(p) for p in items],
-    )
+    total, items = service.list_people(db, search=search, tag=tag, rol=rol, skip=skip, limit=limit)
+    roles = service.roles_de_personas(db, [p.id for p in items])
+    salida = []
+    for p in items:
+        out = PersonListOut.model_validate(p)
+        out.roles = roles[p.id]
+        salida.append(out)
+    return PaginatedPeople(total=total, items=salida)
 
 
 @router.get("/tags", response_model=list[TagCount])
@@ -61,7 +72,7 @@ def get_person(
     _: object = Depends(get_current_user),
 ) -> PersonOut:
     person = service.get_person_or_404(db, person_id)
-    return PersonOut.model_validate(person)
+    return _con_roles(db, person)
 
 
 @router.post(
@@ -75,7 +86,7 @@ def create_person(
     db: DBSession = Depends(get_db),
 ) -> PersonOut:
     person = service.create_person(db, body)
-    return PersonOut.model_validate(person)
+    return _con_roles(db, person)
 
 
 @router.patch("/{person_id}", response_model=PersonOut, dependencies=[_staff])
@@ -85,7 +96,7 @@ def update_person(
     db: DBSession = Depends(get_db),
 ) -> PersonOut:
     person = service.update_person(db, person_id, body)
-    return PersonOut.model_validate(person)
+    return _con_roles(db, person)
 
 
 @router.delete("/{person_id}", status_code=status.HTTP_204_NO_CONTENT, dependencies=[_staff])
@@ -102,7 +113,7 @@ def set_tags(
     body: TagsUpdate,
     db: DBSession = Depends(get_db),
 ) -> PersonOut:
-    return PersonOut.model_validate(service.set_tags(db, person_id, body.tags))
+    return _con_roles(db, service.set_tags(db, person_id, body.tags))
 
 
 # ---------------------------------------------------------------------------

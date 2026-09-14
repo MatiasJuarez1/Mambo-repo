@@ -64,6 +64,7 @@ class PersonOut(PersonBase):
     full_name: str
     contacts: list[PersonContactOut] = []
     tags: list[str] = []
+    roles: dict[str, int] = {}
     created_at: datetime
     updated_at: datetime
 
@@ -76,6 +77,7 @@ class PersonListOut(BaseModel):
     document_type: str | None
     document_number: str | None
     tags: list[str] = []
+    roles: dict[str, int] = {}
     created_at: datetime
 
     model_config = {"from_attributes": True}

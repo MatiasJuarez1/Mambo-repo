@@ -4,9 +4,11 @@ from __future__ import annotations
 from datetime import UTC, datetime
 
 from fastapi import HTTPException, status
-from sqlalchemy import func, or_
+from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session as DBSession
 
+from app.modules.propiedades.models import Propiedad
+from app.platform.deals.models import Deal, DealParty
 from app.platform.people.models import Person, PersonContact, PersonTag
 from app.platform.people.schemas import (
     PersonContactCreate,
@@ -14,6 +16,7 @@ from app.platform.people.schemas import (
     PersonCreate,
     PersonUpdate,
 )
+from app.platform.reservations.models import Reservation
 
 # ---------------------------------------------------------------------------
 # People
@@ -23,6 +26,7 @@ def list_people(
     db: DBSession,
     search: str | None = None,
     tag: str | None = None,
+    rol: str | None = None,
     skip: int = 0,
     limit: int = 50,
 ) -> tuple[int, list[Person]]:
@@ -38,6 +42,8 @@ def list_people(
         )
     if tag:
         q = q.join(PersonTag).filter(func.lower(PersonTag.nombre) == tag.strip().lower())
+    if rol:
+        q = q.filter(Person.id.in_(_ids_con_rol(rol)))
     total = q.count()
     items = q.order_by(Person.last_name, Person.first_name).offset(skip).limit(limit).all()
     return total, items
@@ -201,3 +207,71 @@ def list_tags(db: DBSession) -> list[tuple[str, int]]:
         .all()
     )
     return [(nombre, cantidad) for nombre, cantidad in filas]
+
+
+# ---------------------------------------------------------------------------
+# Roles derivados
+# ---------------------------------------------------------------------------
+#
+# Una persona no "es" compradora: figura como tal en una operación ganada. Los
+# roles se calculan siempre desde las relaciones para que nunca queden viejos y
+# para que la misma persona pueda ser dueña de una cosa y compradora de otra.
+
+ROLES = ("propietario", "comprador", "vendedor", "inquilino", "interesado")
+
+
+def _consulta_rol(rol: str):
+    """Select (person_id, cantidad) para un rol. Se reutiliza para contar y filtrar."""
+    if rol == "propietario":
+        return (
+            select(Propiedad.propietario_persona_id.label("person_id"), func.count().label("n"))
+            .where(Propiedad.propietario_persona_id.is_not(None), Propiedad.eliminado_en.is_(None))
+            .group_by(Propiedad.propietario_persona_id)
+        )
+    if rol in ("comprador", "vendedor", "inquilino"):
+        return (
+            select(DealParty.person_id.label("person_id"), func.count().label("n"))
+            .join(Deal, Deal.id == DealParty.deal_id)
+            .where(DealParty.role == rol, Deal.is_won.is_(True), Deal.deleted_at.is_(None))
+            .group_by(DealParty.person_id)
+        )
+    if rol == "interesado":
+        abiertos = (
+            select(DealParty.person_id.label("person_id"))
+            .join(Deal, Deal.id == DealParty.deal_id)
+            .where(Deal.is_won.is_(False), Deal.is_lost.is_(False), Deal.deleted_at.is_(None))
+        )
+        reservas = select(Reservation.person_id.label("person_id")).where(
+            Reservation.status == "activa"
+        )
+        union = abiertos.union_all(reservas).subquery()
+        return (
+            select(union.c.person_id.label("person_id"), func.count().label("n"))
+            .group_by(union.c.person_id)
+        )
+    raise ValueError(f"Rol desconocido: {rol}")
+
+
+def roles_de_personas(db: DBSession, person_ids: list[int]) -> dict[int, dict[str, int]]:
+    """Roles de varias personas en cinco consultas agregadas (no una por persona)."""
+    resultado = {pid: dict.fromkeys(ROLES, 0) for pid in person_ids}
+    if not person_ids:
+        return resultado
+    for rol in ROLES:
+        sub = _consulta_rol(rol).subquery()
+        filas = db.execute(
+            select(sub.c.person_id, sub.c.n).where(sub.c.person_id.in_(person_ids))
+        ).all()
+        for pid, n in filas:
+            resultado[pid][rol] = n
+    return resultado
+
+
+def _ids_con_rol(rol: str):
+    if rol not in ROLES:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"Rol desconocido: {rol}. Válidos: {', '.join(ROLES)}",
+        )
+    sub = _consulta_rol(rol).subquery()
+    return select(sub.c.person_id)
