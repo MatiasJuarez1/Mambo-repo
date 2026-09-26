@@ -17,6 +17,11 @@ vi.mock('../../../api/personas', () => ({
 vi.mock('../../../api/documentos', () => ({
   documentosApi: { listar: vi.fn(), subir: vi.fn(), eliminar: vi.fn() },
 }))
+vi.mock('../../../context/AuthContext', () => ({
+  useAuth: () => ({
+    usuario: { id: 1, email: 'paulo@admin.com', is_active: true, roles: ['admin', 'beta'], person_id: null },
+  }),
+}))
 
 const PROPIEDAD = {
   id: 7, titulo: 'Casa', descripcion: null,

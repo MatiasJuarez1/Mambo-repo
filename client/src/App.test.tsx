@@ -71,6 +71,15 @@ describe('App — acceso al panel', () => {
     expect(screen.getByText('admin@mambo.com')).toBeInTheDocument()
   })
 
+  it('sin el rol beta, una URL del CRM escrita a mano vuelve al dashboard', async () => {
+    meMock.mockResolvedValue(USUARIO)
+
+    renderEn('/admin/reportes')
+
+    expect(await screen.findByRole('heading', { name: 'Dashboard' })).toBeInTheDocument()
+    expect(window.location.pathname).toBe('/admin')
+  })
+
   it('el sitio público no consulta la sesión: ahí no hay nada que proteger', async () => {
     renderEn('/propiedades')
 

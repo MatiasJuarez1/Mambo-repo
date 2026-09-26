@@ -6,14 +6,25 @@ import { reservasApi } from '../../api/reservas'
 import { operacionesApi } from '../../api/operaciones'
 import { alquileresApi } from '../../api/alquileres'
 import { reportesApi } from '../../api/reportes'
+import { useAuth } from '../../context/AuthContext'
 
 vi.mock('../../api/propiedades', () => ({ propiedadesApi: { listar: vi.fn() } }))
 vi.mock('../../api/reservas', () => ({ reservasApi: { listar: vi.fn() } }))
 vi.mock('../../api/operaciones', () => ({ operacionesApi: { listar: vi.fn() } }))
 vi.mock('../../api/alquileres', () => ({ alquileresApi: { listar: vi.fn(), resumen: vi.fn(), recordatorios: vi.fn() } }))
 vi.mock('../../api/reportes', () => ({ reportesApi: { comisiones: vi.fn(), operaciones: vi.fn() } }))
+vi.mock('../../context/AuthContext', () => ({ useAuth: vi.fn() }))
+
+function sesionCon(roles: string[]) {
+  vi.mocked(useAuth).mockReturnValue({
+    usuario: { id: 1, email: 'paulo@admin.com', is_active: true, roles, person_id: null },
+    cargando: false, login: vi.fn(), logout: vi.fn(),
+  })
+}
 
 beforeEach(() => {
+  vi.clearAllMocks()
+  sesionCon(['admin', 'beta'])
   vi.mocked(reportesApi.comisiones).mockResolvedValue({
     desde: '', hasta: '', agente_id: null, cobrada: false, por_agente: [],
     filas: [{ deal_id: 1 }, { deal_id: 2 }] as never,
@@ -94,4 +105,15 @@ it('muestra las comisiones a cobrar y el gráfico de los últimos meses', async 
   expect(screen.getByRole('link', { name: 'Ver reportes' })).toHaveAttribute('href', '/admin/reportes')
   expect(await screen.findByText('ago 26')).toBeInTheDocument()
   expect(reportesApi.comisiones).toHaveBeenCalledWith({ cobrada: false })
+})
+
+it('sin el rol beta muestra solo el inventario y no consulta el CRM', async () => {
+  sesionCon(['admin'])
+  render(<MemoryRouter><Dashboard /></MemoryRouter>)
+  expect(await screen.findByRole('heading', { name: 'Inventario' })).toBeInTheDocument()
+  expect(screen.queryByRole('heading', { name: 'Comercial' })).not.toBeInTheDocument()
+  expect(screen.queryByRole('heading', { name: 'Alquileres' })).not.toBeInTheDocument()
+  expect(reservasApi.listar).not.toHaveBeenCalled()
+  expect(alquileresApi.resumen).not.toHaveBeenCalled()
+  expect(reportesApi.operaciones).not.toHaveBeenCalled()
 })

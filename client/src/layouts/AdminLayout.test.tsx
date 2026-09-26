@@ -56,6 +56,27 @@ afterEach(() => {
   vi.unstubAllGlobals()
 })
 
+describe('AdminLayout — CRM a prueba', () => {
+  it('sin el rol beta el menú no muestra CRM, Análisis ni Configuración', async () => {
+    renderPanel()
+
+    expect(await screen.findByRole('link', { name: 'Propiedades' })).toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: 'Personas' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: 'Reportes' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: 'Configuración' })).not.toBeInTheDocument()
+  })
+
+  it('con el rol beta el menú muestra todo el CRM', async () => {
+    meMock.mockResolvedValue({ ...USUARIO, roles: ['admin', 'beta'] })
+    renderPanel()
+
+    expect(await screen.findByRole('link', { name: 'Personas' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Contratos' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Reportes' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Configuración' })).toBeInTheDocument()
+  })
+})
+
 describe('AdminLayout — sesión', () => {
   it('muestra el email del usuario conectado', async () => {
     renderPanel()

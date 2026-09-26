@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
 import { Outlet, NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { veCrm } from '../lib/beta'
 import './AdminLayout.css'
 
-const grupos = [
+const grupos: { titulo: string; beta?: true; items: { to: string; label: string; end?: boolean }[] }[] = [
   {
     titulo: 'Inventario',
     items: [
@@ -13,6 +14,7 @@ const grupos = [
   },
   {
     titulo: 'CRM',
+    beta: true,
     items: [
       { to: '/admin/personas',    label: 'Personas' },
       { to: '/admin/reservas',    label: 'Reservas' },
@@ -28,6 +30,7 @@ const grupos = [
   },
   {
     titulo: 'Análisis',
+    beta: true,
     items: [{ to: '/admin/reportes', label: 'Reportes' }],
   },
 ]
@@ -45,6 +48,7 @@ export default function AdminLayout() {
   const navigate = useNavigate()
   const { pathname } = useLocation()
   const { usuario, logout } = useAuth()
+  const crm = veCrm(usuario)
 
   // Sólo tiene efecto bajo 860px: arriba de ese ancho el sidebar está siempre a
   // la vista y la hamburguesa no se renderiza (`display: none` por CSS, no por
@@ -135,7 +139,7 @@ export default function AdminLayout() {
             Dashboard
           </NavLink>
 
-          {grupos.map(g => (
+          {grupos.filter(g => !g.beta || crm).map(g => (
             <div key={g.titulo}>
               <p className="admin-nav-group">{g.titulo}</p>
               {g.items.map(({ to, label, end }) => (
@@ -151,7 +155,7 @@ export default function AdminLayout() {
             </div>
           ))}
 
-          {usuario?.roles.includes('admin') && (
+          {crm && usuario?.roles.includes('admin') && (
             <div>
               <p className="admin-nav-group">Ajustes</p>
               <NavLink to="/admin/configuracion" className={({ isActive }) => `admin-nav-item${isActive ? ' active' : ''}`}>

@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom
 // Sesión
 import { AuthProvider } from './context/AuthContext'
 import RutaProtegida from './components/RutaProtegida'
+import RutaBeta from './components/RutaBeta'
 import ScrollToTop from './components/ScrollToTop'
 
 // Layouts
@@ -93,39 +94,42 @@ export default function App() {
                 <Route path=":id/editar"  element={<PublicacionFormulario />} />
               </Route>
 
-              <Route path="personas">
-                <Route index             element={<PersonasLista />} />
-                <Route path="nueva"      element={<PersonaFormulario />} />
-                <Route path=":id"        element={<PersonaFicha />} />
-                <Route path=":id/editar" element={<PersonaFormulario />} />
+              {/* CRM a prueba: solo con el rol beta (ver lib/beta.ts). */}
+              <Route element={<RutaBeta />}>
+                <Route path="personas">
+                  <Route index             element={<PersonasLista />} />
+                  <Route path="nueva"      element={<PersonaFormulario />} />
+                  <Route path=":id"        element={<PersonaFicha />} />
+                  <Route path=":id/editar" element={<PersonaFormulario />} />
+                </Route>
+
+                <Route path="reservas">
+                  <Route index        element={<ReservasLista />} />
+                  <Route path="nueva" element={<ReservaFormulario />} />
+                </Route>
+
+                <Route path="operaciones">
+                  <Route index        element={<Tablero />} />
+                  <Route path="nueva" element={<OperacionFormulario />} />
+                  <Route path=":id"   element={<OperacionFicha />} />
+                </Route>
+
+                <Route path="actividades" element={<ActividadesLista />} />
+
+                <Route path="alquileres">
+                  <Route index               element={<ContratosLista />} />
+                  <Route path="cobros"       element={<CobrosLista />} />
+                  <Route path="liquidaciones" element={<LiquidacionesLista />} />
+                  <Route path="recordatorios" element={<RecordatoriosPagina />} />
+                  <Route path="nuevo"        element={<ContratoNuevo />} />
+                  <Route path=":id"          element={<ContratoFicha />} />
+                  <Route path=":id/editar"   element={<ContratoEditar />} />
+                  <Route path=":id/renovar"  element={<ContratoRenovar />} />
+                </Route>
+
+                <Route path="configuracion" element={<Configuracion />} />
+                <Route path="reportes"      element={<Reportes />} />
               </Route>
-
-              <Route path="reservas">
-                <Route index        element={<ReservasLista />} />
-                <Route path="nueva" element={<ReservaFormulario />} />
-              </Route>
-
-              <Route path="operaciones">
-                <Route index        element={<Tablero />} />
-                <Route path="nueva" element={<OperacionFormulario />} />
-                <Route path=":id"   element={<OperacionFicha />} />
-              </Route>
-
-              <Route path="actividades" element={<ActividadesLista />} />
-
-              <Route path="alquileres">
-                <Route index               element={<ContratosLista />} />
-                <Route path="cobros"       element={<CobrosLista />} />
-                <Route path="liquidaciones" element={<LiquidacionesLista />} />
-                <Route path="recordatorios" element={<RecordatoriosPagina />} />
-                <Route path="nuevo"        element={<ContratoNuevo />} />
-                <Route path=":id"          element={<ContratoFicha />} />
-                <Route path=":id/editar"   element={<ContratoEditar />} />
-                <Route path=":id/renovar"  element={<ContratoRenovar />} />
-              </Route>
-
-              <Route path="configuracion" element={<Configuracion />} />
-              <Route path="reportes"      element={<Reportes />} />
             </Route>
           </Route>
         </Route>

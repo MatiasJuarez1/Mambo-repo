@@ -5,6 +5,7 @@ import PropiedadFormulario from './Formulario'
 import { propiedadesApi } from '../../../api/propiedades'
 import { personasApi } from '../../../api/personas'
 import type { Propiedad } from '../../../types/propiedad'
+import { useAuth } from '../../../context/AuthContext'
 
 vi.mock('../../../api/propiedades', () => ({
   propiedadesApi: {
@@ -18,6 +19,16 @@ vi.mock('../../../api/personas', () => ({
 vi.mock('../../../api/documentos', () => ({
   documentosApi: { listar: vi.fn().mockResolvedValue([]), subir: vi.fn(), eliminar: vi.fn() },
 }))
+vi.mock('../../../context/AuthContext', () => ({ useAuth: vi.fn() }))
+
+function sesionCon(roles: string[]) {
+  vi.mocked(useAuth).mockReturnValue({
+    usuario: { id: 1, email: 'paulo@admin.com', is_active: true, roles, person_id: null },
+    cargando: false, login: vi.fn(), logout: vi.fn(),
+  })
+}
+
+beforeEach(() => sesionCon(['admin', 'beta']))
 
 const ANA = {
   id: 3, full_name: 'Ana Pérez', document_type: null, document_number: null, created_at: '',
@@ -76,4 +87,18 @@ it('al editar muestra el propietario actual y quitarlo manda null', async () => 
   await waitFor(() =>
     expect(propiedadesApi.actualizar).toHaveBeenCalledWith(7, expect.objectContaining({ propietario_persona_id: null })),
   )
+})
+
+it('sin el rol beta no muestra el propietario ni lo pisa al guardar', async () => {
+  const usuario = userEvent.setup()
+  sesionCon(['admin'])
+  vi.mocked(propiedadesApi.obtener).mockResolvedValue(PROPIEDAD)
+  vi.mocked(propiedadesApi.actualizar).mockResolvedValue(PROPIEDAD)
+  renderEn('/admin/propiedades/7/editar')
+
+  await usuario.click(await screen.findByRole('button', { name: 'Guardar cambios' }))
+
+  expect(screen.queryByRole('combobox', { name: 'Propietario' })).not.toBeInTheDocument()
+  await waitFor(() => expect(propiedadesApi.actualizar).toHaveBeenCalled())
+  expect(vi.mocked(propiedadesApi.actualizar).mock.lastCall?.[1].propietario_persona_id).toBeUndefined()
 })

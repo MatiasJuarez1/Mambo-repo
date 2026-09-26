@@ -7,6 +7,8 @@ import StatTile from '../../../components/StatTile'
 import { etiquetaEstado, LABEL_ESTADO } from '../../../lib/propiedad'
 import { ANCHO_MINIATURA, urlDeVariante } from '../../../lib/imagen'
 import { formatearMonto } from '../../../lib/formato'
+import { veCrm } from '../../../lib/beta'
+import { useAuth } from '../../../context/AuthContext'
 import './Lista.css'
 
 const TIPO_OPTIONS   = ['', 'casa', 'depto', 'local', 'terreno', 'oficina', 'otro']
@@ -15,6 +17,7 @@ const ESTADO_OPTIONS: EstadoComercial[]  = ['disponible', 'reservada', 'cerrada'
 
 export default function PropiedadesLista() {
   const navigate = useNavigate()
+  const crm = veCrm(useAuth().usuario)
 
   const [propiedades, setPropiedades] = useState<PropiedadListItem[]>([])
   const [loading, setLoading]         = useState(true)
@@ -157,7 +160,7 @@ export default function PropiedadesLista() {
                     <th>Operación</th>
                     <th>Estado</th>
                     <th className="num">Precio</th>
-                    <th>Propietario</th>
+                    {crm && <th>Propietario</th>}
                     <th className="th-acciones">Acciones</th>
                   </tr>
                 </thead>
@@ -209,7 +212,7 @@ export default function PropiedadesLista() {
                           />
                         </td>
                         <td data-label="Precio" className="tabla-precio num">{formatearMonto(p.precio, p.moneda)}</td>
-                        <td data-label="Propietario">
+                        {crm && <td data-label="Propietario">
                           {p.propietario
                             ? (
                               <Link
@@ -221,12 +224,12 @@ export default function PropiedadesLista() {
                               </Link>
                             )
                             : <span className="tabla-vacio">—</span>}
-                        </td>
+                        </td>}
                         <td data-label="Acciones">
                           <div className="tabla-acciones">
                             {/* Solo una propiedad disponible se puede reservar: las demás ya
                                 están reservadas, cerradas o dadas de baja. */}
-                            {p.estado_comercial === 'disponible' && (
+                            {crm && p.estado_comercial === 'disponible' && (
                               <Link to={`/admin/reservas/nueva?propiedad=${p.id}`} className="btn btn-outline">
                                 Reservar
                               </Link>

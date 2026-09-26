@@ -7,6 +7,8 @@ import SelectorPersona from '../../../components/crm/SelectorPersona/SelectorPer
 import BloqueDocumentos from '../../../components/crm/BloqueDocumentos/BloqueDocumentos'
 import { etiquetaEstado, mediaUrl } from '../../../lib/propiedad'
 import { formatearFecha, formatearMonto } from '../../../lib/formato'
+import { veCrm } from '../../../lib/beta'
+import { useAuth } from '../../../context/AuthContext'
 import './Formulario.css'
 
 interface FormState {
@@ -60,6 +62,7 @@ export default function PropiedadFormulario() {
   // Dueño de la propiedad. Va aparte del FormState porque no es un string
   // sino una persona elegida con el buscador.
   const [propietario, setPropietario] = useState<PersonaBrief | null>(null)
+  const crm = veCrm(useAuth().usuario)
 
   // Contrato de alquiler activo, si lo hay: solo se muestra, lo maneja Alquileres.
   const [contratoVigente, setContratoVigente] = useState<Propiedad['contrato_vigente']>(null)
@@ -147,8 +150,9 @@ export default function PropiedadFormulario() {
       m2_cubiertos:     num(form.m2_cubiertos),
       m2_totales:       num(form.m2_totales),
       // `null` (y no `undefined`) para que al editar el backend borre el
-      // propietario que había; `undefined` lo dejaría como estaba.
-      propietario_persona_id: propietario?.id ?? null,
+      // propietario que había; `undefined` lo dejaría como estaba. Sin CRM el
+      // campo no se muestra, así que no se manda: no hay que pisar lo cargado.
+      propietario_persona_id: crm ? propietario?.id ?? null : undefined,
       ubicacion: {
         direccion:     form.direccion || undefined,
         ciudad:        form.ciudad    || undefined,
@@ -259,6 +263,7 @@ export default function PropiedadFormulario() {
         </div>
 
         {/* ── Propietario ── */}
+        {crm && (
         <div className="admin-card form-section">
           <h2 className="form-section-title">Propietario</h2>
           <SelectorPersona valor={propietario} onChange={setPropietario} label="Propietario" />
@@ -266,9 +271,10 @@ export default function PropiedadFormulario() {
             La persona que figura como dueña. Aparece en su ficha como "Propietario".
           </p>
         </div>
+        )}
 
         {/* ── Contrato de alquiler ── */}
-        {esEdicion && (
+        {crm && esEdicion && (
           <div className="admin-card form-section">
             <h2 className="form-section-title">Contrato de alquiler</h2>
             {contratoVigente
@@ -409,7 +415,7 @@ export default function PropiedadFormulario() {
         </div>
 
         {/* ── Documentos ── */}
-        {esEdicion && <BloqueDocumentos entidad={{ propiedadId: Number(id) }} />}
+        {crm && esEdicion && <BloqueDocumentos entidad={{ propiedadId: Number(id) }} />}
 
         {/* ── Acciones ── */}
         <div className="form-actions">

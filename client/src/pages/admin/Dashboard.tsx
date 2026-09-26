@@ -10,6 +10,8 @@ import type { Reserva } from '../../types/reserva'
 import type { Recordatorios, ResumenAlquileres } from '../../types/alquileres'
 import type { ReporteOperaciones } from '../../types/reportes'
 import StatTile from '../../components/StatTile'
+import { useAuth } from '../../context/AuthContext'
+import { veCrm } from '../../lib/beta'
 import BandejaRecordatorios from '../../components/crm/BandejaRecordatorios/BandejaRecordatorios'
 import GraficoBarras from '../../components/graficos/GraficoBarras'
 import { diasHasta, etiquetaMesCorta, formatearMonto } from '../../lib/formato'
@@ -34,8 +36,11 @@ export default function Dashboard() {
   const [comisionesACobrar, setComisionesACobrar]     = useState(0)
   const [ultimosMeses, setUltimosMeses]               = useState<ReporteOperaciones | null>(null)
 
+  const crm = veCrm(useAuth().usuario)
+
   useEffect(() => {
     propiedadesApi.listar({ limit: 500 }).then(setProps).catch(() => setProps([]))
+    if (!crm) return
     reservasApi.listar({ status: 'activa', limit: 200 })
       .then(r => setReservasActivas(r.items))
       .catch(() => setReservasActivas([]))
@@ -59,7 +64,7 @@ export default function Dashboard() {
     reportesApi.operaciones({ desde: primerDiaHaceMeses(MESES_GRAFICO - 1) })
       .then(setUltimosMeses)
       .catch(() => setUltimosMeses(null))
-  }, [])
+  }, [crm])
 
   const total       = props.length
   const disponibles = props.filter(p => p.estado_comercial === 'disponible').length
@@ -94,6 +99,7 @@ export default function Dashboard() {
         </div>
       </section>
 
+      {crm && (<>
       <section className="admin-seccion">
         <h2 className="admin-seccion-titulo">Comercial</h2>
         <div className="admin-stats-grid">
@@ -181,6 +187,7 @@ export default function Dashboard() {
           )
           : <p className="lista-estado">Cargando...</p>}
       </div>
+      </>)}
     </div>
   )
 }
