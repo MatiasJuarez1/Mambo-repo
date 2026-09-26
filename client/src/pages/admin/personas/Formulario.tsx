@@ -118,7 +118,10 @@ export default function PersonaFormulario() {
   return (
     <div>
       <div className="admin-page-header">
-        <h1>{editando ? 'Editar persona' : 'Nueva persona'}</h1>
+        <div>
+          <span className="section-label">CRM</span>
+          <h1>{editando ? 'Editar persona' : 'Nueva persona'}</h1>
+        </div>
       </div>
       {error && <p className="form-error">{error}</p>}
 

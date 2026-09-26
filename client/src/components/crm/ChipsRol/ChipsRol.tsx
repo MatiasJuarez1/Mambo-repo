@@ -2,7 +2,7 @@ import type { Roles, Rol } from '../../../types/persona'
 import { LABEL_ROL } from '../../../lib/crm'
 import './ChipsRol.css'
 
-const ORDEN: Rol[] = ['propietario', 'comprador', 'vendedor', 'inquilino', 'interesado']
+const ORDEN: Rol[] = ['propietario', 'comprador', 'vendedor', 'inquilino', 'garante', 'interesado']
 
 /** Roles derivados de una persona. Solo los que tienen vínculos; nunca se editan. */
 export default function ChipsRol({ roles }: { roles: Roles }) {

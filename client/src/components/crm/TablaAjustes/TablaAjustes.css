@@ -1,0 +1,2 @@
+.tabla-ajustes td { font-variant-numeric: tabular-nums; }
+.tabla-ajustes .tabla-acciones { display: flex; gap: 0.4rem; flex-wrap: nowrap; }

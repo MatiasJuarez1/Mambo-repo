@@ -1,6 +1,8 @@
 /* Ficha y alta de operación comparten la lista de partes (`.partes-lista`,
    `.partes-alta`); el resto de la ficha es propio. */
 
+.ficha-op-acciones { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+
 .ficha-op-grilla {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -15,8 +17,16 @@
   margin: 1rem 0 0;
 }
 
-.ficha-op-datos dt { color: var(--text-muted); font-size: 0.85rem; }
-.ficha-op-datos dd { margin: 0; }
+.ficha-op-datos dt {
+  color: var(--text-muted);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.ficha-op-datos dd { margin: 0; font-size: 0.95rem; }
 
 .ficha-op-notas { white-space: pre-wrap; margin-top: 1rem; }
 
@@ -44,4 +54,10 @@
 
 @media (max-width: 860px) {
   .ficha-op-grilla { grid-template-columns: 1fr; }
+
+  /* La lista de datos pasa a una columna, como la de la ficha de contrato: con
+     `auto 1fr` en un teléfono, un rótulo largo deja al valor en dos caracteres
+     por renglón. */
+  .ficha-op-datos { grid-template-columns: 1fr; gap: 0.15rem 0; }
+  .ficha-op-datos dd { margin-bottom: 0.6rem; }
 }

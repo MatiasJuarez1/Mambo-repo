@@ -19,6 +19,17 @@ const colorMap: Record<string, Color> = {
   // estado de reserva (activa ya está mapeada arriba)
   convertida: 'neutro',
   vencida:    'baja',
+  // estado de contrato de alquiler
+  vigente:    'ok',
+  finalizado: 'neutro',
+  rescindido: 'baja',
+  // estado de ajuste
+  pendiente:  'espera',
+  aplicado:   'ok',
+  omitido:    'neutro',
+  // estado de actividad (pendiente ya está mapeada arriba)
+  hecha:      'ok',
+  cancelada:  'baja',
 }
 
 const labelMap: Record<string, string> = {
@@ -34,6 +45,14 @@ const labelMap: Record<string, string> = {
   eliminada:  'Eliminada',
   convertida: 'Convertida',
   vencida:    'Vencida',
+  vigente:    'Vigente',
+  finalizado: 'Finalizado',
+  rescindido: 'Rescindido',
+  pendiente:  'Pendiente',
+  aplicado:   'Aplicado',
+  omitido:    'Omitido',
+  hecha:      'Hecha',
+  cancelada:  'Cancelada',
   casa:       'Casa',
   depto:      'Depto',
   local:      'Local',

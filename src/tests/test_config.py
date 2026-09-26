@@ -173,3 +173,57 @@ def test_cors_sigue_aceptando_localhost_con_credenciales(client):
 
     assert respuesta.headers["access-control-allow-origin"] == "http://localhost:5174"
     assert respuesta.headers["access-control-allow-credentials"] == "true"
+
+
+def test_smtp_a_medias_no_arranca(monkeypatch):
+    """SMTP_HOST sin EMAIL_FROM mandaría emails sin remitente: mejor no arrancar."""
+    monkeypatch.setenv("JWT_SECRET", "cualquiera")
+    monkeypatch.setenv("SMTP_HOST", "smtp.gmail.com")
+    for var in ("SMTP_USER", "SMTP_PASSWORD", "EMAIL_FROM"):
+        monkeypatch.delenv(var, raising=False)
+
+    with pytest.raises(ValidationError, match="SMTP"):
+        _settings_sin_env()
+
+
+def test_smtp_completo_marca_email_configurado(monkeypatch):
+    monkeypatch.setenv("JWT_SECRET", "cualquiera")
+    monkeypatch.setenv("SMTP_HOST", "smtp.gmail.com")
+    monkeypatch.setenv("SMTP_USER", "mambo@gmail.com")
+    monkeypatch.setenv("SMTP_PASSWORD", "app-password")
+    monkeypatch.setenv("EMAIL_FROM", "Mambo <mambo@gmail.com>")
+
+    s = _settings_sin_env()
+    assert s.email_configurado is True
+    assert s.smtp_port == 587
+
+
+def test_sin_smtp_email_no_configurado(monkeypatch):
+    monkeypatch.setenv("JWT_SECRET", "cualquiera")
+    for var in ("SMTP_HOST", "SMTP_USER", "SMTP_PASSWORD", "EMAIL_FROM"):
+        monkeypatch.delenv(var, raising=False)
+
+    assert _settings_sin_env().email_configurado is False
+
+
+def test_recordatorios_configurado_exige_token_y_smtp(monkeypatch):
+    """El token solo sirve si además hay SMTP: sin eso el endpoint responde 409."""
+    monkeypatch.setenv("JWT_SECRET", "cualquiera")
+    for var in ("SMTP_HOST", "SMTP_USER", "SMTP_PASSWORD", "EMAIL_FROM"):
+        monkeypatch.delenv(var, raising=False)
+    monkeypatch.setenv("RECORDATORIOS_TOKEN", "abc")
+    assert _settings_sin_env().recordatorios_configurado is False
+
+    monkeypatch.setenv("SMTP_HOST", "smtp.gmail.com")
+    monkeypatch.setenv("SMTP_USER", "mambo@gmail.com")
+    monkeypatch.setenv("SMTP_PASSWORD", "app-password")
+    monkeypatch.setenv("EMAIL_FROM", "Mambo <mambo@gmail.com>")
+    assert _settings_sin_env().recordatorios_configurado is True
+
+
+def test_sin_token_recordatorios_no_configurado(monkeypatch):
+    monkeypatch.setenv("JWT_SECRET", "cualquiera")
+    monkeypatch.delenv("RECORDATORIOS_TOKEN", raising=False)
+    s = _settings_sin_env()
+    assert s.recordatorios_token is None
+    assert s.recordatorios_configurado is False

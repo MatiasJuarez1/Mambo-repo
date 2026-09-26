@@ -1,0 +1,3 @@
+.bloque-comision-cabecera { display: flex; justify-content: space-between; align-items: baseline; gap: var(--space-4); }
+.bloque-comision-reparto { list-style: none; padding: 0; margin: var(--space-3) 0 0; display: grid; gap: var(--space-1); }
+.bloque-comision-resto { color: var(--text-muted); }

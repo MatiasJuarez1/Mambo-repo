@@ -1,4 +1,5 @@
 """Router activities: CRUD /activities + PATCH /{id}/done y /{id}/cancel."""
+
 from __future__ import annotations
 
 from fastapi import APIRouter, Depends, Query, status
@@ -9,6 +10,8 @@ from app.platform.activities import service
 from app.platform.activities.schemas import (
     ActivityCreate,
     ActivityOut,
+    ActivityStatus,
+    ActivityType,
     ActivityUpdate,
     PaginatedActivities,
 )
@@ -24,13 +27,15 @@ _staff = Depends(require_role("staff", "admin"))
 # Listado
 # ---------------------------------------------------------------------------
 
+
 @router.get("", response_model=PaginatedActivities)
 def list_activities(
     person_id: int | None = Query(default=None),
     assigned_to_user_id: int | None = Query(default=None),
-    activity_status: str | None = Query(default=None, alias="status"),
-    activity_type: str | None = Query(default=None, alias="type"),
+    activity_status: ActivityStatus | None = Query(default=None, alias="status"),
+    activity_type: ActivityType | None = Query(default=None, alias="type"),
     property_id: int | None = Query(default=None),
+    deal_id: int | None = Query(default=None),
     skip: int = Query(default=0, ge=0),
     limit: int = Query(default=50, ge=1, le=200),
     db: DBSession = Depends(get_db),
@@ -43,6 +48,7 @@ def list_activities(
         activity_status=activity_status,
         activity_type=activity_type,
         property_id=property_id,
+        deal_id=deal_id,
         skip=skip,
         limit=limit,
     )
@@ -55,6 +61,7 @@ def list_activities(
 # ---------------------------------------------------------------------------
 # CRUD base
 # ---------------------------------------------------------------------------
+
 
 @router.get("/{activity_id}", response_model=ActivityOut)
 def get_activity(
@@ -97,6 +104,7 @@ def delete_activity(
 # ---------------------------------------------------------------------------
 # Cambios de estado
 # ---------------------------------------------------------------------------
+
 
 @router.patch("/{activity_id}/done", response_model=ActivityOut, dependencies=[_staff])
 def mark_done(

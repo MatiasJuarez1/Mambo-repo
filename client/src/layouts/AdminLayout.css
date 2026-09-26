@@ -1,6 +1,28 @@
+/* ════════════════════════════════════════════════════════════════
+   Shell del panel + sistema visual compartido
+   ════════════════════════════════════════════════════════════════
+   AdminLayout envuelve toda la rama /admin (menos el login), así que lo que
+   se define acá queda disponible para cualquier página del panel sin que
+   cada una tenga que importarlo o redefinirlo. Lo que es específico de una
+   sola pantalla (`.prop-form`, `.ficha-grilla`, `.tablero-*`, …) sigue
+   viviendo en el CSS de esa página.
+
+   La escala de breakpoints es la de index.css y no se amplía: 640px (móvil)
+   y 860px (tablet). Donde hace falta un tercer escalón se resuelve con
+   grillas intrínsecas (`auto-fit` + `minmax`) o `clamp()`, que se adaptan de
+   forma continua y no agregan una query más que mantener. */
+
+/* Los tokens del panel (`--admin-sidebar-w`, `--admin-row-h`,
+   `--admin-control-h`, …) viven en index.css junto al resto de la paleta, y no
+   acá: los usan también el login y los componentes del CRM, que no importan
+   esta hoja. Que hoy funcionaran igual era casualidad —ninguna ruta es lazy y
+   todo el CSS termina en el mismo bundle—, la misma casualidad que sostenía a
+   `.admin-stats-grid` desde propiedades/Lista.css. */
+
 .admin-shell {
   display: flex;
   min-height: 100vh;
+  background: var(--bone);
 }
 
 /* ── Topbar móvil ──────────────────────────────────────────────
@@ -37,7 +59,7 @@
 
 .admin-topbar-titulo {
   font-family: var(--font-serif);
-  font-size: 1.05rem;
+  font-size: 1.15rem;
   font-weight: 600;
   color: var(--white);
   letter-spacing: 0.02em;
@@ -51,7 +73,7 @@
 /* ── Sidebar ───────────────────────────────────────────────── */
 
 .admin-sidebar {
-  width: 220px;
+  width: var(--admin-sidebar-w);
   flex-shrink: 0;
   background: var(--petrol-deep);
   display: flex;
@@ -64,15 +86,14 @@
   display: flex;
   flex-direction: column;
   line-height: 1;
-  padding: 1.75rem 1.5rem 1.5rem;
+  padding: 1.6rem 1.35rem 1.35rem;
   cursor: pointer;
   border-bottom: 1px solid rgba(255,255,255,0.08);
-  margin-bottom: 0.5rem;
 }
 
 .admin-sidebar-logo .logo-mambo {
   font-family: var(--font-serif);
-  font-size: 1.35rem;
+  font-size: 1.45rem;
   font-weight: 700;
   color: var(--white);
   letter-spacing: 0.06em;
@@ -80,30 +101,69 @@
 }
 
 .admin-sidebar-logo .logo-groups {
-  font-size: 0.55rem;
+  font-size: 0.56rem;
   font-weight: 500;
   color: rgba(255,255,255,0.45);
-  letter-spacing: 0.28em;
+  letter-spacing: 0.26em;
   text-transform: uppercase;
-  margin-top: 2px;
+  margin-top: 4px;
 }
 
+/* El scroll vive acá y no en `.admin-sidebar`: así el logo y el pie de sesión
+   quedan fijos arriba y abajo, y solo la lista de enlaces se desplaza. Sin esto
+   —el sidebar es `position: fixed` a toda la altura— un menú más largo que la
+   ventana dejaba los últimos ítems y el botón "Salir" fuera de alcance, sin
+   ninguna barra que permitiera llegar a ellos.
+   El `min-height: 0` es lo que lo hace funcionar: un hijo flex arranca con
+   `min-height: auto` y se niega a achicarse por debajo de su contenido, así que
+   sin él el `overflow-y` nunca entra en juego. */
 .admin-nav {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  padding: 0 0.75rem;
+  gap: 1px;
+  padding: 0.75rem 0.7rem 1rem;
   flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  /* El scroll del nav no se propaga al contenido de atrás al llegar al final. */
+  overscroll-behavior: contain;
+
+  /* La barra nativa de Windows es una franja clara de ~17px: sobre el petróleo
+     se lee como un error de pintura, y además le come ancho a los rótulos. Acá
+     queda fina y del mismo tono que el hover de los ítems, así que se percibe
+     como parte del panel y no como un elemento del sistema operativo.
+     Van las dos sintaxis: la estándar (Firefox y Chrome ≥121) y la de WebKit
+     para el resto, porque ninguna de las dos cubre sola a todos los navegadores
+     que puede usar la inmobiliaria. */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.18) transparent;
 }
 
+.admin-nav::-webkit-scrollbar { width: 6px; }
+.admin-nav::-webkit-scrollbar-track { background: transparent; }
+
+.admin-nav::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.16);
+  border-radius: 999px;
+}
+
+.admin-nav::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.28); }
+
+/* El filete del ítem activo se dibuja con un `::before` absoluto y no con un
+   `border-left`: un borde cambiaría el ancho de la caja y los rótulos de los
+   ítems activos quedarían 3px corridos respecto de los inactivos. */
 .admin-nav-item {
-  display: block;
-  padding: 0.65rem 0.85rem;
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: 38px;
+  padding: 0.5rem 0.8rem;
   font-size: 0.875rem;
   font-weight: 500;
-  color: rgba(255,255,255,0.65);
+  letter-spacing: 0.01em;
+  color: rgba(255,255,255,0.68);
   text-decoration: none;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   transition: background 0.15s, color 0.15s;
 }
 
@@ -112,18 +172,40 @@
   color: var(--white);
 }
 
+/* Activo: fondo apenas levantado y un filete magenta al ras del borde
+   izquierdo. La pastilla magenta llena que había antes era el elemento más
+   saturado de toda la pantalla y competía con el botón de acción primaria, que
+   es el que sí tiene que llamar. Acá el acento marca dónde está parado el
+   usuario sin gritar. */
 .admin-nav-item.active {
-  background: var(--magenta);
+  background: rgba(255,255,255,0.10);
   color: var(--white);
+  font-weight: 600;
+}
+
+.admin-nav-item.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 7px;
+  bottom: 7px;
+  width: 3px;
+  border-radius: 0 2px 2px 0;
+  background: var(--magenta);
+}
+
+.admin-nav-item:focus-visible {
+  outline: 2px solid var(--magenta);
+  outline-offset: -2px;
 }
 
 .admin-nav-group {
-  font-size: 0.6rem;
+  font-size: 0.62rem;
   font-weight: 600;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.3);
-  padding: 1.1rem 0.85rem 0.4rem;
+  color: rgba(255, 255, 255, 0.32);
+  padding: 1.15rem 0.8rem 0.35rem;
 }
 
 .admin-nav-item-soon {
@@ -134,26 +216,26 @@
 .admin-nav-item-soon:hover { background: transparent; color: rgba(255, 255, 255, 0.35); }
 
 .admin-sidebar-footer {
-  padding: 1rem 0.75rem;
+  padding: 0.9rem 0.7rem 1.1rem;
   border-top: 1px solid rgba(255,255,255,0.08);
 }
 
-/* Identidad de la sesión + salida. El email va en una línea aparte porque en
-   220px de sidebar no entra al lado del botón sin recortarse a la mitad. */
+/* Identidad de la sesión + salida. El email va en una línea aparte porque en el
+   ancho del sidebar no entra al lado del botón sin recortarse a la mitad. */
 .admin-sesion {
-  padding: 0 0.85rem 0.75rem;
-  margin-bottom: 0.5rem;
+  padding: 0 0.8rem 0.8rem;
+  margin-bottom: 0.4rem;
   border-bottom: 1px solid rgba(255,255,255,0.08);
 }
 
 .admin-sesion-email {
   display: block;
-  font-size: 0.72rem;
-  color: rgba(255,255,255,0.5);
+  font-size: 0.75rem;
+  color: rgba(255,255,255,0.55);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  margin-bottom: 0.4rem;
+  margin-bottom: 0.5rem;
 }
 
 /* Acción secundaria: contorno tenue, para que no compita con la navegación. */
@@ -167,7 +249,7 @@
   background: transparent;
   border: 1px solid rgba(255,255,255,0.22);
   border-radius: var(--radius-sm);
-  padding: 0.35rem 0.75rem;
+  padding: 0.4rem 0.8rem;
   cursor: pointer;
   transition: background 0.15s, color 0.15s, border-color 0.15s;
 }
@@ -181,54 +263,193 @@
 /* ── Main ─────────────────────────────────────────────────── */
 
 .admin-main {
-  margin-left: 220px;
+  margin-left: var(--admin-sidebar-w);
   flex: 1;
   /* Un ítem flex arranca con `min-width: auto`, o sea que se niega a achicarse
      por debajo del ancho intrínseco de su contenido. Con la tabla de
-     propiedades adentro eso empujaba el main a ~1130px y desbordaba la ventana
-     a 1024px, que es donde el sidebar todavía ocupa sus 220px. El `0` lo deja
+     propiedades adentro eso empujaba el main y desbordaba la ventana a 1024px,
+     que es donde el sidebar todavía ocupa su ancho completo. El `0` lo deja
      achicarse y el `overflow-x: auto` de `.tabla-wrapper` vuelve a hacerse
      cargo del scroll, que era su trabajo. */
   min-width: 0;
   background: var(--bone);
   min-height: 100vh;
-  padding: 2.5rem;
+  /* Respira más en un monitor grande y menos en una notebook, sin agregar un
+     breakpoint: entre 1024 y 1920px el padding va de 24 a 44px de forma
+     continua. */
+  padding: clamp(1.5rem, 2.4vw, 2.75rem);
 }
 
-/* ── Helpers compartidos admin ────────────────────────────── */
+/* Tope de ancho de la lectura. Sin esto, en un monitor de 2560px una tabla de
+   ocho columnas se estira hasta el borde y la vista salta de una punta a la
+   otra de la pantalla. El `margin: 0 auto` la centra en el espacio que sobra.
+   Es un div propio y no el `.admin-main`, porque el fondo hueso sí tiene que
+   llegar hasta el borde. */
+.admin-main-inner {
+  max-width: 1520px;
+  margin: 0 auto;
+}
+
+/* ── Cabecera de página ───────────────────────────────────────
+   El patrón es siempre el mismo: a la izquierda el rótulo de sección y el
+   título, a la derecha las acciones de la pantalla. */
 
 .admin-page-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.25rem;
+  margin-bottom: 1.75rem;
 }
 
 .admin-page-header h1 {
   font-family: var(--font-serif);
-  font-size: 1.75rem;
+  font-size: clamp(1.9rem, 2.6vw, 2.25rem);
   font-weight: 600;
+  line-height: 1.1;
   color: var(--petrol);
 }
 
-.admin-card {
-  background: var(--white);
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  padding: 1.5rem;
+/* Los `h2` que encabezan una tarjeta (Dashboard, fichas) comparten la caja pero
+   no el tamaño: son un nivel abajo del título de la pantalla. */
+.admin-page-header h2 {
+  font-family: var(--font-serif);
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--petrol);
+  margin: 0;
 }
 
-.btn {
-  display: inline-block;
-  padding: 0.6rem 1.25rem;
-  font-size: 0.8rem;
+/* El rótulo chico arriba del título ("Panel", "Inventario"). Hereda de
+   `.section-label` del sistema, con el filete magenta del `.eyebrow`. */
+.admin-page-header .section-label {
+  display: block;
+  margin-bottom: 0.3rem;
+  color: var(--text-muted);
+  letter-spacing: 0.18em;
+  font-size: 0.66rem;
+}
+
+/* Bajada opcional: una línea de contexto bajo el título. */
+.admin-page-sub {
+  margin-top: 0.4rem;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+/* Grupo de acciones a la derecha del título: los botones siempre en fila y con
+   la misma separación, cualquiera sea la pantalla. */
+.admin-page-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+/* ── Tarjeta ──────────────────────────────────────────────── */
+
+.admin-card {
+  /* El padding se expone como custom property porque hay bloques que necesitan
+     anularlo desde adentro: una tabla que sangra hasta el borde de la tarjeta
+     lo hace con `margin: 0 calc(-1 * var(--card-pad))`, y así sigue calzando
+     cuando el padding cambia en móvil. Antes estaba escrito `-1.5rem` literal
+     y en el teléfono la tabla se salía de la tarjeta. */
+  --card-pad: 1.5rem;
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: var(--card-pad);
+}
+
+/* Separación vertical entre bloques de una misma pantalla. Antes cada página
+   resolvía esto con un `style={{ marginTop: '1.25rem' }}` inline. */
+.admin-card + .admin-card,
+.admin-bloque { margin-top: 1.25rem; }
+
+.admin-card-titulo {
+  font-family: var(--font-serif);
+  font-size: 1.15rem;
   font-weight: 600;
-  letter-spacing: 0.04em;
+  color: var(--petrol);
+  margin-bottom: 1rem;
+}
+
+/* Cabecera interna de una tarjeta: título a la izquierda, un enlace de "ver
+   todos" a la derecha. Es la `.admin-page-header` de un nivel más abajo, y
+   existe como clase propia porque antes cada tarjeta del Dashboard la
+   improvisaba con `style={{ marginBottom: '0.75rem' }}` inline. */
+.admin-card-cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  margin-bottom: 1rem;
+}
+
+.admin-card-cabecera h2 {
+  font-family: var(--font-serif);
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--petrol);
+  margin: 0;
+}
+
+/* ── Sección de una pantalla ──────────────────────────────────
+   Agrupa una grilla de tiles o un conjunto de tarjetas bajo un rótulo. El
+   Dashboard es el caso que lo pide: trece tiles seguidos en una sola grilla
+   son una pared de números sin jerarquía. */
+
+.admin-seccion { margin-bottom: 1.75rem; }
+
+.admin-seccion-titulo {
+  font-family: var(--font-sans);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--line);
+}
+
+/* ── Botones ──────────────────────────────────────────────────
+   Todos miden lo mismo de alto (`--admin-control-h`) y se alinean con los
+   inputs: es lo que hace que una barra de filtros con un botón al lado no
+   quede escalonada. El `inline-flex` es lo que hace que la altura se note en
+   los `<a>`, que como `inline-block` la ignoran. */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  height: var(--admin-control-h);
+  padding: 0 1.15rem;
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   text-decoration: none;
-  border: none;
+  white-space: nowrap;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--petrol);
+  outline-offset: 2px;
+}
+
+.btn:disabled,
+.btn[aria-disabled='true'] {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 /* Acción primaria del admin — uno de los 5 usos de magenta del sistema. */
@@ -240,31 +461,529 @@
 .btn-magenta:hover { background: var(--magenta-deep); }
 
 .btn-outline {
-  background: transparent;
+  background: var(--white);
   color: var(--petrol);
-  border: 1px solid var(--petrol);
+  border-color: var(--line);
 }
 
 .btn-outline:hover {
   background: var(--petrol);
+  border-color: var(--petrol);
   color: var(--white);
 }
 
+/* Acción afirmativa dentro de una fila o un bloque, donde el magenta no sirve:
+   al lado de "Editar" y "Pausar", el único botón lleno y en un rojo-rosa se lee
+   como el destructivo de la fila —que es justo lo contrario de lo que hace—.
+   El petróleo lleno destaca igual (es el contraste más alto de la paleta sobre
+   blanco, 11.8:1) sin la carga de alerta, y deja el magenta reservado para la
+   acción primaria de la pantalla, que es el único lugar donde tiene que
+   llamar. */
+.btn-petrol {
+  background: var(--petrol);
+  color: var(--white);
+}
+
+.btn-petrol:hover { background: var(--petrol-deep); }
+
 .btn-danger {
-  background: transparent;
+  background: var(--white);
   color: var(--estado-baja);
-  border: 1px solid var(--estado-baja);
+  border-color: rgba(179, 38, 30, 0.35);
 }
 
 .btn-danger:hover {
   background: var(--estado-baja);
+  border-color: var(--estado-baja);
   color: var(--white);
 }
 
+/* Variante compacta: acciones dentro de una fila de tabla o de una tarjeta,
+   donde tres botones de alto completo desbordan el ancho. */
+.btn-chico {
+  height: var(--admin-control-h-sm);
+  padding: 0 0.75rem;
+  font-size: 0.7rem;
+  letter-spacing: 0.04em;
+}
+
+/* ── Tiles de métricas ────────────────────────────────────────
+   La grilla vivía en propiedades/Lista.css y el Dashboard la usaba sin
+   importarla: funcionaba de casualidad, porque ninguna ruta es lazy y todo el
+   CSS termina en el mismo bundle. Acá está donde corresponde.
+
+   `auto-fit` + `minmax` reparte las columnas según el ancho disponible sin
+   ninguna media query, y el `minmax(190px, 1fr)` garantiza que los rótulos
+   largos del Dashboard ("Ajustes en los próximos 30 días") entren en dos
+   líneas y no en cuatro. */
+.admin-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 0.9rem;
+  margin-bottom: 1.5rem;
+}
+
+/* Dentro de una sección el aire de abajo lo pone `.admin-seccion`: si además
+   lo pusiera la grilla, los bloques quedarían al doble de separación. */
+.admin-seccion .admin-stats-grid { margin-bottom: 0; }
+
+/* ── Listas: estado de carga/error y contador ──────────────────── */
+
+.lista-estado {
+  color: var(--text-muted);
+  font-size: 0.92rem;
+  padding: 2.5rem 0;
+  text-align: center;
+}
+
+.lista-error { color: var(--estado-baja); }
+
+.lista-total { margin: 0.9rem 0 0; color: var(--text-muted); font-size: 0.85rem; }
+
+/* ── Barra de filtros ─────────────────────────────────────────── */
+
+.filtros-bar {
+  display: flex;
+  gap: 0.7rem;
+  flex-wrap: wrap;
+  /* Al pie y no al centro: hay barras que mezclan controles con rótulo
+     (`.filtros-label`, que es más alto) con inputs pelados. Alineados por
+     abajo, todos los controles quedan sobre la misma línea; centrados, los
+     pelados flotaban a media altura de los rotulados. */
+  align-items: flex-end;
+  margin-bottom: 1.25rem;
+  padding: 0.9rem 1rem;
+}
+
+.filtros-bar .filtros-buscar {
+  flex: 1;
+  min-width: 220px;
+}
+
+.filtros-bar select,
+.filtros-bar input {
+  height: var(--admin-control-h);
+  padding: 0 0.75rem;
+  font-size: 0.875rem;
+  font-family: var(--font-sans);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--white);
+  color: var(--text);
+  outline: none;
+  min-width: 160px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.filtros-bar select:focus,
+.filtros-bar input:focus {
+  border-color: var(--petrol);
+  box-shadow: 0 0 0 3px rgba(14, 58, 59, 0.08);
+}
+
+/* El placeholder es texto de ayuda, no un valor: va un tono más claro para que
+   no se confunda con un filtro ya aplicado. */
+.filtros-bar input::placeholder { color: var(--text-muted); }
+
+/* Una casilla no es un campo de texto: con el alto y el ancho mínimo de la
+   regla de arriba quedaba como un recuadro vacío de 160×40 al lado de su
+   rótulo. El `--tap-min` de alto se lo lleva el `<label>` que la envuelve
+   (`.filtros-label`), que es el área que se toca. */
+.filtros-bar input[type='checkbox'],
+.filtros-bar input[type='radio'] {
+  height: auto;
+  width: auto;
+  min-width: 0;
+}
+
+/* Filtro de sí/no: el rótulo va al lado de la casilla y no arriba, que es como
+   se lee una opción booleana. La clase ya estaba puesta en el markup de
+   alquileres/Lista.tsx pero no la definía ninguna hoja, así que la casilla
+   heredaba el `flex-direction: column` de `.filtros-label` y quedaba arriba
+   del texto. En caja baja, además: no es el rótulo de un campo. */
+.filtros-bar .filtros-check {
+  flex-direction: row;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: var(--admin-control-h);
+  font-size: 0.85rem;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--text);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.filtros-bar .filtros-check input { cursor: pointer; }
+
+/* Conteos al lado de los filtros (p. ej. los cuatro tipos de recordatorios). */
+.filtros-bar .filtros-resumen {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  align-items: center;
+  margin-left: auto;
+}
+
+.filtros-label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+/* ── Tabla ────────────────────────────────────────────────────
+   El wrapper es un `.admin-card` sin padding: el marco lo pone la tarjeta y el
+   aire lo ponen las celdas. */
+
+.tabla-wrapper {
+  padding: 0;
+  overflow-x: auto;
+  /* La barra horizontal aparece cuando la tabla no entra. Fina y en el gris de
+     la línea, para que no corte visualmente la tarjeta. */
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent;
+}
+
+.tabla-wrapper::-webkit-scrollbar { height: 8px; }
+.tabla-wrapper::-webkit-scrollbar-track { background: transparent; }
+
+.tabla-wrapper::-webkit-scrollbar-thumb {
+  background: var(--line);
+  border-radius: 999px;
+}
+
+.tabla-wrapper::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+.tabla {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.tabla thead {
+  background: var(--bone);
+  border-bottom: 1px solid var(--line);
+}
+
+.tabla th {
+  padding: 0.7rem 0.7rem;
+  text-align: left;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.tabla td {
+  /* En una celda `height` funciona como mínimo, no como alto fijo: todas las
+     filas miden lo mismo y la que tenga dos líneas de contenido crece sola. Es
+     lo que convierte la lista en una grilla legible en vez de una sucesión de
+     filas de alturas distintas. */
+  height: var(--admin-row-h);
+  padding: 0.6rem 0.7rem;
+  border-bottom: 1px solid var(--line);
+  color: var(--text);
+  vertical-align: middle;
+  /* Una línea por celda. Sin esto, "San Miguel de Tucumán" en una columna
+     angosta se parte en tres renglones y esa fila mide el triple que las de al
+     lado. Lo que no entra lo resuelve el scroll horizontal del wrapper, que es
+     un solo eje y se entiende; el texto partido no se arregla scrolleando. */
+  white-space: nowrap;
+}
+
+.tabla th:first-child,
+.tabla td:first-child { padding-left: 1rem; }
+
+.tabla th:last-child,
+.tabla td:last-child { padding-right: 1rem; }
+
+.tabla tbody tr:last-child td { border-bottom: none; }
+
+.tabla tbody tr { transition: background 0.12s; }
+.tabla tbody tr:hover { background: var(--petrol-soft); }
+
+.tabla a { color: var(--petrol); }
+
+/* El dato por el que se escanea la lista: un punto más grande y con peso, para
+   que el ojo lo encuentre sin leer el resto de la fila. */
+.tabla-titulo {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--petrol);
+  max-width: 210px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* El recorte con elipsis necesita una caja que no sea inline. Va por selector
+   de elemento y no en la regla de arriba porque la misma clase se usa a veces
+   sobre el propio `<td>` (publicaciones), y ahí un `display` distinto de
+   `table-cell` lo saca del layout tabular y parte la fila. */
+span.tabla-titulo,
+a.tabla-titulo {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+/* Celda de texto que puede venir largo (propietario, dirección, descripción).
+   Se recorta con elipsis en vez de ensanchar la columna; el valor completo
+   queda en el `title` del elemento. */
+.tabla-texto {
+  display: inline-block;
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+/* Columna numérica: cifras tabulares (todos los dígitos del mismo ancho, así
+   los montos se alinean verticalmente y se comparan de un vistazo) y alineada
+   a la derecha junto con su encabezado. */
+.tabla th.num,
+.tabla td.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Segunda línea dentro de una celda (p. ej. la fecha bajo el chip de estado). */
+.tabla-subtexto {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+.tabla-precio {
+  font-size: 0.95rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.tabla-propiedad {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  min-width: 0;
+}
+
+/* Título y dato secundario (la ciudad) apilados dentro de la misma celda. Dos
+   renglones entran holgados en los 64px de la fila, y cada columna que se
+   evita son ~140px que la tabla deja de pedir. */
+.tabla-propiedad-texto {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.tabla-subtitulo {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tabla-thumb {
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+}
+
+.tabla-thumb-empty {
+  background: var(--bone);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+}
+
+/* Acciones de fila: siempre a la derecha de la celda y en variante compacta.
+   Tres botones de alto completo en cada fila empujaban la tabla ~200px más allá
+   del ancho de la ventana y obligaban a scrollear en horizontal para llegar a
+   "Editar". */
+.tabla-acciones {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.4rem;
+}
+
+.tabla-acciones .btn {
+  height: var(--admin-control-h-sm);
+  padding: 0 0.6rem;
+  font-size: 0.68rem;
+  letter-spacing: 0.02em;
+}
+
+/* El encabezado de la columna de acciones acompaña a sus botones, que van
+   pegados al borde derecho de la fila. */
+.tabla th.th-acciones { text-align: right; }
+
+/* Dato ausente: el guión es información ("no hay"), pero no compite con los
+   valores reales. */
+.tabla-vacio { color: var(--text-muted); }
+
+/* Contador que pide atención dentro de una fila (cobros vencidos de un
+   contrato). La clase ya se usaba en alquileres/Lista.tsx pero no estaba
+   definida en ninguna hoja: el número se veía igual que cualquier otro. */
+.lista-vencidos { font-weight: 700; }
+
+/* Con el nombre del elemento: `.tabla a` tiene la misma especificidad y, sin
+   el `a`, le ganaría el petróleo de los enlaces de tabla. */
+a.lista-vencidos { color: var(--estado-baja); text-decoration: none; }
+a.lista-vencidos:hover { text-decoration: underline; }
+
+/* ── Etiquetas ────────────────────────────────────────────────── */
+
+.etiquetas { display: inline-flex; flex-wrap: wrap; gap: 0.3rem; }
+
+.etiqueta {
+  padding: 0.15rem 0.55rem;
+  border-radius: var(--radius-sm);
+  background: var(--bone);
+  border: 1px solid var(--line);
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+
+/* ── Formularios ──────────────────────────────────────────────── */
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.35rem;
+}
+
+.form-section-title {
+  font-family: var(--font-serif);
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--petrol);
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 0.25rem;
+}
+
+.form-row {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  flex: 1;
+  min-width: 180px;
+}
+
+.form-field.full { flex: 1 1 100%; }
+
+.form-field label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.form-field input,
+.form-field select,
+.form-field textarea {
+  height: var(--admin-control-h);
+  padding: 0 0.8rem;
+  font-size: 0.925rem;
+  font-family: var(--font-sans);
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--white);
+  outline: none;
+  width: 100%;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+/* El textarea es el único control que no tiene alto de una línea. */
+.form-field textarea {
+  height: auto;
+  min-height: 110px;
+  padding: 0.65rem 0.8rem;
+  line-height: 1.55;
+  resize: vertical;
+}
+
+.form-field input:focus,
+.form-field select:focus,
+.form-field textarea:focus {
+  border-color: var(--petrol);
+  box-shadow: 0 0 0 3px rgba(14, 58, 59, 0.08);
+}
+
+/* Las casillas no siguen la altura de los campos de texto: son un cuadradito,
+   no una caja de una línea. */
+.form-field input[type='checkbox'],
+.form-field input[type='radio'] {
+  height: auto;
+  width: auto;
+}
+
+/* El campo de archivo lo dibuja el navegador (un botón más el nombre del
+   archivo) y no entra en una caja de una línea: con alto fijo se recorta. */
+.form-field input[type='file'] {
+  height: auto;
+  padding: 0.5rem 0.6rem;
+  font-size: 0.85rem;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--line);
+}
+
+/* Valor de sólo lectura donde iría un campo (fichas, resúmenes). Alineado con
+   los campos editables para que la ficha no se vea escalonada. */
+.form-valor {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  min-height: var(--admin-control-h);
+  font-size: 0.95rem;
+  color: var(--text);
+}
+
+.form-error {
+  background: var(--estado-baja-bg);
+  color: var(--estado-baja);
+  padding: 0.8rem 1rem;
+  font-size: 0.875rem;
+  border-radius: var(--radius-sm);
+  margin-bottom: 1rem;
+}
+
+.form-hint {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  margin-bottom: 1rem;
+}
+
 /* ── Shell bajo 860px (tablet y teléfono) ──────────────────────
-   El sidebar de 220px fijo dejaba el contenido en ~150px útiles en un teléfono.
-   Acá sale de pantalla y vuelve como drawer desde la izquierda, y el ancho
-   completo pasa a ser del contenido. */
+   El sidebar fijo dejaba el contenido en ~150px útiles en un teléfono. Acá sale
+   de pantalla y vuelve como drawer desde la izquierda, y el ancho completo pasa
+   a ser del contenido. */
 
 @media (max-width: 860px) {
   /* El sidebar es `position: fixed`, así que los únicos hijos en flujo son la
@@ -318,143 +1037,38 @@
     z-index: 50;
   }
 
+  /* Con el puntero táctil los enlaces del drawer tienen que llegar al mínimo
+     de 44px; en escritorio 38px se aciertan igual con el mouse. */
+  .admin-nav-item { min-height: var(--tap-min); }
+
   .admin-main {
     margin-left: 0;
-    padding: 1rem;
+    padding: 1.15rem 1rem 2rem;
     /* El `min-height: 100vh` de escritorio sumado al alto de la topbar dejaba
        un scroll vertical de sobra en páginas cortas. Con la shell en columna,
        el `flex: 1` ya le da el alto que queda. */
     min-height: auto;
   }
 
-  /* Los `.btn` del admin viven acá aunque los usen las pantallas de propiedades:
-     con `padding: 0.6rem` y texto de 0.8rem quedaban en ~35px de alto. El
-     `inline-flex` es lo que hace que el `min-height` se note en los `<a>`, que
-     como `inline-block` ignoran la altura del contenido vacío alrededor. */
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-height: var(--tap-min);
-  }
-}
+  .admin-page-header { margin-bottom: 1.25rem; }
 
-/* El drawer sigue funcionando sin el deslizamiento: quien pidió menos
-   movimiento lo ve aparecer y desaparecer, no viajar. */
-@media (prefers-reduced-motion: reduce) {
-  .admin-sidebar { transition: none; }
-}
+  .admin-card { --card-pad: 1.15rem; }
 
-/* ════════════════════════════════════════════════════════════════
-   Helpers compartidos por las páginas del panel
-   ════════════════════════════════════════════════════════════════
-   AdminLayout envuelve toda la rama /admin (menos el login), así que las
-   clases de acá quedan disponibles para cualquier página admin sin que
-   cada una tenga que importarlas o redefinirlas. Antes de este bloque
-   `.lista-estado`, la familia `form*`, `.etiqueta`/`.etiquetas` y
-   `.btn-chico` estaban copiadas entre las hojas de propiedades y personas
-   (y una página nueva, Ficha, directamente se quedó sin ellas). Lo que es
-   específico de una sola pantalla (`.tabla-thumb`, `.prop-form`,
-   `.ficha-grilla`, `.selector-persona-*`, etc.) sigue viviendo en el CSS
-   de esa página. */
-
-/* ── Listas: estado de carga/error y contador ──────────────────── */
-
-.lista-estado {
-  color: var(--text-muted);
-  font-size: 0.9rem;
-  padding: 2rem 0;
-  text-align: center;
-}
-
-.lista-error { color: var(--estado-baja); }
-
-.lista-total { margin: 0.75rem 0 0; color: var(--text-muted); font-size: 0.85rem; }
-
-/* ── Barra de filtros ─────────────────────────────────────────── */
-
-.filtros-bar .filtros-buscar {
-  flex: 1;
-  min-width: 220px;
-}
-
-.filtros-bar {
-  display: flex;
-  gap: 0.75rem;
-  flex-wrap: wrap;
-  margin-bottom: 1.25rem;
-  padding: 1rem 1.25rem;
-}
-
-.filtros-bar select,
-.filtros-bar input {
-  padding: 0.5rem 0.75rem;
-  font-size: 0.85rem;
-  font-family: var(--font-sans);
-  border: 1px solid var(--line);
-  background: var(--white);
-  color: var(--text);
-  outline: none;
-  min-width: 160px;
-  transition: border-color 0.2s;
-}
-
-.filtros-bar select:focus,
-.filtros-bar input:focus {
-  border-color: var(--petrol);
-}
-
-/* `.lista-estado`, `.lista-error`, `.tabla`/`.tabla-wrapper` base y el bloque
-   responsive de tarjetas viven en AdminLayout.css: los usa cada lista del
-   panel. Acá quedan sólo las clases propias de esta pantalla. */
-
-.tabla-propiedad {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.tabla-thumb {
-  width: 48px;
-  height: 48px;
-  object-fit: cover;
-  border-radius: 4px;
-  flex-shrink: 0;
-}
-
-.tabla-thumb-empty {
-  background: var(--bone);
-  border-radius: 4px;
-}
-
-.tabla-precio {
-  font-weight: 500;
-  white-space: nowrap;
-}
-
-.tabla-acciones {
-  display: flex;
-  gap: 0.5rem;
-}
-
-.filtros-label {
-  display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
-  font-size: 0.8rem;
-  color: var(--text-muted);
-}
-
-/* ── Tablet: targets táctiles ─────────────────────────────────── */
-
-@media (max-width: 860px) {
-  /* Con el alto que traen del escritorio (~35px) quedan por debajo del mínimo
-     de 44px. Los `.btn` de las acciones los cubre la regla global de
-     AdminLayout.css. */
+  /* Los controles llegan al mínimo táctil. Los `.btn` ya miden 40px por la
+     regla base, así que sólo les falta el empujón hasta 44. */
+  .btn,
   .filtros-bar select,
-  .filtros-bar input {
+  .filtros-bar input,
+  .form-field input,
+  .form-field select,
+  .form-field textarea {
     min-height: var(--tap-min);
   }
+
+  /* Excepto los compactos de una fila de tabla: ahí el target es la fila
+     entera y tres botones de 44px no entran en el ancho de un teléfono. */
+  .btn-chico,
+  .tabla-acciones .btn { min-height: var(--admin-control-h-sm); }
 }
 
 /* ── Móvil: filtros apilados ──────────────────────────────────── */
@@ -465,6 +1079,7 @@
      cuál caiga en cada línea. En columna todos miden lo mismo. */
   .filtros-bar {
     flex-direction: column;
+    align-items: stretch;
     padding: 0.9rem 1rem;
   }
 
@@ -477,186 +1092,27 @@
   /* El `flex: 1` del buscador repartía el ancho sobrante; en columna repartiría
      el alto, que no es lo que se quiere. */
   .filtros-bar .filtros-buscar { flex: none; }
-}
 
-/* ── Tabla base ───────────────────────────────────────────────── */
+  .filtros-bar .filtros-resumen { margin-left: 0; }
 
-.tabla-wrapper { padding: 0; overflow-x: auto; }
+  /* El título y su botón de acción, uno arriba del otro y a ancho completo: en
+     una fila de ~300px "Propiedades" y "+ Nueva propiedad" se pisan. */
+  .admin-page-header { align-items: stretch; }
+  .admin-page-acciones .btn { flex: 1; }
 
-.tabla {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.875rem;
-}
-
-.tabla thead {
-  background: var(--bone);
-  border-bottom: 2px solid var(--line);
-}
-
-.tabla th {
-  padding: 0.75rem 1rem;
-  text-align: left;
-  font-size: 0.72rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--text-muted);
-  white-space: nowrap;
-}
-
-.tabla td {
-  padding: 0.85rem 1rem;
-  border-bottom: 1px solid var(--line);
-  color: var(--text);
-  vertical-align: middle;
-}
-
-.tabla tbody tr:last-child td { border-bottom: none; }
-
-.tabla tbody tr:hover { background: var(--petrol-soft); }
-
-.tabla-titulo {
-  font-weight: 500;
-  color: var(--text);
-  max-width: 200px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-/* ── Etiquetas ────────────────────────────────────────────────── */
-
-.etiquetas { display: inline-flex; flex-wrap: wrap; gap: 0.3rem; }
-.etiqueta { padding: 0.1rem 0.5rem; border-radius: 4px; background: var(--bone); font-size: 0.78rem; }
-
-/* ── Botón chico ──────────────────────────────────────────────── */
-
-.btn-chico { padding: 0.3rem 0.7rem; font-size: 0.85rem; }
-
-/* ── Formularios ──────────────────────────────────────────────── */
-
-.form {
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-}
-
-.form-section-title {
-  font-family: var(--font-serif);
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: var(--petrol);
-  padding-bottom: 0.75rem;
-  border-bottom: 1px solid var(--line);
-  margin-bottom: 0.25rem;
-}
-
-.form-row {
-  display: flex;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
-
-.form-field {
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-  flex: 1;
-  min-width: 160px;
-}
-
-.form-field.full { flex: 1 1 100%; }
-
-.form-field label {
-  font-size: 0.78rem;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--text-muted);
-}
-
-.form-field input,
-.form-field select,
-.form-field textarea {
-  padding: 0.6rem 0.75rem;
-  font-size: 0.9rem;
-  font-family: var(--font-sans);
-  color: var(--text);
-  border: 1px solid var(--line);
-  background: var(--white);
-  outline: none;
-  width: 100%;
-  transition: border-color 0.2s;
-  border-radius: 4px;
-}
-
-.form-field input:focus,
-.form-field select:focus,
-.form-field textarea:focus {
-  border-color: var(--petrol);
-}
-
-.form-field textarea { resize: vertical; }
-
-.form-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 0.75rem;
-  padding-top: 0.5rem;
-}
-
-.form-valor {
-  margin: 0;
-  padding: 0.6rem 0;
-  font-size: 0.95rem;
-  color: var(--text);
-}
-
-.form-error {
-  background: var(--estado-baja-bg);
-  color: var(--estado-baja);
-  padding: 0.75rem 1rem;
-  font-size: 0.875rem;
-  border-radius: 4px;
-  margin-bottom: 1rem;
-}
-
-.form-hint {
-  font-size: 0.8rem;
-  color: var(--text-muted);
-  margin-bottom: 1rem;
-}
-
-/* ── Tablet: targets táctiles en campos de formulario ──────────── */
-
-@media (max-width: 860px) {
-  .form-field input,
-  .form-field select,
-  .form-field textarea {
-    min-height: var(--tap-min);
-  }
-}
-
-/* ── Móvil: acciones de formulario apiladas ────────────────────── */
-
-@media (max-width: 640px) {
-  /* Alineados a la derecha y a ancho de contenido, dos botones quedan
-     pegados uno al otro en el borde de la pantalla. Apilados a ancho
-     completo el primario queda abajo, que es donde llega el pulgar. */
+  /* Alineadas a la derecha y a ancho de contenido, las acciones de formulario
+     quedan pegadas una a la otra en el borde de la pantalla. Apiladas a ancho
+     completo la primaria queda abajo, que es donde llega el pulgar. */
   .form-actions {
-    flex-direction: column;
+    flex-direction: column-reverse;
     align-items: stretch;
   }
 
-  .form-actions .btn {
-    width: 100%;
-    text-align: center;
-  }
+  .form-actions .btn { width: 100%; }
 }
 
 /* ── Móvil: la tabla pasa a tarjetas apiladas ─────────────────────
-   Siete columnas no entran en un teléfono, y el `overflow-x` del wrapper las
+   Ocho columnas no entran en un teléfono, y el `overflow-x` del wrapper las
    deja accesibles pero a costa de scrollear en dos ejes. Bajo 640 cada fila se
    convierte en una tarjeta: es la misma tabla, con `display: block` desarmando
    el layout tabular y cada celda rotulándose sola con su `data-label`. No hay
@@ -703,19 +1159,28 @@
   .tabla tbody tr {
     background: var(--white);
     border: 1px solid var(--line);
-    border-radius: 8px;
-    padding: 0 0.9rem;
+    border-radius: var(--radius-lg);
+    padding: 0 1rem;
   }
 
   .tabla tbody tr + tr { margin-top: 0.75rem; }
+
+  .tabla tbody tr:hover { background: var(--white); }
 
   .tabla td {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 1rem;
-    padding: 0.6rem 0;
+    /* El alto de grilla es para la tabla; en tarjeta cada celda mide lo que
+       necesita su contenido. */
+    height: auto;
+    min-height: 0;
+    padding: 0.65rem 0;
     text-align: right;
+    /* Acá sí puede partirse: una tarjeta crece hacia abajo sin descuadrar
+       nada, y no hay scroll horizontal que la rescate. */
+    white-space: normal;
   }
 
   /* La regla base saca el borde a toda la última fila —correcto en una tabla,
@@ -728,9 +1193,9 @@
   .tabla td::before {
     content: attr(data-label);
     flex-shrink: 0;
-    font-size: 0.72rem;
+    font-size: 0.68rem;
     font-weight: 600;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
     color: var(--text-muted);
     text-align: left;
@@ -742,14 +1207,31 @@
   .tabla td:first-child,
   .tabla td:last-child {
     display: block;
-    padding: 0.85rem 0;
+    padding: 0.9rem 0;
   }
 
   .tabla td:first-child::before,
   .tabla td:last-child::before { content: none; }
 
-  /* El recorte a 200px se calculó contra una columna de tabla; en la tarjeta el
-     título dispone del ancho entero. La elipsis sigue vigente para los títulos
-     largos. */
-  .tabla-titulo { max-width: none; }
+  /* Los recortes se calcularon contra una columna de tabla; en la tarjeta el
+     texto dispone del ancho entero. */
+  .tabla-titulo,
+  .tabla-texto { max-width: none; }
+
+  .tabla-titulo { font-size: 1rem; }
+
+  /* Las acciones ocupan el pie de la tarjeta, repartidas en partes iguales. */
+  .tabla-acciones { justify-content: stretch; }
+  .tabla-acciones .btn { flex: 1; }
+
+  /* La columna numérica se alinea a la derecha por regla base; en tarjeta el
+     valor ya está a la derecha del rótulo, así que sólo queda el formato. */
+  .tabla th.num,
+  .tabla td.num { text-align: right; }
+}
+
+/* El drawer sigue funcionando sin el deslizamiento: quien pidió menos
+   movimiento lo ve aparecer y desaparecer, no viajar. */
+@media (prefers-reduced-motion: reduce) {
+  .admin-sidebar { transition: none; }
 }

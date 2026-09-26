@@ -12,7 +12,7 @@ const crear = vi.mocked(personasApi.crear)
 
 const ANA = {
   id: 1, full_name: 'Ana Pérez', document_type: null, document_number: null,
-  created_at: '', tags: [], roles: { propietario: 1, comprador: 0, vendedor: 0, inquilino: 0, interesado: 0 },
+  created_at: '', tags: [], roles: { propietario: 1, comprador: 0, vendedor: 0, inquilino: 0, garante: 0, interesado: 0 },
 }
 
 beforeEach(() => {

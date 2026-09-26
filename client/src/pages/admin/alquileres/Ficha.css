@@ -1,0 +1,74 @@
+.ficha-contrato-cabecera { align-items: flex-start; }
+.ficha-contrato-cabecera h1 a { color: inherit; text-decoration: none; }
+.ficha-contrato-cabecera h1 a:hover { text-decoration: underline; }
+
+.ficha-contrato-meta {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem;
+  margin-top: 0.5rem; color: var(--text-muted); font-size: 0.9rem;
+}
+.ficha-contrato-meta strong { color: var(--text); font-size: 1.05rem; }
+
+.ficha-contrato-acciones { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+
+.ficha-contrato-rescision { margin: 0 0 1.25rem; background: var(--estado-baja-bg); color: var(--estado-baja); }
+.ficha-contrato-cadena { display: flex; flex-wrap: wrap; gap: 1rem; margin: 0 0 1.25rem; font-size: 0.9rem; }
+
+.ficha-contrato-grilla {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.25rem;
+}
+
+.ficha-contrato-datos {
+  display: grid; grid-template-columns: auto 1fr; gap: 0.5rem 1rem; align-items: center; margin: 0;
+}
+.ficha-contrato-datos dt {
+  color: var(--text-muted);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.ficha-contrato-datos dd { margin: 0; font-size: 0.95rem; }
+.ficha-contrato-pdf { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; }
+.ficha-contrato-notas { white-space: pre-wrap; margin: 1rem 0 0; }
+
+.ficha-contrato-partes { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem; margin-bottom: 0.6rem; }
+
+/* La tabla sangra hasta el borde de la tarjeta que la contiene: adentro de un
+   `.admin-card` una tabla con padding a los costados se lee como una caja
+   dentro de otra. El padding se lee de `--card-pad`, así que la sangría sigue
+   calzando cuando cambia en móvil. El redondeo de abajo acompaña al de la
+   tarjeta, que si no asomaría por debajo de la última fila. */
+.ficha-contrato-ajustes,
+.ficha-contrato-bloque { margin-top: 1.25rem; }
+
+.ficha-contrato-ajustes .tabla-wrapper,
+.ficha-contrato-bloque .tabla-wrapper {
+  margin: 0 calc(-1 * var(--card-pad)) calc(-1 * var(--card-pad));
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+}
+.ficha-contrato-bloque-cabecera { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 0.5rem 1rem; }
+.ficha-contrato-resumen { margin: 0 0 1rem; color: var(--text-muted); font-size: 0.9rem; }
+.ficha-contrato-vencido { color: var(--estado-baja); font-weight: 600; }
+.ficha-contrato-no-administrado { color: var(--text-muted); }
+.ficha-contrato-aviso { margin: 0 0 1rem; }
+
+@media (max-width: 640px) {
+  /* Bajo 640 la tabla deja de ser tabla: cada fila es una tarjeta con su
+     propio marco. Sangrarlas hasta el borde las dejaría pegadas al borde de la
+     tarjeta que las contiene, así que acá la sangría se anula. */
+  .ficha-contrato-ajustes .tabla-wrapper,
+  .ficha-contrato-bloque .tabla-wrapper {
+    margin: 0;
+    border-radius: 0;
+  }
+}
+
+@media (max-width: 860px) {
+  .ficha-contrato-grilla { grid-template-columns: 1fr; }
+  .ficha-contrato-datos { grid-template-columns: 1fr; gap: 0.15rem 0; }
+  .ficha-contrato-datos dd { margin-bottom: 0.5rem; }
+}

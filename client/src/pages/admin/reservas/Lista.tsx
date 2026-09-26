@@ -74,8 +74,13 @@ export default function ReservasLista() {
   return (
     <div>
       <div className="admin-page-header">
-        <h1>Reservas</h1>
-        <Link to="/admin/reservas/nueva" className="btn btn-magenta">+ Nueva reserva</Link>
+        <div>
+          <span className="section-label">CRM</span>
+          <h1>Reservas</h1>
+        </div>
+        <div className="admin-page-acciones">
+          <Link to="/admin/reservas/nueva" className="btn btn-magenta">+ Nueva reserva</Link>
+        </div>
       </div>
 
       <div className="admin-card filtros-bar">
@@ -101,22 +106,34 @@ export default function ReservasLista() {
                   <tr>
                     <th>Propiedad</th>
                     <th>Persona</th>
-                    <th>Seña</th>
+                    <th className="num">Seña</th>
                     <th>Vence</th>
                     <th>Estado</th>
-                    <th>Acciones</th>
+                    <th className="th-acciones">Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
                   {reservas.map(r => (
                     <tr key={r.id} className={claseVencimiento(r)}>
                       <td data-label="Propiedad">
-                        <Link to={`/admin/propiedades/${r.property_id}/editar`}>{r.propiedad.titulo}</Link>
+                        <Link
+                          to={`/admin/propiedades/${r.property_id}/editar`}
+                          className="tabla-titulo"
+                          title={r.propiedad.titulo}
+                        >
+                          {r.propiedad.titulo}
+                        </Link>
                       </td>
                       <td data-label="Persona">
-                        <Link to={`/admin/personas/${r.person.id}`}>{r.person.full_name}</Link>
+                        <Link
+                          to={`/admin/personas/${r.person.id}`}
+                          className="tabla-texto"
+                          title={r.person.full_name}
+                        >
+                          {r.person.full_name}
+                        </Link>
                       </td>
-                      <td data-label="Seña">{formatearMonto(r.amount, r.currency)}</td>
+                      <td data-label="Seña" className="tabla-precio num">{formatearMonto(r.amount, r.currency)}</td>
                       <td data-label="Vence">{formatearFecha(r.expires_at)}</td>
                       <td data-label="Estado">
                         <Badge value={r.status} label={LABEL_ESTADO_RESERVA[r.status]} />
@@ -134,9 +151,11 @@ export default function ReservasLista() {
                           </div>
                         )}
                         {r.status === 'vencida' && (
-                          <button className="btn btn-danger" onClick={() => accion(() => reservasApi.cancelar(r.id))}>
-                            Cancelar
-                          </button>
+                          <div className="tabla-acciones">
+                            <button className="btn btn-danger" onClick={() => accion(() => reservasApi.cancelar(r.id))}>
+                              Cancelar
+                            </button>
+                          </div>
                         )}
                       </td>
                     </tr>

@@ -34,6 +34,7 @@ from app.modules.propiedades.schemas import (
     PropiedadCreate,
     PropiedadUpdate,
 )
+from app.platform.alquileres.models import Contrato, EstadoContrato
 from app.platform.deals.models import Deal
 from app.platform.people.models import Person
 from app.platform.reservations.models import Reservation
@@ -48,9 +49,9 @@ def _verificar_persona(db: Session, persona_id: int | None) -> None:
     """
     if persona_id is None:
         return
-    existe = db.query(Person.id).filter(
-        Person.id == persona_id, Person.deleted_at.is_(None)
-    ).first()
+    existe = (
+        db.query(Person.id).filter(Person.id == persona_id, Person.deleted_at.is_(None)).first()
+    )
     if not existe:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail=f"La persona {persona_id} no existe"
@@ -162,6 +163,8 @@ class EventoOperacion(StrEnum):
     deal_ganado = "deal_ganado"
     deal_perdido = "deal_perdido"
     deal_reabierto = "deal_reabierto"  # de ganada/perdida a una etapa abierta
+    contrato_activado = "contrato_activado"  # alta o renovación de un contrato de alquiler
+    contrato_terminado = "contrato_terminado"  # fin o rescisión de un contrato de alquiler
 
 
 def aplicar_evento_de_operacion(
@@ -200,6 +203,17 @@ def aplicar_evento_de_operacion(
     elif evento == EventoOperacion.deal_reabierto:
         if estado == EstadoComercial.cerrada:
             prop.estado_comercial = EstadoComercial.disponible
+    elif evento == EventoOperacion.contrato_activado:
+        if estado == EstadoComercial.baja:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="La propiedad está dada de baja",
+            )
+        prop.estado_comercial = EstadoComercial.cerrada
+    elif evento == EventoOperacion.contrato_terminado:
+        # Solo libera si sigue cerrada: si el staff ya la movió a mano, se respeta.
+        if estado == EstadoComercial.cerrada:
+            prop.estado_comercial = EstadoComercial.disponible
 
     db.flush()
     return prop
@@ -226,6 +240,17 @@ def _verificar_liberacion_manual(db: Session, prop: Propiedad) -> None:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail=f"La propiedad tiene la operación {deal.id} ganada",
+        )
+    contrato = (
+        db.query(Contrato)
+        .filter(Contrato.property_id == prop.id, Contrato.estado == EstadoContrato.vigente)
+        .first()
+    )
+    if contrato:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="La propiedad tiene un contrato de alquiler vigente; "
+            "finalizalo o rescindilo primero",
         )
 
 

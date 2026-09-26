@@ -1,4 +1,5 @@
 """Modelos ORM: activities."""
+
 from __future__ import annotations
 
 from datetime import UTC, datetime
@@ -44,6 +45,9 @@ class Activity(Base):
     property_id: Mapped[int | None] = mapped_column(
         Integer, ForeignKey("propiedades.id", ondelete="SET NULL"), nullable=True, index=True
     )
+    deal_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("deals.id", ondelete="SET NULL"), nullable=True, index=True
+    )
     listing_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
     created_at: Mapped[datetime] = mapped_column(
@@ -56,10 +60,8 @@ class Activity(Base):
         nullable=False,
     )
 
-    assigned_to: Mapped[object | None] = relationship(
-        "User", foreign_keys=[assigned_to_user_id]
-    )
-    created_by: Mapped[object] = relationship(
-        "User", foreign_keys=[created_by_user_id]
-    )
+    assigned_to: Mapped[object | None] = relationship("User", foreign_keys=[assigned_to_user_id])
+    created_by: Mapped[object] = relationship("User", foreign_keys=[created_by_user_id])
     person: Mapped[object | None] = relationship("Person", foreign_keys=[person_id])
+    deal: Mapped[object | None] = relationship("Deal", foreign_keys=[deal_id])
+    propiedad: Mapped[object | None] = relationship("Propiedad", foreign_keys=[property_id])

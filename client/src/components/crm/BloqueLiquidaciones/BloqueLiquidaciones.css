@@ -1,0 +1,4 @@
+.liquidaciones-barra { display: flex; justify-content: flex-end; margin-bottom: 0.75rem; min-height: 1px; }
+.tabla-liquidaciones td { font-variant-numeric: tabular-nums; }
+.tabla-liquidaciones .tabla-acciones { display: flex; gap: 0.4rem; flex-wrap: nowrap; align-items: center; }
+.liquidaciones-fecha, .liquidaciones-enviado { color: var(--text-muted); font-size: 0.8rem; }

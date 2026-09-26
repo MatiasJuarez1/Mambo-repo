@@ -1,0 +1,98 @@
+/* Selector con autocompletado. Comparte estructura y estilo con
+   SelectorPersona / SelectorPropiedad / SelectorOperacion: los tres usan el
+   alto (`--admin-control-h`), el marco y el foco de los campos del panel, para
+   que en un formulario no se distingan de un `.form-field` común.
+
+   Tokens de la paleta "Petróleo y tinta" (ver client/src/index.css): esta hoja
+   no define ninguno nuevo. --white (fondo de paneles flotantes), --bone (hover
+   de ítem), --line (bordes) y --estado-baja (el color negativo del sistema, el
+   de .form-error / .btn-danger). */
+
+.selector-propiedad { position: relative; display: flex; flex-direction: column; gap: 0.4rem; }
+
+/* Mismo rótulo que `.form-field label`: versalita chica y espaciada. */
+.selector-propiedad-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.selector-propiedad-input {
+  width: 100%;
+  height: var(--admin-control-h);
+  padding: 0 0.8rem;
+  font-family: var(--font-sans);
+  font-size: 0.925rem;
+  color: var(--text);
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.selector-propiedad-input:focus {
+  border-color: var(--petrol);
+  box-shadow: 0 0 0 3px rgba(14, 58, 59, 0.08);
+}
+
+/* Valor ya elegido: ocupa el lugar del campo, así que mide lo mismo. */
+.selector-propiedad-elegida {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  min-height: var(--admin-control-h);
+  padding: 0.35rem 0.5rem 0.35rem 0.8rem;
+  background: var(--bone);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+}
+
+.selector-propiedad-panel {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 20;
+  margin-top: 0.25rem;
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+}
+
+.selector-propiedad-lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 260px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent;
+}
+
+.selector-propiedad-opcion {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 0.8rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.selector-propiedad-opcion:hover { background: var(--bone); }
+.selector-propiedad-opcion small { color: var(--text-muted); }
+
+.selector-propiedad-estado {
+  margin: 0;
+  padding: 0.6rem 0.8rem;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.selector-propiedad-error { color: var(--estado-baja); }

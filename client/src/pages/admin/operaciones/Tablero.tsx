@@ -81,8 +81,13 @@ export default function Tablero() {
   return (
     <div>
       <div className="admin-page-header">
-        <div className="tablero-cabecera">
+        <div>
+          <span className="section-label">CRM</span>
           <h1>Operaciones</h1>
+        </div>
+        {/* El selector de pipeline es un filtro de la pantalla, no un título:
+            va del lado de las acciones, junto al alta. */}
+        <div className="admin-page-acciones">
           <div className="tablero-pipelines" role="tablist">
             {pipelines.map(p => (
               <button
@@ -96,13 +101,13 @@ export default function Tablero() {
               </button>
             ))}
           </div>
+          <Link
+            to={`/admin/operaciones/nueva${pipeline ? `?pipeline=${pipeline.name}` : ''}`}
+            className="btn btn-magenta"
+          >
+            + Nueva operación
+          </Link>
         </div>
-        <Link
-          to={`/admin/operaciones/nueva${pipeline ? `?pipeline=${pipeline.name}` : ''}`}
-          className="btn btn-magenta"
-        >
-          + Nueva operación
-        </Link>
       </div>
 
       {error && <p className="lista-estado lista-error" role="alert">{error}</p>}

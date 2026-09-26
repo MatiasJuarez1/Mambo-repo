@@ -1,9 +1,13 @@
-"""Dependencias FastAPI reutilizables: get_current_user, require_role."""
+"""Dependencias FastAPI reutilizables: get_current_user, require_role y el token del cron."""
+
 from __future__ import annotations
 
-from fastapi import Cookie, Depends, HTTPException, status
+import hmac
+
+from fastapi import Cookie, Depends, Header, HTTPException, status
 from sqlalchemy.orm import Session as DBSession
 
+from app.config import get_settings
 from app.database import get_db
 from app.platform.auth.models import User
 from app.platform.auth.service import decodificar_access_token, get_valid_session
@@ -58,6 +62,7 @@ def require_role(*role_names: str):
         o como parámetro:
         current_user: User = Depends(require_role("admin"))
     """
+
     def _check(current_user: User = Depends(get_current_user)) -> User:
         user_roles = {ur.role.name for ur in current_user.user_roles}
         if not user_roles.intersection(role_names):
@@ -68,3 +73,19 @@ def require_role(*role_names: str):
         return current_user
 
     return _check
+
+
+def require_token_recordatorios(
+    token: str | None = Header(default=None, alias="X-Recordatorios-Token"),
+) -> None:
+    """Autentica al cron que dispara el email diario de recordatorios.
+
+    No usa la cookie de sesión porque quien llama no es una persona. Sin
+    `RECORDATORIOS_TOKEN` en el servidor el endpoint responde 404, no 401: así
+    no se anuncia que existe algo que abrir.
+    """
+    esperado = get_settings().recordatorios_token
+    if not esperado:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not Found")
+    if not token or not hmac.compare_digest(token.encode(), esperado.encode()):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token inválido")

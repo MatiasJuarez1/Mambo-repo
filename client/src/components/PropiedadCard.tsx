@@ -3,6 +3,7 @@ import type { PropiedadListItem } from '../types/propiedad'
 import {
   etiquetaCierre,
   formatPrecio,
+  formatSuperficie,
   LABEL_OPERACION,
   LABEL_TIPO,
   mediaUrl,
@@ -54,8 +55,8 @@ export default function PropiedadCard({ propiedad: p }: { propiedad: PropiedadLi
         <div className="prop-card-stats">
           {p.dormitorios != null && <span>{p.dormitorios} dorm.</span>}
           {p.banos != null && <span>{p.banos} baño{p.banos !== 1 ? 's' : ''}</span>}
-          {p.m2_cubiertos != null && <span>{p.m2_cubiertos} m²</span>}
-          {p.m2_totales != null && p.m2_cubiertos == null && <span>{p.m2_totales} m² tot.</span>}
+          {p.m2_cubiertos != null && <span>{formatSuperficie(p.m2_cubiertos)} m²</span>}
+          {p.m2_totales != null && p.m2_cubiertos == null && <span>{formatSuperficie(p.m2_totales)} m² tot.</span>}
         </div>
 
         <p className="prop-card-precio">{formatPrecio(p.precio, p.moneda)}</p>

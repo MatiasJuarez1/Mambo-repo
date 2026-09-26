@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { propiedadesApi } from '../../../api/propiedades'
-import type { TipoPropiedad, TipoOperacion, EstadoComercial, Medio } from '../../../types/propiedad'
+import type { TipoPropiedad, TipoOperacion, EstadoComercial, Medio, Propiedad } from '../../../types/propiedad'
 import type { PersonaBrief } from '../../../types/persona'
 import SelectorPersona from '../../../components/crm/SelectorPersona/SelectorPersona'
+import BloqueDocumentos from '../../../components/crm/BloqueDocumentos/BloqueDocumentos'
 import { etiquetaEstado, mediaUrl } from '../../../lib/propiedad'
+import { formatearFecha, formatearMonto } from '../../../lib/formato'
 import './Formulario.css'
 
 interface FormState {
@@ -59,6 +61,9 @@ export default function PropiedadFormulario() {
   // sino una persona elegida con el buscador.
   const [propietario, setPropietario] = useState<PersonaBrief | null>(null)
 
+  // Contrato de alquiler activo, si lo hay: solo se muestra, lo maneja Alquileres.
+  const [contratoVigente, setContratoVigente] = useState<Propiedad['contrato_vigente']>(null)
+
   // ── Cargar datos en modo edición ──
   useEffect(() => {
     if (!esEdicion) return
@@ -85,6 +90,7 @@ export default function PropiedadFormulario() {
         })
         setMedios([...p.medios].sort((a, b) => a.orden - b.orden))
         setPropietario(p.propietario)
+        setContratoVigente(p.contrato_vigente)
       })
       .catch(e => setError(e.message))
       .finally(() => setLoading(false))
@@ -174,7 +180,10 @@ export default function PropiedadFormulario() {
   return (
     <div>
       <div className="admin-page-header">
-        <h1>{esEdicion ? 'Editar propiedad' : 'Nueva propiedad'}</h1>
+        <div>
+          <span className="section-label">Inventario</span>
+          <h1>{esEdicion ? 'Editar propiedad' : 'Nueva propiedad'}</h1>
+        </div>
       </div>
 
       {error && <p className="form-error">{error}</p>}
@@ -257,6 +266,26 @@ export default function PropiedadFormulario() {
             La persona que figura como dueña. Aparece en su ficha como "Propietario".
           </p>
         </div>
+
+        {/* ── Contrato de alquiler ── */}
+        {esEdicion && (
+          <div className="admin-card form-section">
+            <h2 className="form-section-title">Contrato de alquiler</h2>
+            {contratoVigente
+              ? (
+                <p className="form-valor">
+                  {formatearMonto(contratoVigente.monto_vigente, contratoVigente.moneda)} · vence el {formatearFecha(contratoVigente.fecha_fin)}{' '}
+                  <Link to={`/admin/alquileres/${contratoVigente.id}`} className="btn btn-outline btn-chico">Ver contrato</Link>
+                </p>
+              )
+              : (
+                <div>
+                  <Link to={`/admin/alquileres/nuevo?property_id=${id}`} className="btn btn-outline btn-chico">Cargar contrato</Link>
+                  <p className="form-hint">Sin contrato vigente.</p>
+                </div>
+              )}
+          </div>
+        )}
 
         {/* ── Precio ── */}
         <div className="admin-card form-section">
@@ -378,6 +407,9 @@ export default function PropiedadFormulario() {
             </div>
           )}
         </div>
+
+        {/* ── Documentos ── */}
+        {esEdicion && <BloqueDocumentos entidad={{ propiedadId: Number(id) }} />}
 
         {/* ── Acciones ── */}
         <div className="form-actions">

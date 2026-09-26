@@ -14,7 +14,7 @@ const etiquetas = vi.mocked(personasApi.etiquetas)
 const ANA = {
   id: 1, full_name: 'Ana Pérez', document_type: 'DNI', document_number: '30111222',
   created_at: '', tags: ['inversor'],
-  roles: { propietario: 2, comprador: 0, vendedor: 0, inquilino: 0, interesado: 0 },
+  roles: { propietario: 2, comprador: 0, vendedor: 0, inquilino: 0, garante: 0, interesado: 0 },
 }
 
 beforeEach(() => {

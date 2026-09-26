@@ -1,11 +1,13 @@
-"""Modelos ORM: pipelines, pipeline_stages, deals, deal_parties."""
+"""Modelos ORM: pipelines, pipeline_stages, deals, deal_parties, comisiones, historial."""
+
 from __future__ import annotations
 
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 from decimal import Decimal
 
 from sqlalchemy import (
     Boolean,
+    Date,
     DateTime,
     ForeignKey,
     Integer,
@@ -17,6 +19,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
+from app.formato import redondear
 
 
 class Pipeline(Base):
@@ -117,6 +120,18 @@ class Deal(Base):
     parties: Mapped[list[DealParty]] = relationship(
         "DealParty", back_populates="deal", cascade="all, delete-orphan"
     )
+    # Un deal de Alquiler ganado puede tener un contrato (bloque 2a).
+    contrato: Mapped[object | None] = relationship("Contrato", back_populates="deal", uselist=False)
+    # Bloque 4: honorarios de la operación ganada e historial de estadías por etapa.
+    comision: Mapped[Comision | None] = relationship(
+        "Comision", back_populates="deal", uselist=False, cascade="all, delete-orphan"
+    )
+    stage_history: Mapped[list[DealStageHistory]] = relationship(
+        "DealStageHistory",
+        back_populates="deal",
+        cascade="all, delete-orphan",
+        order_by="DealStageHistory.entered_at",
+    )
 
     @property
     def is_closed(self) -> bool:
@@ -139,9 +154,7 @@ class DealParty(Base):
     """Persona vinculada a un deal con un rol específico."""
 
     __tablename__ = "deal_parties"
-    __table_args__ = (
-        UniqueConstraint("deal_id", "person_id", "role", name="uq_deal_party"),
-    )
+    __table_args__ = (UniqueConstraint("deal_id", "person_id", "role", name="uq_deal_party"),)
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     deal_id: Mapped[int] = mapped_column(
@@ -161,4 +174,98 @@ class DealParty(Base):
     person: Mapped[object] = relationship("Person", foreign_keys=[person_id])
 
 
-__all__ = ["Pipeline", "PipelineStage", "Deal", "DealParty"]
+class Comision(Base):
+    """Honorarios de una operación ganada. 1:1 con el deal; el reparto va aparte."""
+
+    __tablename__ = "comisiones"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    deal_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("deals.id", ondelete="CASCADE"), nullable=False, unique=True
+    )
+    monto_operacion: Mapped[Decimal] = mapped_column(Numeric(14, 2), nullable=False, default=0)
+    moneda: Mapped[str] = mapped_column(String(3), nullable=False, default="ARS")
+    # Porcentaje de referencia; manda `monto` (puede cargarse una cifra pactada sin %).
+    pct: Mapped[Decimal | None] = mapped_column(Numeric(5, 2), nullable=True)
+    monto: Mapped[Decimal] = mapped_column(Numeric(14, 2), nullable=False, default=0)
+    cobrada: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    fecha_cobro: Mapped[date | None] = mapped_column(Date, nullable=True)
+    notas: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(UTC), nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(UTC),
+        onupdate=lambda: datetime.now(UTC),
+        nullable=False,
+    )
+
+    deal: Mapped[Deal] = relationship("Deal", back_populates="comision")
+    reparto: Mapped[list[ComisionReparto]] = relationship(
+        "ComisionReparto",
+        back_populates="comision",
+        cascade="all, delete-orphan",
+        order_by="ComisionReparto.pct.desc()",
+    )
+
+    @property
+    def sin_monto(self) -> bool:
+        return self.monto_operacion == 0
+
+
+class ComisionReparto(Base):
+    """Parte de la comisión que le toca a un agente, como % de la comisión."""
+
+    __tablename__ = "comisiones_reparto"
+    __table_args__ = (UniqueConstraint("comision_id", "user_id", name="uq_comision_reparto"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    comision_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("comisiones.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    user_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("users.id", ondelete="RESTRICT"), nullable=False, index=True
+    )
+    pct: Mapped[Decimal] = mapped_column(Numeric(5, 2), nullable=False)
+
+    comision: Mapped[Comision] = relationship("Comision", back_populates="reparto")
+    user: Mapped[object] = relationship("User")
+
+    @property
+    def monto(self) -> Decimal:
+        return redondear(self.comision.monto * self.pct / Decimal(100))
+
+    @property
+    def nombre(self) -> str:
+        return self.user.name
+
+
+class DealStageHistory(Base):
+    """Una estadía de un deal en una etapa. `left_at` null = etapa actual."""
+
+    __tablename__ = "deal_stage_history"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    deal_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("deals.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    stage_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("pipeline_stages.id", ondelete="RESTRICT"), nullable=False, index=True
+    )
+    entered_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    left_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+    deal: Mapped[Deal] = relationship("Deal", back_populates="stage_history")
+    stage: Mapped[PipelineStage] = relationship("PipelineStage")
+
+
+__all__ = [
+    "Pipeline",
+    "PipelineStage",
+    "Deal",
+    "DealParty",
+    "Comision",
+    "ComisionReparto",
+    "DealStageHistory",
+]

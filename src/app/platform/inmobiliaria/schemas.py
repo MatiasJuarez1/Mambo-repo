@@ -16,6 +16,9 @@ class InmobiliariaUpdate(BaseModel):
     direccion: str | None = Field(default=None, max_length=255)
     honorarios_venta_pct: Decimal | None = Field(default=None, ge=0, le=100, decimal_places=2)
     honorarios_alquiler_pct: Decimal | None = Field(default=None, ge=0, le=100, decimal_places=2)
+    punitorio_diario_pct: Decimal | None = Field(default=None, ge=0, le=100, decimal_places=3)
+    dias_gracia: int | None = Field(default=None, ge=0, le=60)
+    dias_aviso_recordatorios: int | None = Field(default=None, ge=1, le=180)
 
 
 class InmobiliariaOut(BaseModel):
@@ -28,6 +31,21 @@ class InmobiliariaOut(BaseModel):
     direccion: str | None
     honorarios_venta_pct: Decimal | None
     honorarios_alquiler_pct: Decimal | None
+    punitorio_diario_pct: Decimal | None
+    dias_gracia: int
+    dias_aviso_recordatorios: int
     actualizado_en: datetime
+    email_configurado: bool = False
+    recordatorios_configurado: bool = False
 
     model_config = ConfigDict(from_attributes=True)
+
+    @classmethod
+    def desde(cls, fila) -> InmobiliariaOut:
+        """`email_configurado` sale de `Settings`, no de la fila."""
+        from app.config import get_settings
+
+        out = cls.model_validate(fila)
+        out.email_configurado = get_settings().email_configurado
+        out.recordatorios_configurado = get_settings().recordatorios_configurado
+        return out

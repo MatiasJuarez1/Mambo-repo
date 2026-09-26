@@ -1,4 +1,4 @@
-import { api } from './client'
+import { api, BASE_URL } from './client'
 import type {
   Publicacion,
   PublicacionListItem,
@@ -44,4 +44,11 @@ export const publicacionesApi = {
 
   eliminar: (id: number) =>
     api.delete<void>(`${BASE}/${id}`),
+
+  /**
+   * URL absoluta del ZIP con las fotos y el texto. Se abre con un `<a download>`
+   * en vez de `fetch`: la cookie de sesión viaja igual porque el pedido es
+   * first-party (el proxy de Vercel), y así no hay que manejar el binario en JS.
+   */
+  urlDescarga: (id: number) => `${BASE_URL}${BASE}/${id}/descargar`,
 }

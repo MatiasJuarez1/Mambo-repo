@@ -31,7 +31,17 @@ import ReservaFormulario    from './pages/admin/reservas/Formulario'
 import Tablero              from './pages/admin/operaciones/Tablero'
 import OperacionFormulario  from './pages/admin/operaciones/Formulario'
 import OperacionFicha       from './pages/admin/operaciones/Ficha'
+import ActividadesLista       from './pages/admin/actividades/Lista'
 import Configuracion        from './pages/admin/configuracion/Configuracion'
+import Reportes             from './pages/admin/reportes/Reportes'
+import ContratosLista       from './pages/admin/alquileres/Lista'
+import CobrosLista          from './pages/admin/alquileres/Cobros'
+import LiquidacionesLista  from './pages/admin/alquileres/Liquidaciones'
+import RecordatoriosPagina  from './pages/admin/alquileres/Recordatorios'
+import ContratoNuevo        from './pages/admin/alquileres/Nuevo'
+import ContratoFicha        from './pages/admin/alquileres/Ficha'
+import ContratoEditar       from './pages/admin/alquileres/Editar'
+import ContratoRenovar      from './pages/admin/alquileres/Renovar'
 
 /** Ruta contenedora que le da contexto de sesión a toda la rama `/admin`. */
 function ProveedorSesionAdmin() {
@@ -101,7 +111,21 @@ export default function App() {
                 <Route path=":id"   element={<OperacionFicha />} />
               </Route>
 
+              <Route path="actividades" element={<ActividadesLista />} />
+
+              <Route path="alquileres">
+                <Route index               element={<ContratosLista />} />
+                <Route path="cobros"       element={<CobrosLista />} />
+                <Route path="liquidaciones" element={<LiquidacionesLista />} />
+                <Route path="recordatorios" element={<RecordatoriosPagina />} />
+                <Route path="nuevo"        element={<ContratoNuevo />} />
+                <Route path=":id"          element={<ContratoFicha />} />
+                <Route path=":id/editar"   element={<ContratoEditar />} />
+                <Route path=":id/renovar"  element={<ContratoRenovar />} />
+              </Route>
+
               <Route path="configuracion" element={<Configuracion />} />
+              <Route path="reportes"      element={<Reportes />} />
             </Route>
           </Route>
         </Route>

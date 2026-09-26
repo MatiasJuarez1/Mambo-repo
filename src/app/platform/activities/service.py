@@ -1,4 +1,5 @@
 """Lógica de negocio: CRUD activities, filtros y cierre de tarea."""
+
 from __future__ import annotations
 
 from datetime import UTC, datetime
@@ -6,12 +7,28 @@ from datetime import UTC, datetime
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session as DBSession
 
+from app.modules.propiedades.service import obtener_propiedad
 from app.platform.activities.models import Activity
 from app.platform.activities.schemas import ActivityCreate, ActivityUpdate
+from app.platform.deals.service import get_deal_or_404
+from app.platform.people.service import get_person_or_404
 
 # ---------------------------------------------------------------------------
 # Queries
 # ---------------------------------------------------------------------------
+
+
+def _validar_entidades(
+    db: DBSession, *, person_id: int | None, property_id: int | None, deal_id: int | None
+) -> None:
+    """Si vienen cargadas, deben existir. Cualquier combinación es válida, o ninguna."""
+    if person_id is not None:
+        get_person_or_404(db, person_id)
+    if property_id is not None:
+        obtener_propiedad(db, property_id)
+    if deal_id is not None:
+        get_deal_or_404(db, deal_id)
+
 
 def list_activities(
     db: DBSession,
@@ -21,6 +38,7 @@ def list_activities(
     activity_status: str | None = None,
     activity_type: str | None = None,
     property_id: int | None = None,
+    deal_id: int | None = None,
     skip: int = 0,
     limit: int = 50,
 ) -> tuple[int, list[Activity]]:
@@ -36,6 +54,8 @@ def list_activities(
         q = q.filter(Activity.activity_type == activity_type)
     if property_id is not None:
         q = q.filter(Activity.property_id == property_id)
+    if deal_id is not None:
+        q = q.filter(Activity.deal_id == deal_id)
 
     total = q.count()
     items = (
@@ -58,7 +78,11 @@ def get_activity_or_404(db: DBSession, activity_id: int) -> Activity:
 # Mutaciones
 # ---------------------------------------------------------------------------
 
+
 def create_activity(db: DBSession, data: ActivityCreate, created_by_user_id: int) -> Activity:
+    _validar_entidades(
+        db, person_id=data.person_id, property_id=data.property_id, deal_id=data.deal_id
+    )
     activity = Activity(
         **data.model_dump(),
         created_by_user_id=created_by_user_id,
@@ -78,6 +102,9 @@ def update_activity(db: DBSession, activity_id: int, data: ActivityUpdate) -> Ac
             status_code=status.HTTP_409_CONFLICT,
             detail="No se puede editar una actividad ya completada",
         )
+    _validar_entidades(
+        db, person_id=data.person_id, property_id=data.property_id, deal_id=data.deal_id
+    )
 
     for field, value in data.model_dump(exclude_unset=True).items():
         setattr(activity, field, value)

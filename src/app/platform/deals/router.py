@@ -1,14 +1,17 @@
-"""Router deals: /pipelines, /deals, PATCH /deals/{id}/stage, /deals/{id}/parties."""
+"""Router deals: /pipelines, /deals, PATCH /deals/{id}/stage, /deals/{id}/parties, /comision."""
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session as DBSession
 
 from app.database import get_db
+from app.platform.alquileres.schemas import ContratoDetalle
 from app.platform.auth.dependencies import get_current_user, require_role
 from app.platform.auth.models import User
-from app.platform.deals import service
+from app.platform.deals import comisiones, service
 from app.platform.deals.schemas import (
+    ComisionIn,
+    ComisionOut,
     DealCreate,
     DealListOut,
     DealMoveStage,
@@ -217,6 +220,39 @@ def move_stage(
 ) -> DealOut:
     deal = service.move_stage(db, deal_id, body)
     return DealOut.model_validate(deal)
+
+
+@router.get("/deals/{deal_id}/contrato", response_model=ContratoDetalle, dependencies=[_staff])
+def get_contrato(
+    deal_id: int,
+    db: DBSession = Depends(get_db),
+) -> ContratoDetalle:
+    """El contrato de alquiler que nació de este deal, si lo hay."""
+    deal = service.get_deal_or_404(db, deal_id)
+    if deal.contrato is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="El deal no tiene contrato"
+        )
+    return ContratoDetalle.model_validate(deal.contrato)
+
+
+@router.get("/deals/{deal_id}/comision", response_model=ComisionOut, dependencies=[_staff])
+def get_comision(deal_id: int, db: DBSession = Depends(get_db)) -> ComisionOut:
+    """La comisión de la operación ganada; 404 si todavía no se cargó."""
+    deal = service.get_deal_or_404(db, deal_id)
+    if deal.comision is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="La operación no tiene comisión cargada",
+        )
+    return ComisionOut.model_validate(deal.comision)
+
+
+@router.put("/deals/{deal_id}/comision", response_model=ComisionOut, dependencies=[_staff])
+def put_comision(deal_id: int, body: ComisionIn, db: DBSession = Depends(get_db)) -> ComisionOut:
+    """Crea o reemplaza la comisión entera (reparto incluido). Solo deals ganados."""
+    deal = service.get_deal_or_404(db, deal_id)
+    return ComisionOut.model_validate(comisiones.guardar(db, deal, body))
 
 
 @router.delete("/deals/{deal_id}", status_code=status.HTTP_204_NO_CONTENT, dependencies=[_staff])

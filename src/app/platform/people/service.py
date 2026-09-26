@@ -10,10 +10,12 @@ from sqlalchemy.orm import Session as DBSession
 from app.modules.propiedades.models import Propiedad
 from app.modules.propiedades.schemas import PropiedadBrief
 from app.platform.activities.models import Activity
+from app.platform.alquileres.models import Contrato, ContratoParte, EstadoContrato
 from app.platform.deals.models import Deal, DealParty
 from app.platform.people.models import Person, PersonContact, PersonTag
 from app.platform.people.schemas import (
     ActividadVinculoOut,
+    ContratoVinculoOut,
     DealVinculoOut,
     PersonContactCreate,
     PersonContactUpdate,
@@ -223,25 +225,63 @@ def list_tags(db: DBSession) -> list[tuple[str, int]]:
 # Una persona no "es" compradora: figura como tal en una operación ganada. Los
 # roles se calculan siempre desde las relaciones para que nunca queden viejos y
 # para que la misma persona pueda ser dueña de una cosa y compradora de otra.
+# Cada rol cuenta pares (persona, propiedad) distintos: las fuentes (propiedades,
+# deals ganados, contratos de alquiler vigentes) se unen antes de contar.
 
-ROLES = ("propietario", "comprador", "vendedor", "inquilino", "interesado")
+ROLES = ("propietario", "comprador", "vendedor", "inquilino", "garante", "interesado")
+
+
+def _pares_propietario_por_propiedades():
+    return select(
+        Propiedad.propietario_persona_id.label("person_id"), Propiedad.id.label("clave")
+    ).where(Propiedad.propietario_persona_id.is_not(None), Propiedad.eliminado_en.is_(None))
+
+
+def _pares_por_deals_ganados(rol: str):
+    # Un deal sin propiedad cuenta igual: la clave negativa no choca con ningún id real.
+    clave = func.coalesce(Deal.property_id, -Deal.id)
+    return (
+        select(DealParty.person_id.label("person_id"), clave.label("clave"))
+        .join(Deal, Deal.id == DealParty.deal_id)
+        .where(DealParty.role == rol, Deal.is_won.is_(True), Deal.deleted_at.is_(None))
+    )
+
+
+def _pares_por_contratos_vigentes(rol: str):
+    return (
+        select(ContratoParte.person_id.label("person_id"), Contrato.property_id.label("clave"))
+        .join(Contrato, Contrato.id == ContratoParte.contrato_id)
+        .where(ContratoParte.rol == rol, Contrato.estado == EstadoContrato.vigente)
+    )
+
+
+def _contar_pares(*fuentes):
+    """Une fuentes de pares (person_id, clave), las deduplica y cuenta por persona.
+
+    Así una persona inquilina por el deal ganado **y** por el contrato de la misma
+    propiedad cuenta 1, no 2. `union` (no `union_all`) es lo que deduplica.
+    """
+    primera, *resto = fuentes
+    pares = primera.union(*resto).subquery() if resto else primera.subquery()
+    return select(pares.c.person_id.label("person_id"), func.count().label("n")).group_by(
+        pares.c.person_id
+    )
 
 
 def _consulta_rol(rol: str):
     """Select (person_id, cantidad) para un rol. Se reutiliza para contar y filtrar."""
     if rol == "propietario":
-        return (
-            select(Propiedad.propietario_persona_id.label("person_id"), func.count().label("n"))
-            .where(Propiedad.propietario_persona_id.is_not(None), Propiedad.eliminado_en.is_(None))
-            .group_by(Propiedad.propietario_persona_id)
+        return _contar_pares(
+            _pares_propietario_por_propiedades(), _pares_por_contratos_vigentes("propietario")
         )
-    if rol in ("comprador", "vendedor", "inquilino"):
-        return (
-            select(DealParty.person_id.label("person_id"), func.count().label("n"))
-            .join(Deal, Deal.id == DealParty.deal_id)
-            .where(DealParty.role == rol, Deal.is_won.is_(True), Deal.deleted_at.is_(None))
-            .group_by(DealParty.person_id)
+    if rol in ("comprador", "vendedor"):
+        return _contar_pares(_pares_por_deals_ganados(rol))
+    if rol == "inquilino":
+        return _contar_pares(
+            _pares_por_deals_ganados("inquilino"), _pares_por_contratos_vigentes("inquilino")
         )
+    if rol == "garante":
+        return _contar_pares(_pares_por_contratos_vigentes("garante"))
     if rol == "interesado":
         abiertos = (
             select(DealParty.person_id.label("person_id"))
@@ -260,7 +300,7 @@ def _consulta_rol(rol: str):
 
 
 def roles_de_personas(db: DBSession, person_ids: list[int]) -> dict[int, dict[str, int]]:
-    """Roles de varias personas en cinco consultas agregadas (no una por persona)."""
+    """Roles de varias personas en una consulta agregada por rol (no una por persona)."""
     resultado = {pid: dict.fromkeys(ROLES, 0) for pid in person_ids}
     if not person_ids:
         return resultado
@@ -316,6 +356,14 @@ def get_person_links(db: DBSession, person_id: int) -> PersonLinksOut:
         .order_by(Activity.due_at.asc().nulls_last(), Activity.created_at.desc())
         .all()
     )
+    # Historial completo (vigentes y no): una entrada por (contrato, rol) de la persona.
+    partes_contratos = (
+        db.query(ContratoParte)
+        .join(Contrato, Contrato.id == ContratoParte.contrato_id)
+        .filter(ContratoParte.person_id == person_id)
+        .order_by(Contrato.fecha_fin.desc(), Contrato.id.desc(), ContratoParte.id)
+        .all()
+    )
 
     return PersonLinksOut(
         propiedades=[
@@ -357,6 +405,15 @@ def get_person_links(db: DBSession, person_id: int) -> PersonLinksOut:
                 due_at=a.due_at,
             )
             for a in actividades
+        ],
+        contratos=[
+            ContratoVinculoOut(
+                id=pc.contrato.id, rol=pc.rol, estado=pc.contrato.estado,
+                fecha_fin=pc.contrato.fecha_fin, monto_vigente=pc.contrato.monto_vigente,
+                moneda=pc.contrato.moneda,
+                propiedad=PropiedadBrief.model_validate(pc.contrato.propiedad),
+            )
+            for pc in partes_contratos
         ],
     )
 

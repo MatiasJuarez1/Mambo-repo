@@ -25,6 +25,7 @@ function propiedad(over: Partial<Propiedad> = {}): Propiedad {
     m2_cubiertos: 140,
     m2_totales: 200,
     propietario_persona_id: null,
+    contrato_vigente: null,
     propietario: null,
     creado_en: '2026-01-01T10:00:00',
     actualizado_en: '2026-01-01T10:00:00',

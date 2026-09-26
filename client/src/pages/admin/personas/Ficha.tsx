@@ -4,9 +4,11 @@ import { personasApi } from '../../../api/personas'
 import type { Contacto, Persona, Vinculos } from '../../../types/persona'
 import ChipsRol from '../../../components/crm/ChipsRol/ChipsRol'
 import BloqueVinculos from '../../../components/crm/BloqueVinculos/BloqueVinculos'
+import BloqueDocumentos from '../../../components/crm/BloqueDocumentos/BloqueDocumentos'
 import Badge from '../../../components/Badge'
 import { formatearFecha, formatearMonto } from '../../../lib/formato'
 import { LABEL_ESTADO_RESERVA, LABEL_ROL_PARTE } from '../../../lib/crm'
+import { LABEL_ESTADO_CONTRATO, LABEL_ROL_CONTRATO } from '../../../lib/alquileres'
 import type { EstadoReserva } from '../../../types/reserva'
 import type { RolParte } from '../../../types/operacion'
 import './Ficha.css'
@@ -92,6 +94,20 @@ export default function PersonaFicha() {
           ))}
         </BloqueVinculos>
 
+        <BloqueVinculos titulo="Contratos" vacio="Sin contratos">
+          {vinculos.contratos.map(c => (
+            <li key={`${c.id}-${c.rol}`}>
+              <Link to={`/admin/alquileres/${c.id}`}>
+                {c.propiedad.titulo} <small>({LABEL_ROL_CONTRATO[c.rol]})</small>
+              </Link>
+              <span className="ficha-etapa">
+                {formatearMonto(c.monto_vigente, c.moneda)} · vence {formatearFecha(c.fecha_fin)}
+              </span>
+              <Badge value={c.estado} label={LABEL_ESTADO_CONTRATO[c.estado]} />
+            </li>
+          ))}
+        </BloqueVinculos>
+
         <BloqueVinculos titulo="Actividades pendientes" vacio="Sin actividades pendientes">
           {vinculos.actividades.map(a => (
             <li key={a.id}>
@@ -101,6 +117,8 @@ export default function PersonaFicha() {
           ))}
         </BloqueVinculos>
       </div>
+
+      <BloqueDocumentos entidad={{ personaId: persona.id }} />
     </div>
   )
 }

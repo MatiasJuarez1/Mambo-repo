@@ -10,9 +10,11 @@ from app.database import Base
 from app.modules.propiedades import models as _propiedades_models  # noqa: F401
 from app.modules.publicaciones import models as _publicaciones_models  # noqa: F401
 from app.platform.activities import models as _activities_models  # noqa: F401
+from app.platform.alquileres import models as _alquileres_models  # noqa: F401
 from app.platform.audit import models as _audit_models  # noqa: F401
 from app.platform.auth import models as _auth_models  # noqa: F401
 from app.platform.deals import models as _deals_models  # noqa: F401
+from app.platform.documentos import models as _documentos_models  # noqa: F401
 from app.platform.inmobiliaria import models as _inmobiliaria_models  # noqa: F401
 from app.platform.notes import models as _notes_models  # noqa: F401
 from app.platform.people import models as _people_models  # noqa: F401

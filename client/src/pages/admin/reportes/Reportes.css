@@ -1,0 +1,80 @@
+/* Reportes: pestañas + una tabla por pestaña. El resto (filtros, tabla,
+   tarjeta) sale de la capa compartida de AdminLayout.css. */
+
+.reportes-tabs {
+  display: flex;
+  gap: var(--space-1);
+  margin-bottom: var(--space-4);
+  border-bottom: 1px solid var(--line);
+  overflow-x: auto;
+  /* La barra del sistema debajo de las pestañas parte la línea inferior en
+     dos; fina y transparente se integra al filete. */
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent;
+}
+
+.reportes-tabs::-webkit-scrollbar { height: 4px; }
+.reportes-tabs::-webkit-scrollbar-track { background: transparent; }
+.reportes-tabs::-webkit-scrollbar-thumb { background: var(--line); border-radius: 999px; }
+
+.reportes-tab {
+  background: none;
+  border: 0;
+  padding: 0.7rem 1.1rem;
+  cursor: pointer;
+  /* El filete de la pestaña activa se dibuja siempre, transparente cuando no
+     lo está: si apareciera recién al activarse, la fila entera se movería 2px
+     al cambiar de pestaña. */
+  border-bottom: 2px solid transparent;
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  white-space: nowrap;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.reportes-tab:hover { color: var(--petrol); }
+
+.reportes-tab.activa {
+  border-bottom-color: var(--magenta);
+  color: var(--petrol);
+}
+
+.reportes-resumen {
+  margin: var(--space-4) 0 0;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.reportes-grafico { margin-bottom: var(--space-4); }
+
+/* Título dentro de una tarjeta que es, ella misma, el `.tabla-wrapper` (o sea,
+   sin padding propio): el rótulo se lo pone acá y cierra con el mismo filete
+   que separa el encabezado de la tabla. Usa `.form-section-title`, de ahí el
+   `margin-bottom: 0` — el de aquella regla separaba de un campo, y acá el
+   siguiente elemento es la tabla, que trae su propio fondo. */
+.reportes-tabla-titulo {
+  padding: var(--space-4);
+  margin-bottom: 0;
+  border-bottom: 1px solid var(--line);
+  font-family: var(--font-serif);
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--petrol);
+}
+
+/* Fila de totales: cierra la tabla, así que va con peso y un filete más marcado
+   que el de las filas comunes. */
+.fila-total td {
+  font-weight: 700;
+  border-top: 2px solid var(--line);
+  background: var(--bone);
+}
+
+@media (max-width: 860px) {
+  /* Las pestañas son el control principal de la pantalla: con el puntero
+     táctil tienen que llegar al mínimo de 44px. */
+  .reportes-tab { min-height: var(--tap-min); }
+}

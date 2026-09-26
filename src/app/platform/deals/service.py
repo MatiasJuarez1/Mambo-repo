@@ -7,6 +7,7 @@ from fastapi import HTTPException, status
 from sqlalchemy.orm import Session as DBSession
 
 from app.modules.propiedades.service import EventoOperacion, aplicar_evento_de_operacion
+from app.platform.deals import comisiones, historial
 from app.platform.deals.models import Deal, DealParty, Pipeline, PipelineStage
 from app.platform.deals.pipelines_base import PIPELINES_BASE
 from app.platform.deals.schemas import (
@@ -230,6 +231,7 @@ def create_deal(db: DBSession, data: DealCreate, created_by_user_id: int) -> Dea
     )
     db.add(deal)
     db.flush()
+    historial.registrar_entrada(db, deal, data.stage_id, deal.stage_changed_at)
 
     for party_data in data.parties:
         db.add(DealParty(deal_id=deal.id, **party_data.model_dump()))
@@ -263,6 +265,10 @@ def move_stage(db: DBSession, deal_id: int, data: DealMoveStage) -> Deal:
     stage = db.query(PipelineStage).filter(PipelineStage.id == data.stage_id).first()
     estaba_cerrado = deal.is_closed
     ahora = datetime.now(UTC)
+
+    # Mover a la misma etapa no es una estadía nueva.
+    if data.stage_id != deal.stage_id:
+        historial.registrar_entrada(db, deal, data.stage_id, ahora)
 
     deal.stage_id = data.stage_id
     deal.stage_changed_at = ahora
@@ -349,15 +355,13 @@ def _reserva_activa(db: DBSession, property_id: int) -> Reservation | None:
 
 
 def _aplicar_cierre(db: DBSession, deal: Deal, stage: PipelineStage, estaba_cerrado: bool) -> None:
-    """Refleja en la propiedad (y en su reserva activa) que el deal cambió de etapa.
+    """Refleja el cambio de etapa en la propiedad, su reserva y la comisión.
 
-    Sin commit: lo hace quien llama. Un deal sin propiedad no dispara nada. Si la
-    propiedad rechaza el evento (409), se revierte la sesión entera: el deal ya
-    tiene la etapa nueva en memoria y sin rollback un lector de la misma sesión
-    (los tests, o el `refresh` de un error posterior) la vería como aplicada.
+    Sin commit: lo hace quien llama. Si algo rechaza el evento (409: la propiedad,
+    el contrato de alquiler o una comisión cobrada), se revierte la sesión entera:
+    el deal ya tiene la etapa nueva en memoria y sin rollback un lector de la misma
+    sesión (los tests, o el `refresh` de un error posterior) la vería como aplicada.
     """
-    if deal.property_id is None:
-        return
     try:
         _aplicar_cierre_sin_proteccion(db, deal, stage, estaba_cerrado)
     except HTTPException:
@@ -368,20 +372,34 @@ def _aplicar_cierre(db: DBSession, deal: Deal, stage: PipelineStage, estaba_cerr
 def _aplicar_cierre_sin_proteccion(
     db: DBSession, deal: Deal, stage: PipelineStage, estaba_cerrado: bool
 ) -> None:
+    # La comisión y el contrato no dependen de que haya propiedad; la propiedad y
+    # su reserva sí.
+    con_propiedad = deal.property_id is not None
     if stage.is_won:
-        aplicar_evento_de_operacion(db, deal.property_id, EventoOperacion.deal_ganado)
-        reserva = _reserva_activa(db, deal.property_id)
-        if reserva:
-            reserva.status = "convertida"
-            reserva.updated_at = datetime.now(UTC)
+        if con_propiedad:
+            aplicar_evento_de_operacion(db, deal.property_id, EventoOperacion.deal_ganado)
+            reserva = _reserva_activa(db, deal.property_id)
+            if reserva:
+                reserva.status = "convertida"
+                reserva.updated_at = datetime.now(UTC)
+        comisiones.crear_por_defecto(db, deal)
     elif stage.is_lost:
-        reserva = _reserva_activa(db, deal.property_id)
-        if reserva:
-            reserva.status = "cancelada"
-            reserva.updated_at = datetime.now(UTC)
-        aplicar_evento_de_operacion(db, deal.property_id, EventoOperacion.deal_perdido)
+        comisiones.al_reabrir(db, deal)
+        if con_propiedad:
+            reserva = _reserva_activa(db, deal.property_id)
+            if reserva:
+                reserva.status = "cancelada"
+                reserva.updated_at = datetime.now(UTC)
+            aplicar_evento_de_operacion(db, deal.property_id, EventoOperacion.deal_perdido)
     elif estaba_cerrado:
-        aplicar_evento_de_operacion(db, deal.property_id, EventoOperacion.deal_reabierto)
+        comisiones.al_reabrir(db, deal)
+        if deal.contrato is not None:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="El deal tiene un contrato de alquiler; rescindilo antes de reabrirlo",
+            )
+        if con_propiedad:
+            aplicar_evento_de_operacion(db, deal.property_id, EventoOperacion.deal_reabierto)
 
 
 def _validate_stage_belongs_to_pipeline(

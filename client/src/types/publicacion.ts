@@ -33,4 +33,13 @@ export interface PublicacionCreatePayload {
   slug?: string
 }
 
-export type PublicacionUpdatePayload = Partial<Omit<PublicacionCreatePayload, 'propiedad_id'>>
+// En edición, vaciar un campo opcional necesita mandar `null` explícito (no alcanza con
+// omitirlo): el backend aplica `exclude_unset=True` y no puede distinguir "no lo mandes"
+// de "vació el campo" si el valor es `undefined`, porque `JSON.stringify` borra esas claves.
+export type PublicacionUpdatePayload = Partial<
+  Omit<PublicacionCreatePayload, 'propiedad_id' | 'descripcion' | 'precio_publicado' | 'slug'>
+> & {
+  descripcion?: string | null
+  precio_publicado?: number | null
+  slug?: string | null
+}

@@ -17,7 +17,18 @@ const grupos = [
       { to: '/admin/personas',    label: 'Personas' },
       { to: '/admin/reservas',    label: 'Reservas' },
       { to: '/admin/operaciones', label: 'Operaciones' },
+      { to: '/admin/actividades', label: 'Actividades' },
+      // `/recordatorios` y `/cobros` van antes que `/alquileres` porque el título de
+      // la topbar sale del primer enlace cuyo `to` es prefijo de la ruta actual.
+      { to: '/admin/alquileres/recordatorios', label: 'Recordatorios', end: false },
+      { to: '/admin/alquileres/cobros', label: 'Cobros', end: false },
+      { to: '/admin/alquileres/liquidaciones', label: 'Liquidaciones', end: false },
+      { to: '/admin/alquileres',  label: 'Contratos', end: true },
     ],
+  },
+  {
+    titulo: 'Análisis',
+    items: [{ to: '/admin/reportes', label: 'Reportes' }],
   },
 ]
 
@@ -127,10 +138,11 @@ export default function AdminLayout() {
           {grupos.map(g => (
             <div key={g.titulo}>
               <p className="admin-nav-group">{g.titulo}</p>
-              {g.items.map(({ to, label }) => (
+              {g.items.map(({ to, label, end }) => (
                 <NavLink
                   key={to}
                   to={to}
+                  end={end}
                   className={({ isActive }) => `admin-nav-item${isActive ? ' active' : ''}`}
                 >
                   {label}
@@ -165,8 +177,13 @@ export default function AdminLayout() {
         </div>
       </aside>
 
+      {/* El div interno es el que topea el ancho de lectura (ver
+          `.admin-main-inner`): el fondo hueso tiene que seguir llegando hasta
+          el borde de la ventana, así que el tope no puede ir en el `main`. */}
       <main className="admin-main">
-        <Outlet />
+        <div className="admin-main-inner">
+          <Outlet />
+        </div>
       </main>
     </div>
   )

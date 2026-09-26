@@ -1,6 +1,7 @@
 import { api } from './client'
 import { construirQuery } from '../lib/query'
 import type { Paginado } from '../types/persona'
+import type { Comision, ComisionIn } from '../types/comision'
 import type {
   Operacion, OperacionCreatePayload, OperacionListItem, OperacionUpdatePayload,
   Parte, PartePayload, Pipeline, PipelineResumen,
@@ -29,4 +30,7 @@ export const operacionesApi = {
 
   agregarParte: (id: number, data: PartePayload) => api.post<Parte>(`${BASE}/deals/${id}/parties`, data),
   quitarParte:  (id: number, parteId: number)    => api.delete<void>(`${BASE}/deals/${id}/parties/${parteId}`),
+
+  comision:        (id: number)                   => api.get<Comision>(`${BASE}/deals/${id}/comision`),
+  guardarComision: (id: number, data: ComisionIn) => api.put<Comision>(`${BASE}/deals/${id}/comision`, data),
 }

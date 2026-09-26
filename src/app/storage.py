@@ -160,6 +160,25 @@ def guardar_logo(contenido: bytes, extension: str) -> ArchivoGuardado:
     return ArchivoGuardado(url=_guardar(contenido, clave), clave=clave)
 
 
+# Subcarpeta (local) / prefijo de la key (R2) donde viven los PDF de los contratos.
+CARPETA_CONTRATOS = "contratos"
+
+
+def guardar_archivo(contenido: bytes, clave: str) -> ArchivoGuardado:
+    """Guarda bytes bajo una clave elegida por quien llama (recibos, liquidaciones,
+    comprobantes de gastos). La extensión de la clave decide el `ContentType` en R2."""
+    return ArchivoGuardado(url=_guardar(contenido, clave), clave=clave)
+
+
+def guardar_pdf_contrato(contenido: bytes) -> ArchivoGuardado:
+    """El PDF firmado de un contrato de alquiler: un solo archivo, sin variantes.
+
+    La extensión es siempre `.pdf`: en R2 el `ContentType` se deduce de ella
+    (ver `_subir_r2`), así el navegador lo abre en vez de ofrecerlo como descarga.
+    """
+    return guardar_archivo(contenido, f"{CARPETA_CONTRATOS}/{uuid.uuid4().hex}.pdf")
+
+
 def guardar_variante(contenido: bytes, clave_original: str, ancho: int) -> str:
     """Guarda una copia reducida junto al original y devuelve su URL pública.
 

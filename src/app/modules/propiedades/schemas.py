@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, datetime
 from decimal import Decimal
 
 from pydantic import BaseModel, ConfigDict
@@ -113,6 +113,17 @@ class PropiedadBrief(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class ContratoVigenteBrief(BaseModel):
+    """Lo mínimo del contrato de alquiler activo para mostrarlo en la ficha de la propiedad."""
+
+    id: int
+    fecha_fin: date
+    monto_vigente: Decimal
+    moneda: str
+
+    model_config = ConfigDict(from_attributes=True)
+
+
 class PropiedadBase(BaseModel):
     titulo: str
     descripcion: str | None = None
@@ -159,6 +170,8 @@ class PropiedadResponse(PropiedadBase):
     medios: list[MedioResponse] = []
     caracteristicas: list[CaracteristicaResponse] = []
     propietario: PersonaBrief | None = None
+    # Lo lee de la property `Propiedad.contrato_vigente`; None si no hay contrato activo.
+    contrato_vigente: ContratoVigenteBrief | None = None
 
     model_config = ConfigDict(from_attributes=True)
 

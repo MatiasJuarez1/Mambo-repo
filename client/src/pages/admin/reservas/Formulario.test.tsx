@@ -15,7 +15,7 @@ beforeEach(() => {
   vi.mocked(propiedadesApi.listar).mockResolvedValue([])
   vi.mocked(personasApi.listar).mockResolvedValue({
     total: 1,
-    items: [{ id: 1, full_name: 'Ana Pérez', document_type: null, document_number: null, created_at: '', tags: [], roles: { propietario: 0, comprador: 0, vendedor: 0, inquilino: 0, interesado: 0 } }],
+    items: [{ id: 1, full_name: 'Ana Pérez', document_type: null, document_number: null, created_at: '', tags: [], roles: { propietario: 0, comprador: 0, vendedor: 0, inquilino: 0, garante: 0, interesado: 0 } }],
   })
 })
 

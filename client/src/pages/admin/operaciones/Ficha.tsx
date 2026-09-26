@@ -2,11 +2,14 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { operacionesApi } from '../../../api/operaciones'
 import { usuariosApi } from '../../../api/usuarios'
+import { alquileresApi } from '../../../api/alquileres'
 import type { Operacion, Pipeline, RolParte } from '../../../types/operacion'
 import type { PersonaBrief } from '../../../types/persona'
 import type { UsuarioBrief } from '../../../types/inmobiliaria'
 import SelectorPersona from '../../../components/crm/SelectorPersona/SelectorPersona'
 import Badge from '../../../components/Badge'
+import BloqueComision from '../../../components/crm/BloqueComision/BloqueComision'
+import BloqueDocumentos from '../../../components/crm/BloqueDocumentos/BloqueDocumentos'
 import { formatearFecha, formatearMonto } from '../../../lib/formato'
 import { LABEL_ROL_PARTE, ROLES_PARTE } from '../../../lib/crm'
 import './Ficha.css'
@@ -22,12 +25,20 @@ export default function OperacionFicha() {
   const [nuevaParte, setNuevaParte] = useState<PersonaBrief | null>(null)
   const [nuevoRol, setNuevoRol]     = useState<RolParte>('comprador')
   const [error, setError]           = useState<string | null>(null)
+  // Contrato de alquiler nacido de este deal: `null` si no hay (404), `undefined`
+  // mientras no se consultó. Solo aplica a un deal de Alquiler ganado.
+  const [contratoId, setContratoId] = useState<number | null | undefined>(undefined)
 
   const cargar = () => {
+    setContratoId(undefined)
     operacionesApi.obtener(opId)
       .then(async o => {
         setOp(o)
-        setPipeline(await operacionesApi.pipeline(o.pipeline_id))
+        const p = await operacionesApi.pipeline(o.pipeline_id)
+        setPipeline(p)
+        if (o.is_won && p.name === 'Alquiler') {
+          alquileresApi.porDeal(o.id).then(c => setContratoId(c.id)).catch(() => setContratoId(null))
+        }
       })
       .catch(e => setError(e.message))
   }
@@ -77,7 +88,15 @@ export default function OperacionFicha() {
           <span className="section-label">{pipeline.name}</span>
           <h1>{op.title}</h1>
         </div>
-        <button className="btn btn-danger" onClick={eliminar}>Eliminar</button>
+        <div className="ficha-op-acciones">
+          {contratoId === null && (
+            <Link to={`/admin/alquileres/nuevo?deal_id=${op.id}`} className="btn btn-magenta">Crear contrato</Link>
+          )}
+          {typeof contratoId === 'number' && (
+            <Link to={`/admin/alquileres/${contratoId}`} className="btn btn-outline">Ver contrato</Link>
+          )}
+          <button className="btn btn-danger" onClick={eliminar}>Eliminar</button>
+        </div>
       </div>
 
       {error && <p className="form-error" role="alert">{error}</p>}
@@ -132,6 +151,10 @@ export default function OperacionFicha() {
 
           {op.notes && <p className="ficha-op-notas">{op.notes}</p>}
         </section>
+
+        {op.is_won && <BloqueComision operacion={op} usuarios={usuarios} />}
+
+        <BloqueDocumentos entidad={{ dealId: op.id }} />
 
         <section className="admin-card">
           <h2 className="form-section-title">Partes</h2>

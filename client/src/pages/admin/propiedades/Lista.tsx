@@ -6,16 +6,12 @@ import Badge from '../../../components/Badge'
 import StatTile from '../../../components/StatTile'
 import { etiquetaEstado, LABEL_ESTADO } from '../../../lib/propiedad'
 import { ANCHO_MINIATURA, urlDeVariante } from '../../../lib/imagen'
+import { formatearMonto } from '../../../lib/formato'
 import './Lista.css'
 
 const TIPO_OPTIONS   = ['', 'casa', 'depto', 'local', 'terreno', 'oficina', 'otro']
 const OPERACION_OPTIONS: TipoOperacion[] = ['venta', 'alquiler', 'temporal']
 const ESTADO_OPTIONS: EstadoComercial[]  = ['disponible', 'reservada', 'cerrada', 'baja']
-
-function formatPrecio(precio: number | null, moneda: string) {
-  if (precio === null) return '—'
-  return `${moneda} ${precio.toLocaleString('es-AR')}`
-}
 
 export default function PropiedadesLista() {
   const navigate = useNavigate()
@@ -74,10 +70,15 @@ export default function PropiedadesLista() {
     <div>
       {/* Header */}
       <div className="admin-page-header">
-        <h1>Propiedades</h1>
-        <Link to="/admin/propiedades/nueva" className="btn btn-magenta">
-          + Nueva propiedad
-        </Link>
+        <div>
+          <span className="section-label">Inventario</span>
+          <h1>Propiedades</h1>
+        </div>
+        <div className="admin-page-acciones">
+          <Link to="/admin/propiedades/nueva" className="btn btn-magenta">
+            + Nueva propiedad
+          </Link>
+        </div>
       </div>
 
       <div className="admin-stats-grid">
@@ -148,17 +149,16 @@ export default function PropiedadesLista() {
           ? <p className="lista-estado">No hay propiedades que coincidan con la búsqueda.</p>
           : (
             <div className="admin-card tabla-wrapper">
-              <table className="tabla">
+              <table className="tabla tabla-propiedades">
                 <thead>
                   <tr>
                     <th>Propiedad</th>
                     <th>Tipo</th>
                     <th>Operación</th>
                     <th>Estado</th>
-                    <th>Precio</th>
+                    <th className="num">Precio</th>
                     <th>Propietario</th>
-                    <th>Ciudad</th>
-                    <th>Acciones</th>
+                    <th className="th-acciones">Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -171,7 +171,7 @@ export default function PropiedadesLista() {
                         <td data-label="Propiedad">
                           <div className="tabla-propiedad">
                             {img
-                              /* Sin `srcset`: el hueco mide 48×48 fijos, así que no
+                              /* Sin `srcset`: el hueco mide 40×40 fijos, así que no
                                  hay nada que el navegador tenga que decidir. Se pide
                                  la variante más chica y, si la foto no tiene, la
                                  completa. */
@@ -180,12 +180,24 @@ export default function PropiedadesLista() {
                                   alt={p.titulo}
                                   className="tabla-thumb"
                                   loading="lazy"
-                                  width={48}
-                                  height={48}
+                                  width={40}
+                                  height={40}
                                 />
                               : <div className="tabla-thumb tabla-thumb-empty" />
                             }
-                            <span className="tabla-titulo">{p.titulo}</span>
+                            {/* La ciudad va acá y no en una columna propia: ocho
+                                columnas en una línea no entran en una notebook
+                                y la fila ya mide dos renglones de alto. Bajo el
+                                título es, además, donde se la busca.
+                                El `title` deja el valor completo al alcance del
+                                puntero: en la columna el texto se recorta con
+                                elipsis para que la fila no crezca. */}
+                            <div className="tabla-propiedad-texto">
+                              <span className="tabla-titulo" title={p.titulo}>{p.titulo}</span>
+                              <span className="tabla-subtitulo" title={p.ubicacion?.ciudad ?? undefined}>
+                                {p.ubicacion?.ciudad ?? '—'}
+                              </span>
+                            </div>
                           </div>
                         </td>
                         <td data-label="Tipo"><Badge value={p.tipo_propiedad} /></td>
@@ -196,13 +208,20 @@ export default function PropiedadesLista() {
                             label={etiquetaEstado(p.estado_comercial, p.tipo_operacion)}
                           />
                         </td>
-                        <td data-label="Precio" className="tabla-precio">{formatPrecio(p.precio, p.moneda)}</td>
+                        <td data-label="Precio" className="tabla-precio num">{formatearMonto(p.precio, p.moneda)}</td>
                         <td data-label="Propietario">
                           {p.propietario
-                            ? <Link to={`/admin/personas/${p.propietario.id}`}>{p.propietario.full_name}</Link>
-                            : '—'}
+                            ? (
+                              <Link
+                                to={`/admin/personas/${p.propietario.id}`}
+                                className="tabla-texto"
+                                title={p.propietario.full_name}
+                              >
+                                {p.propietario.full_name}
+                              </Link>
+                            )
+                            : <span className="tabla-vacio">—</span>}
                         </td>
-                        <td data-label="Ciudad">{p.ubicacion?.ciudad ?? '—'}</td>
                         <td data-label="Acciones">
                           <div className="tabla-acciones">
                             {/* Solo una propiedad disponible se puede reservar: las demás ya

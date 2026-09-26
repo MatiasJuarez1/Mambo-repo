@@ -1,0 +1,68 @@
+/* Diálogo modal del panel. El cuerpo es un `.admin-card`, así que el marco, el
+   radio y el padding salen del sistema; acá va sólo lo propio del diálogo. */
+
+.modal-fondo {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  /* Petróleo profundo translúcido en vez de negro, igual que el overlay del
+     drawer: el oscurecido queda dentro de la paleta. */
+  background: rgba(7, 31, 32, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.modal {
+  width: 100%;
+  max-width: 480px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 24px 60px rgba(7, 31, 32, 0.28);
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent;
+}
+
+/* El título del diálogo usa `.form-section-title`, que trae un `margin-bottom`
+   pensado para separarlo del primer campo; acá alcanza con menos. */
+.modal .form-section-title { margin-bottom: 1.1rem; }
+
+.modal-toggle { display: flex; flex-wrap: wrap; gap: 1.25rem; }
+
+.modal-toggle label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+/* Las radio/checkbox no siguen el alto de un campo de texto. */
+.modal-toggle input { width: auto; height: auto; }
+
+.modal-resultado {
+  margin: 0;
+  padding: 0.7rem 0.9rem;
+  background: var(--bone);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  font-size: 0.95rem;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 640px) {
+  /* Pegado abajo y a ancho completo: en un teléfono un diálogo centrado deja
+     los botones a mitad de pantalla, lejos del pulgar. */
+  .modal-fondo {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .modal {
+    max-width: none;
+    max-height: 88vh;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    border-bottom: none;
+  }
+}

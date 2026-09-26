@@ -8,13 +8,13 @@ export const LABEL_ROL: Record<Rol, string> = {
   comprador:   'Comprador',
   vendedor:    'Vendedor',
   inquilino:   'Inquilino',
+  garante:     'Garante',
   interesado:  'Interesado',
 }
 
 export const LABEL_ROL_PARTE: Record<RolParte, string> = {
   ...LABEL_ROL,
-  garante: 'Garante',
-  otro:    'Otro',
+  otro: 'Otro',
 }
 
 export const ROLES_PARTE: RolParte[] = [

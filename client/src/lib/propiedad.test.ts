@@ -6,8 +6,56 @@ import {
   ESTADOS_PUBLICOS,
   etiquetaCierre,
   etiquetaEstado,
+  formatPrecio,
+  formatSuperficie,
   LABEL_ESTADO,
 } from './propiedad'
+
+// El backend serializa los `Decimal` como string, no como número: los casos de
+// abajo usan esa forma a propósito porque es la que llega de verdad al navegador.
+describe('formatPrecio', () => {
+  it('separa los miles con punto', () => {
+    expect(formatPrecio(600000, 'ARS')).toBe('$ 600.000')
+  })
+
+  it('formatea igual el string del Decimal del backend', () => {
+    expect(formatPrecio('600000.00', 'ARS')).toBe('$ 600.000')
+  })
+
+  it('no arrastra los decimales en cero del Decimal', () => {
+    expect(formatPrecio('150000.00', 'USD')).toBe('U$D 150.000')
+  })
+
+  it('conserva los decimales cuando los hay, con coma', () => {
+    expect(formatPrecio('1234.5', 'ARS')).toBe('$ 1.234,5')
+  })
+
+  it('devuelve "Consultar" si no hay precio', () => {
+    expect(formatPrecio(null, 'ARS')).toBe('Consultar')
+  })
+
+  it('devuelve "Consultar" si el valor no es numérico', () => {
+    expect(formatPrecio('a consultar', 'ARS')).toBe('Consultar')
+  })
+})
+
+describe('formatSuperficie', () => {
+  it('saca los decimales en cero del Decimal', () => {
+    expect(formatSuperficie('250.00')).toBe('250')
+  })
+
+  it('conserva los decimales reales', () => {
+    expect(formatSuperficie('250.55')).toBe('250.55')
+  })
+
+  it('no agrupa los miles, para no confundirlos con un decimal', () => {
+    expect(formatSuperficie('10000.00')).toBe('10000')
+  })
+
+  it('devuelve vacío si no hay superficie', () => {
+    expect(formatSuperficie(null)).toBe('')
+  })
+})
 
 describe('OPCIONES_TIPO', () => {
   it('tiene cinco entradas (todas menos "otro")', () => {

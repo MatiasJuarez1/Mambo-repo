@@ -40,8 +40,13 @@ export default function PersonasLista() {
   return (
     <div>
       <div className="admin-page-header">
-        <h1>Personas</h1>
-        <Link to="/admin/personas/nueva" className="btn btn-magenta">+ Nueva persona</Link>
+        <div>
+          <span className="section-label">CRM</span>
+          <h1>Personas</h1>
+        </div>
+        <div className="admin-page-acciones">
+          <Link to="/admin/personas/nueva" className="btn btn-magenta">+ Nueva persona</Link>
+        </div>
       </div>
 
       <div className="admin-card filtros-bar">
@@ -84,7 +89,7 @@ export default function PersonasLista() {
                     <th>Documento</th>
                     <th>Roles</th>
                     <th>Etiquetas</th>
-                    <th>Acciones</th>
+                    <th className="th-acciones">Acciones</th>
                   </tr>
                 </thead>
                 <tbody>

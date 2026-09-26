@@ -1,11 +1,11 @@
-"""Schemas Pydantic: Pipeline, PipelineStage, Deal, DealParty."""
+"""Schemas Pydantic: Pipeline, PipelineStage, Deal, DealParty, Comision."""
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import date, datetime
 from decimal import Decimal
 from typing import Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 from app.modules.propiedades.schemas import PropiedadBrief
 from app.platform.reservations.schemas import PersonBrief
@@ -173,3 +173,63 @@ class DealListOut(BaseModel):
 class PaginatedDeals(BaseModel):
     total: int
     items: list[DealListOut]
+
+
+# ---------------------------------------------------------------------------
+# Comisión (Bloque 4)
+# ---------------------------------------------------------------------------
+
+
+class RepartoIn(BaseModel):
+    user_id: int
+    pct: Decimal = Field(gt=0, le=100, decimal_places=2)
+
+
+class ComisionIn(BaseModel):
+    """Reemplaza la comisión entera, reparto incluido. Manda `monto`; sin él se calcula de `pct`."""
+
+    monto_operacion: Decimal = Field(ge=0, decimal_places=2)
+    pct: Decimal | None = Field(default=None, ge=0, le=100, decimal_places=2)
+    monto: Decimal | None = Field(default=None, ge=0, decimal_places=2)
+    cobrada: bool = False
+    fecha_cobro: date | None = None
+    notas: str | None = None
+    reparto: list[RepartoIn] = []
+
+    @model_validator(mode="after")
+    def _coherente(self) -> ComisionIn:
+        if self.pct is None and self.monto is None:
+            raise ValueError("Indicá porcentaje o monto")
+        if sum((r.pct for r in self.reparto), Decimal(0)) > 100:
+            raise ValueError("El reparto supera el 100 %")
+        ids = [r.user_id for r in self.reparto]
+        if len(ids) != len(set(ids)):
+            raise ValueError("Un agente aparece dos veces en el reparto")
+        if self.fecha_cobro is not None and not self.cobrada:
+            raise ValueError("La fecha de cobro requiere marcar la comisión como cobrada")
+        return self
+
+
+class RepartoOut(BaseModel):
+    user_id: int
+    nombre: str
+    pct: Decimal
+    monto: Decimal
+
+    model_config = {"from_attributes": True}
+
+
+class ComisionOut(BaseModel):
+    deal_id: int
+    monto_operacion: Decimal
+    moneda: str
+    pct: Decimal | None
+    monto: Decimal
+    cobrada: bool
+    fecha_cobro: date | None
+    notas: str | None
+    reparto: list[RepartoOut]
+    sin_monto: bool
+    updated_at: datetime
+
+    model_config = {"from_attributes": True}

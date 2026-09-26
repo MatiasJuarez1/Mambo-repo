@@ -1,62 +1,103 @@
-.tablero-cabecera {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 1rem;
-}
+/* Tablero de operaciones por etapa (estilo kanban). La cabecera de la pantalla
+   usa `.admin-page-header` / `.admin-page-acciones` de AdminLayout.css: el
+   selector de pipeline viaja del lado de las acciones, no del título. */
 
-/* Selector Venta / Alquiler: pestañas dentro de una píldora. */
+/* Selector Venta / Alquiler: pestañas dentro de una píldora. Alto igual al de
+   los botones (`--admin-control-h`) para que la fila de acciones quede pareja. */
 .tablero-pipelines {
   display: inline-flex;
   gap: 0.25rem;
-  padding: 0.2rem;
+  height: var(--admin-control-h);
+  padding: 0.25rem;
   background: var(--bone);
-  border-radius: 8px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
 }
 
 .tablero-pipeline {
+  display: inline-flex;
+  align-items: center;
   border: 0;
   background: transparent;
-  padding: 0.35rem 0.9rem;
-  border-radius: 6px;
+  padding: 0 0.9rem;
+  border-radius: 3px;
   cursor: pointer;
   font-family: var(--font-sans);
+  font-size: 0.8rem;
   font-weight: 600;
   color: var(--text-muted);
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s;
 }
+
+.tablero-pipeline:hover { color: var(--petrol); }
 
 .tablero-pipeline.activo {
   background: var(--white);
   color: var(--petrol);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 3px rgba(7, 31, 32, 0.12);
 }
 
-/* Columnas abiertas: una por etapa, con scroll horizontal si no entran. */
+/* Columnas abiertas: una por etapa, con scroll horizontal si no entran.
+   `grid-auto-columns` con un mínimo fijo es lo que mantiene todas las columnas
+   del mismo ancho: con `1fr` a secas, la etapa con la tarjeta de título más
+   largo se quedaba con más espacio que las demás. */
 .tablero {
   display: grid;
   grid-auto-flow: column;
-  grid-auto-columns: minmax(240px, 1fr);
+  grid-auto-columns: minmax(260px, 1fr);
   gap: 1rem;
   overflow-x: auto;
-  padding-bottom: 0.5rem;
+  padding-bottom: 0.75rem;
+  /* Misma barra fina que las tablas: la del sistema corta el tablero en dos. */
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent;
 }
+
+.tablero::-webkit-scrollbar { height: 8px; }
+.tablero::-webkit-scrollbar-track { background: transparent; }
+.tablero::-webkit-scrollbar-thumb { background: var(--line); border-radius: 999px; }
+.tablero::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 
 .tablero-columna { min-width: 0; }
 
+/* El contador va en una píldora y no como texto suelto: es un dato, y así se
+   distingue del nombre de la etapa de un vistazo. */
 .tablero-columna-titulo {
   display: flex;
+  align-items: center;
   justify-content: space-between;
+  gap: 0.5rem;
+  margin: 0 0 0.7rem;
+  padding: 0 0.25rem 0.6rem;
+  border-bottom: 1px solid var(--line);
   font-family: var(--font-sans);
-  font-size: 0.95rem;
-  margin: 0 0 0.5rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--petrol);
 }
 
-.tablero-columna-titulo span { color: var(--text-muted); font-weight: 400; }
+.tablero-columna-titulo span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 20px;
+  padding: 0 0.4rem;
+  border-radius: var(--radius-pill);
+  background: var(--petrol-soft);
+  color: var(--petrol);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0;
+}
 
 .tablero-tarjetas {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.6rem;
 }
 
 /* Ganada / Perdida: plegadas debajo del tablero. */
@@ -64,23 +105,44 @@
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1rem;
-  margin-top: 1.25rem;
+  margin-top: 1.5rem;
 }
 
 .tablero-cerrada-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   width: 100%;
   text-align: left;
   border: 0;
   background: transparent;
   font-family: var(--font-sans);
+  font-size: 0.8rem;
   font-weight: 600;
-  color: var(--text);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--petrol);
   cursor: pointer;
   padding: 0;
 }
 
-.tablero-cerradas .tablero-tarjetas { margin-top: 0.75rem; }
+.tablero-cerradas .tablero-tarjetas { margin-top: 0.9rem; }
+
+@media (max-width: 860px) {
+  /* Con el puntero táctil, las pestañas de pipeline tienen que llegar al
+     mínimo de 44px como el resto de los controles. */
+  .tablero-pipelines { height: var(--tap-min); }
+}
 
 @media (max-width: 640px) {
   .tablero-cerradas { grid-template-columns: 1fr; }
+
+  /* Columnas un poco más angostas: en 320px útiles, 260px dejan la siguiente
+     completamente fuera de vista y no se ve que el tablero sigue al costado. */
+  .tablero { grid-auto-columns: minmax(230px, 1fr); }
+
+  /* El selector ocupa el ancho y reparte las pestañas: dos pastillas chicas
+     alineadas a la izquierda quedan perdidas arriba del botón de alta. */
+  .tablero-pipelines { display: flex; width: 100%; }
+  .tablero-pipeline { flex: 1; justify-content: center; }
 }

@@ -1,13 +1,14 @@
 """Schemas Pydantic para el módulo people."""
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import date, datetime
 from decimal import Decimal
 from typing import Literal
 
 from pydantic import BaseModel, Field
 
 from app.modules.propiedades.schemas import PropiedadBrief
+from app.platform.alquileres.models import EstadoContrato, RolParteContrato
 
 ContactType = Literal["email", "phone", "whatsapp", "other"]
 
@@ -146,8 +147,24 @@ class ActividadVinculoOut(BaseModel):
     due_at: datetime | None
 
 
+class ContratoVinculoOut(BaseModel):
+    """Una parte de un contrato de alquiler: la persona figura con `rol` en el contrato `id`."""
+
+    id: int
+    rol: RolParteContrato
+    estado: EstadoContrato
+    fecha_fin: date
+    monto_vigente: Decimal
+    moneda: str
+    propiedad: PropiedadBrief
+
+    model_config = {"from_attributes": True}
+
+
 class PersonLinksOut(BaseModel):
     propiedades: list[PropiedadVinculoOut]
     reservas: list[ReservaVinculoOut]
     deals: list[DealVinculoOut]
     actividades: list[ActividadVinculoOut]
+    # Historial completo (vigentes y no), una entrada por (contrato, rol), fecha_fin desc.
+    contratos: list[ContratoVinculoOut] = []

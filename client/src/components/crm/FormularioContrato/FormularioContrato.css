@@ -1,0 +1,28 @@
+/* `.form-section` no es global (vive en propiedades/Formulario.css), así que el
+   formulario de contrato trae el suyo con la misma forma. */
+.contrato-form .form-section { display: flex; flex-direction: column; gap: 1rem; }
+
+.contrato-aviso {
+  padding: 0.6rem 0.8rem;
+  border-radius: var(--radius-sm);
+  background: var(--estado-espera-bg);
+  color: var(--estado-espera);
+}
+
+.contrato-partes { display: flex; flex-direction: column; gap: 0.5rem; }
+.contrato-partes-lista { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.4rem; }
+.contrato-partes-lista li { display: flex; gap: 0.6rem; align-items: center; }
+.contrato-partes-lista small { color: var(--text-muted); }
+
+.contrato-switch label { display: flex; align-items: center; gap: 0.5rem; cursor: pointer; }
+.contrato-switch input { width: auto; }
+
+.contrato-calendario h3 { font-size: 0.85rem; color: var(--text-muted); font-weight: 500; margin: 0 0 0.4rem; }
+.contrato-calendario-lista {
+  margin: 0; padding-left: 1.25rem;
+  columns: 3; column-gap: 1.5rem;
+  font-variant-numeric: tabular-nums;
+}
+@media (max-width: 640px) {
+  .contrato-calendario-lista { columns: 1; }
+}

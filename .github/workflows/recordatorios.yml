@@ -1,0 +1,21 @@
+# Dispara el email diario de recordatorios de alquileres. Render free no tiene
+# cron, así que el "reloj" vive acá. Secrets del repo: RECORDATORIOS_URL (la URL
+# de la API en Render, sin barra final) y RECORDATORIOS_TOKEN (el mismo valor
+# que la variable de entorno del servicio).
+name: Recordatorios diarios
+
+on:
+  schedule:
+    - cron: '0 11 * * *'   # 08:00 en Argentina (UTC-3)
+  workflow_dispatch: {}
+
+jobs:
+  enviar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: POST /api/v1/alquileres/recordatorios/enviar
+        run: |
+          curl --fail-with-body -sS -X POST \
+            --max-time 120 \
+            -H "X-Recordatorios-Token: ${{ secrets.RECORDATORIOS_TOKEN }}" \
+            "${{ secrets.RECORDATORIOS_URL }}/api/v1/alquileres/recordatorios/enviar"

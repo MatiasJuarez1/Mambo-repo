@@ -17,8 +17,8 @@
   flex-direction: column;
   padding: var(--space-7) var(--space-6);
   background: var(--white);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-card);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 24px 60px rgba(7, 31, 32, 0.28);
 }
 
 .login-marca {
@@ -37,19 +37,20 @@
 }
 
 .login-label {
-  font-size: 0.68rem;
+  font-size: 0.72rem;
   font-weight: 600;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--text-muted);
   margin-bottom: var(--space-1);
 }
 
 .login-input {
-  padding: 0.65rem 0.8rem;
+  height: var(--admin-control-h);
+  padding: 0 0.8rem;
   margin-bottom: var(--space-4);
   font-family: var(--font-sans);
-  font-size: 0.9rem;
+  font-size: 0.925rem;
   color: var(--text);
   background: var(--white);
   border: 1px solid var(--line);
@@ -58,7 +59,10 @@
   transition: border-color 0.2s;
 }
 
-.login-input:focus { border-color: var(--petrol); }
+.login-input:focus {
+  border-color: var(--petrol);
+  box-shadow: 0 0 0 3px rgba(14, 58, 59, 0.08);
+}
 
 /* Fondo tenue para que el error se lea como un bloque y no como una línea más
    del formulario. El rojo va en el tono oscuro de la escala: pasa AA en 0.85rem. */
@@ -74,9 +78,10 @@
 
 .login-boton {
   margin-top: var(--space-2);
-  padding: 0.7rem 1.25rem;
+  height: var(--admin-control-h);
+  padding: 0 1.25rem;
   font-family: var(--font-sans);
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -103,10 +108,10 @@
 /* ── Pantallas chicas ─────────────────────────────────────────── */
 
 @media (max-width: 860px) {
-  /* Con este padding el input queda en ~42px y el botón en ~38px: los dos
-     únicos controles de la pantalla, y ninguno llega al mínimo táctil. */
+  /* Los dos únicos controles de la pantalla: con el puntero táctil llegan al
+     mínimo de 44px, cuatro más que el alto de control de escritorio. */
   .login-input,
-  .login-boton { min-height: var(--tap-min); }
+  .login-boton { height: var(--tap-min); }
 }
 
 @media (max-width: 640px) {

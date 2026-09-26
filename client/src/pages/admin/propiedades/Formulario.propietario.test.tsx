@@ -15,10 +15,13 @@ vi.mock('../../../api/propiedades', () => ({
 vi.mock('../../../api/personas', () => ({
   personasApi: { listar: vi.fn(), crear: vi.fn() },
 }))
+vi.mock('../../../api/documentos', () => ({
+  documentosApi: { listar: vi.fn().mockResolvedValue([]), subir: vi.fn(), eliminar: vi.fn() },
+}))
 
 const ANA = {
   id: 3, full_name: 'Ana Pérez', document_type: null, document_number: null, created_at: '',
-  tags: [], roles: { propietario: 0, comprador: 0, vendedor: 0, inquilino: 0, interesado: 0 },
+  tags: [], roles: { propietario: 0, comprador: 0, vendedor: 0, inquilino: 0, garante: 0, interesado: 0 },
 }
 
 // Lo mínimo que el formulario lee de una propiedad existente.

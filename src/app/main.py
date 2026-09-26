@@ -12,12 +12,15 @@ from app.modules.publicaciones.router import router as publicaciones_router
 
 # Módulos de plataforma / CRM (rama matias-platform)
 from app.platform.activities.router import router as activities_router
+from app.platform.alquileres.router import router as alquileres_router
 from app.platform.audit.router import router as audit_router
 from app.platform.auth.router import router as auth_router
 from app.platform.deals.router import router as deals_router
+from app.platform.documentos.router import router as documentos_router
 from app.platform.inmobiliaria.router import router as inmobiliaria_router
 from app.platform.notes.router import router as notes_router
 from app.platform.people.router import router as people_router
+from app.platform.reportes.router import router as reportes_router
 from app.platform.reservations.router import router as reservations_router
 
 app = FastAPI(title="Mambo API", version="1.0.0")
@@ -64,6 +67,9 @@ app.include_router(deals_router, prefix="/api/v1")
 app.include_router(notes_router, prefix="/api/v1")
 app.include_router(audit_router, prefix="/api/v1")
 app.include_router(inmobiliaria_router, prefix="/api/v1")
+app.include_router(alquileres_router, prefix="/api/v1")
+app.include_router(reportes_router, prefix="/api/v1")
+app.include_router(documentos_router, prefix="/api/v1")
 
 
 @app.get("/health")

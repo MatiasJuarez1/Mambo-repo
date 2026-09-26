@@ -67,6 +67,8 @@ export interface PropiedadListItem {
 export interface Propiedad extends PropiedadListItem {
   descripcion: string | null
   propietario_persona_id: number | null
+  /** Contrato de alquiler activo sobre la propiedad, si lo hay. */
+  contrato_vigente: { id: number; fecha_fin: string; monto_vigente: string; moneda: string } | null
   actualizado_en: string
   eliminado_en: string | null
   caracteristicas: Caracteristica[]

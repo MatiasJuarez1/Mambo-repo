@@ -2,25 +2,31 @@ import { render, screen } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import PersonaFicha from './Ficha'
 import { personasApi } from '../../../api/personas'
+import { documentosApi } from '../../../api/documentos'
 
 vi.mock('../../../api/personas', () => ({
   personasApi: { obtener: vi.fn(), vinculos: vi.fn() },
+}))
+vi.mock('../../../api/documentos', () => ({
+  documentosApi: { listar: vi.fn(), subir: vi.fn(), eliminar: vi.fn() },
 }))
 
 const PERSONA = {
   id: 1, full_name: 'Ana Pérez', first_name: 'Ana', last_name: 'Pérez', document_type: 'DNI',
   document_number: '30111222', notes: null, created_at: '', updated_at: '', tags: ['inversor'],
   contacts: [{ id: 1, person_id: 1, type: 'whatsapp' as const, value: '2215550000', is_primary: true, created_at: '' }],
-  roles: { propietario: 1, comprador: 0, vendedor: 0, inquilino: 0, interesado: 0 },
+  roles: { propietario: 1, comprador: 0, vendedor: 0, inquilino: 0, garante: 0, interesado: 0 },
 }
 
 beforeEach(() => {
+  vi.mocked(documentosApi.listar).mockResolvedValue([])
   vi.mocked(personasApi.obtener).mockResolvedValue(PERSONA)
   vi.mocked(personasApi.vinculos).mockResolvedValue({
     propiedades: [{ id: 5, titulo: 'Depto en La Plata', tipo_operacion: 'venta', estado_comercial: 'disponible', foto_principal: null }],
     reservas: [],
     deals: [{ id: 9, title: 'Compra casa', pipeline: 'Venta', stage: 'Visita', is_won: false, is_lost: false, amount: 100000, currency: 'USD', role: 'comprador', propiedad: { id: 6, titulo: 'Casa', estado_comercial: 'disponible' } }],
     actividades: [],
+    contratos: [],
   })
 })
 
@@ -41,4 +47,10 @@ it('muestra cabecera, contactos y los cuatro bloques, incluidos los vacíos', as
   expect(screen.getByRole('link', { name: /Compra casa/ })).toHaveAttribute('href', '/admin/operaciones/9')
   expect(screen.getByText('Sin reservas')).toBeInTheDocument()
   expect(screen.getByText('Sin actividades pendientes')).toBeInTheDocument()
+})
+
+it('muestra la sección Documentos de la persona', async () => {
+  renderFicha()
+  expect(await screen.findByRole('heading', { name: 'Documentos' })).toBeInTheDocument()
+  expect(documentosApi.listar).toHaveBeenCalledWith({ personaId: 1 })
 })

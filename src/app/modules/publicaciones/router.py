@@ -1,5 +1,4 @@
-
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import APIRouter, Depends, Query, Response, status
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -52,6 +51,21 @@ def obtener_publicacion(publicacion_id: int, db: Session = Depends(get_db)):
     return service.obtener_publicacion(db, publicacion_id)
 
 
+@router.get("/{publicacion_id}/descargar", dependencies=SOLO_STAFF)
+def descargar_material(publicacion_id: int, db: Session = Depends(get_db)):
+    """Paquete para que el agente publique en sus redes: fotos + texto.
+
+    Va detrás de `SOLO_STAFF` como el resto de las operaciones no públicas: el
+    material de una publicación pausada es trabajo interno, no contenido abierto.
+    """
+    contenido = service.generar_paquete_descarga(db, publicacion_id)
+    return Response(
+        content=contenido,
+        media_type="application/zip",
+        headers={"Content-Disposition": f'attachment; filename="publicacion-{publicacion_id}.zip"'},
+    )
+
+
 @router.post(
     "",
     response_model=PublicacionResponse,
@@ -69,8 +83,6 @@ def actualizar_publicacion(
     return service.actualizar_publicacion(db, publicacion_id, data)
 
 
-@router.delete(
-    "/{publicacion_id}", status_code=status.HTTP_204_NO_CONTENT, dependencies=SOLO_STAFF
-)
+@router.delete("/{publicacion_id}", status_code=status.HTTP_204_NO_CONTENT, dependencies=SOLO_STAFF)
 def eliminar_publicacion(publicacion_id: int, db: Session = Depends(get_db)):
     service.eliminar_publicacion(db, publicacion_id)

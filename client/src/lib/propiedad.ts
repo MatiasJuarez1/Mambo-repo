@@ -18,11 +18,38 @@ export function mediaUrl(url: string): string {
   return `${BASE_URL}${url}`
 }
 
-/** Formatea el precio en es-AR según moneda. Devuelve 'Consultar' si es null. */
-export function formatPrecio(precio: number | null, moneda: string): string {
+/**
+ * Formatea el precio en es-AR según moneda. Devuelve 'Consultar' si es null.
+ *
+ * Acepta `string` además de `number` porque los `Decimal` del backend viajan en
+ * el JSON como texto ("600000.00") aunque el tipo de TS diga `number`: sin el
+ * `Number()` se llamaba a `String.prototype.toLocaleString`, que devuelve la
+ * cadena intacta y dejaba el precio sin separadores de miles y con los dos
+ * decimales del Decimal a la vista.
+ *
+ * Se muestran hasta dos decimales y solo si los hay: "600.000" y no "600.000,00".
+ */
+export function formatPrecio(precio: number | string | null, moneda: string): string {
   if (precio === null) return 'Consultar'
-  const n = precio.toLocaleString('es-AR')
+  const valor = typeof precio === 'string' ? Number(precio) : precio
+  if (Number.isNaN(valor)) return 'Consultar'
+  const n = valor.toLocaleString('es-AR', { maximumFractionDigits: 2 })
   return moneda === 'USD' ? `U$D ${n}` : `$ ${n}`
+}
+
+/**
+ * Formatea una superficie: "250" y no "250.00".
+ *
+ * Mismo motivo que `formatPrecio`: `m2_cubiertos` y `m2_totales` son `Decimal`
+ * en el backend y llegan como texto. Acá no se ponen separadores de miles a
+ * propósito —un lote de "10.000" m² se confunde con un decimal—: alcanza con
+ * sacarle los ceros de más.
+ */
+export function formatSuperficie(m2: number | string | null): string {
+  if (m2 === null) return ''
+  const valor = typeof m2 === 'string' ? Number(m2) : m2
+  if (Number.isNaN(valor)) return ''
+  return String(valor)
 }
 
 export const LABEL_OPERACION: Record<TipoOperacion, string> = {

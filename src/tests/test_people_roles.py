@@ -1,4 +1,4 @@
-"""Roles derivados de persona: propietario, comprador, vendedor, inquilino, interesado."""
+"""Roles derivados de persona: propietario, comprador, vendedor, inquilino, garante, interesado."""
 
 from __future__ import annotations
 
@@ -6,7 +6,14 @@ from app.platform.deals.models import Deal, DealParty
 from app.platform.reservations.models import Reservation
 from tests.helpers_crm import crear_persona, crear_propiedad, etapa, pipeline_por_nombre
 
-CERO = {"propietario": 0, "comprador": 0, "vendedor": 0, "inquilino": 0, "interesado": 0}
+CERO = {
+    "propietario": 0,
+    "comprador": 0,
+    "vendedor": 0,
+    "inquilino": 0,
+    "garante": 0,
+    "interesado": 0,
+}
 
 
 def _deal(db, usuario, pipeline, etapa_nombre, partes):

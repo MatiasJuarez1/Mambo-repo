@@ -78,11 +78,31 @@
   /* Radios */
   --radius-sm: 4px;
   --radius-md: 10px;
+  --radius-lg: 12px;
   --radius-pill: 999px;
 
   /* Sombras del sistema */
   --shadow-card:  0 2px 14px rgba(17, 24, 39, 0.06);
   --shadow-hover: 0 14px 38px rgba(14, 58, 59, 0.13);
+
+  /* ── Medidas del panel ─────────────────────────────────────
+     Las que se repiten en más de un archivo y tienen que coincidir entre sí:
+     el ancho del sidebar lo usan el propio sidebar y el margen del main, y el
+     alto de fila y de control es lo que hace que la tabla, los filtros y los
+     botones se lean como una sola grilla. Escritas literales en cada regla,
+     cambiar una y olvidar la otra descuadra todo.
+
+     Van acá y no en AdminLayout.css porque también las usan el login y los
+     componentes del CRM, que no importan esa hoja. */
+  --admin-sidebar-w: 216px;
+  /* Alto de fila de tabla. En una celda `height` se comporta como mínimo, que
+     es justo lo que se quiere: todas las filas miden esto salvo que el
+     contenido las empuje. */
+  --admin-row-h: 64px;
+  /* Alto común de inputs, selects y botones del panel. Un solo valor para los
+     tres es lo que evita la barra de filtros con controles de tres alturas. */
+  --admin-control-h: 40px;
+  --admin-control-h-sm: 32px;
 }
 
 /* Va pegado al :root a propósito: es la misma declaración, redefinida por ancho.

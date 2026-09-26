@@ -1,3 +1,5 @@
+import type { EstadoContrato, RolParteContrato } from './alquileres'
+
 /** Contacto de una persona, como lo devuelve `/api/v1/people/{id}/contacts`. */
 export type TipoContacto = 'email' | 'phone' | 'whatsapp' | 'other'
 
@@ -10,7 +12,7 @@ export interface Contacto {
   created_at: string
 }
 
-export type Rol = 'propietario' | 'comprador' | 'vendedor' | 'inquilino' | 'interesado'
+export type Rol = 'propietario' | 'comprador' | 'vendedor' | 'inquilino' | 'garante' | 'interesado'
 
 /** Cantidad de vínculos por rol; los calcula el backend, nunca se editan. */
 export type Roles = Record<Rol, number>
@@ -95,6 +97,16 @@ export interface Vinculos {
     status: string
     title: string
     due_at: string | null
+  }[]
+  // Historial completo de contratos de alquiler, una entrada por (contrato, rol).
+  contratos: {
+    id: number
+    rol: RolParteContrato
+    estado: EstadoContrato
+    fecha_fin: string
+    monto_vigente: string
+    moneda: string
+    propiedad: { id: number; titulo: string; estado_comercial: string }
   }[]
 }
 

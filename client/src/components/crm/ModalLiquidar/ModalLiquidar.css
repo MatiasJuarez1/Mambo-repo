@@ -1,0 +1,6 @@
+.liquidacion-desglose { font-size: 0.9rem; }
+.liquidacion-desglose td { padding: 0.4rem 0.5rem; vertical-align: top; }
+.liquidacion-desglose tfoot td { border-top: 2px solid var(--line); padding-top: 0.6rem; }
+.liquidacion-monto { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.liquidacion-negativo td { color: var(--text-muted); }
+.liquidacion-detalle { color: var(--text-muted); font-size: 0.8rem; }

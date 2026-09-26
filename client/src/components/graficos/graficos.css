@@ -1,0 +1,16 @@
+.grafico { margin: 0; }
+.grafico-svg { width: 100%; height: auto; display: block; }
+.grafico-eje { font-size: 11px; fill: var(--text-muted); font-family: var(--font-sans); }
+.grafico-leyenda { display: flex; gap: var(--space-4); font-size: 0.85rem; margin-top: var(--space-2); color: var(--text-muted); }
+.grafico-leyenda i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; vertical-align: middle; }
+
+.embudo { list-style: none; padding: 0; margin: 0; display: grid; gap: var(--space-2); }
+.embudo-fila { display: grid; grid-template-columns: 9rem 1fr 3rem auto; gap: var(--space-3); align-items: center; }
+.embudo-pista { background: var(--petrol-soft); height: 14px; border-radius: 7px; overflow: hidden; }
+.embudo-barra { display: block; height: 100%; background: var(--petrol); }
+.embudo-valor { text-align: right; font-variant-numeric: tabular-nums; }
+.embudo-detalle { font-size: 0.85rem; color: var(--text-muted); }
+@media (max-width: 640px) {
+  .embudo-fila { grid-template-columns: 6rem 1fr 3rem; }
+  .embudo-detalle { grid-column: 1 / -1; }
+}

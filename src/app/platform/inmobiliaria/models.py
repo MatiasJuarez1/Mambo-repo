@@ -30,6 +30,15 @@ class Inmobiliaria(Base):
     direccion: Mapped[str | None] = mapped_column(String(255), nullable=True)
     honorarios_venta_pct: Mapped[Decimal | None] = mapped_column(Numeric(5, 2), nullable=True)
     honorarios_alquiler_pct: Mapped[Decimal | None] = mapped_column(Numeric(5, 2), nullable=True)
+    # Punitorio por día de atraso (0.100 = 0,1 % diario) y días de gracia antes de contarlo.
+    punitorio_diario_pct: Mapped[Decimal | None] = mapped_column(Numeric(5, 3), nullable=True)
+    dias_gracia: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    # Ventana por defecto de la bandeja de recordatorios y del email diario (2c).
+    dias_aviso_recordatorios: Mapped[int] = mapped_column(Integer, nullable=False, default=30)
+    # Contadores de numeración correlativa. Se incrementan con UPDATE ... RETURNING
+    # dentro de la transacción del pago / liquidación (ver cobros._siguiente_numero).
+    ultimo_recibo: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    ultima_liquidacion: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     actualizado_en: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         default=lambda: datetime.now(UTC),

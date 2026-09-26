@@ -1,0 +1,12 @@
+.bloque-documentos-alta { display: flex; flex-wrap: wrap; align-items: flex-end; gap: var(--space-3); margin-bottom: var(--space-4); }
+.bloque-documentos-alta .form-field { margin: 0; }
+.bloque-documentos-alta input[type="file"] { max-width: 100%; }
+/* El nombre del archivo puede venir largo y la celda es de una línea: se
+   recorta en vez de empujar la tabla fuera del ancho de la tarjeta. */
+.bloque-documentos-nombre {
+  display: block;
+  max-width: 320px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.bloque-documentos-tamano { display: block; color: var(--text-muted); font-size: 0.85em; }

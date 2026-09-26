@@ -1,0 +1,22 @@
+.bandeja { display: flex; flex-direction: column; gap: 1rem; }
+.bandeja-titulo {
+  margin: 0 0 0.4rem; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.04em;
+  color: var(--text-muted);
+}
+.bandeja-lista { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.35rem; }
+.bandeja-item {
+  display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 2fr); gap: 0.5rem 1rem; align-items: center;
+  padding: 0.5rem 0.75rem; border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--white);
+}
+.bandeja-item-principal { display: flex; flex-direction: column; min-width: 0; }
+.bandeja-inquilinos { color: var(--text-muted); font-size: 0.85rem; }
+.bandeja-item-detalle {
+  display: flex; flex-wrap: wrap; gap: 0.5rem 1rem; align-items: center; justify-content: flex-end;
+  font-size: 0.9rem; font-variant-numeric: tabular-nums;
+}
+.bandeja-ver-todos { align-self: flex-start; }
+
+@media (max-width: 640px) {
+  .bandeja-item { grid-template-columns: 1fr; }
+  .bandeja-item-detalle { justify-content: flex-start; }
+}

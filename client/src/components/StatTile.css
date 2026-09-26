@@ -1,26 +1,88 @@
+/* Tile de métrica. Se usa en el Dashboard (13 a la vez) y arriba de las listas
+   (3 o 4), así que la regla que manda es que todos midan lo mismo: el `flex`
+   en columna con el valor empujado al pie deja alineados los números aunque un
+   rótulo ocupe una línea y el de al lado dos. Sin eso, "Total" y "Ajustes en
+   los próximos 30 días" dejaban sus cifras a distinta altura y la fila se leía
+   como escalonada. */
+
 .stat-tile {
+  display: flex;
+  flex-direction: column;
+  min-height: 118px;
+  padding: 1.05rem 1.25rem 1.15rem;
   background: var(--white);
   border: 1px solid var(--line);
-  border-radius: var(--radius-md);
-  padding: 1rem 1.15rem;
+  border-radius: var(--radius-lg);
 }
 
 .stat-tile-label {
-  font-size: 0.6rem;
-  font-weight: 500;
+  /* 0.6rem era ilegible de un vistazo, que es justo lo único que se le pide a
+     un rótulo de tile. Acá llega a 0.72rem sin perder la versalita espaciada
+     del sistema. */
+  font-size: 0.72rem;
+  font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
+  line-height: 1.35;
   color: var(--text-muted);
 }
 
+/* `margin-top: auto` es lo que pega el valor al pie del tile: con rótulos de
+   una y de dos líneas conviviendo en la misma grilla, todos los números quedan
+   sobre la misma base. */
 .stat-tile-valor {
+  margin-top: auto;
+  padding-top: 0.65rem;
   font-family: var(--font-serif);
-  font-size: 1.9rem;
+  /* Crece con el ancho disponible: 2.1rem en una columna angosta del Dashboard,
+     2.5rem en los tres tiles anchos de Propiedades. */
+  font-size: clamp(2.1rem, 2.6vw, 2.5rem);
   font-weight: 600;
-  color: var(--text);
-  margin-top: 0.5rem;
   line-height: 1;
+  color: var(--text);
+  /* Cifras de ancho fijo: los números de tiles vecinos quedan alineados entre
+     sí y no bailan al refrescarse el dato. */
+  font-variant-numeric: tabular-nums;
 }
 
 .stat-tile-valor.tono-ok     { color: var(--estado-ok); }
 .stat-tile-valor.tono-espera { color: var(--estado-espera); }
+
+.stat-tile-detalle {
+  margin-top: 0.3rem;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Variante enlazada (el tile lleva a la lista ya filtrada). Se comporta como
+   una tarjeta accionable: se levanta apenas y el filete superior se tiñe de
+   magenta, el mismo gesto que usan las tarjetas de categoría del sitio. */
+.stat-tile-link {
+  color: inherit;
+  text-decoration: none;
+  transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+}
+
+.stat-tile-link:hover {
+  border-color: var(--petrol-soft);
+  box-shadow: var(--shadow-card);
+  transform: translateY(-2px);
+}
+
+.stat-tile-link:focus-visible {
+  outline: 2px solid var(--petrol);
+  outline-offset: 2px;
+}
+
+/* Un monto ("ARS 1.250.000") no es un número de dos dígitos: con el tamaño del
+   contador se sale de la caja. La clase la pone el propio componente cuando el
+   valor es texto y no un número. */
+.stat-tile-valor.es-monto {
+  font-size: clamp(1.45rem, 1.9vw, 1.7rem);
+  letter-spacing: -0.01em;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stat-tile-link:hover { transform: none; }
+}

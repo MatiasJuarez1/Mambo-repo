@@ -124,6 +124,12 @@ class Propiedad(Base):
     # (la FK es RESTRICT), se da de baja.
     reservas = relationship("Reservation", back_populates="propiedad")
     deals = relationship("Deal", back_populates="propiedad")
+    contratos = relationship("Contrato", back_populates="propiedad")
+
+    @property
+    def contrato_vigente(self):
+        """El contrato de alquiler activo, si hay. Alimenta `PropiedadResponse.contrato_vigente`."""
+        return next((c for c in self.contratos if c.estado == "vigente"), None)
 
 
 class PropiedadUbicacion(Base):

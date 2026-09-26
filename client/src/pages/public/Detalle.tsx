@@ -5,6 +5,7 @@ import type { Propiedad } from '../../types/propiedad'
 import {
   etiquetaCierre,
   formatPrecio,
+  formatSuperficie,
   LABEL_OPERACION,
   LABEL_TIPO,
   mediaUrl,
@@ -178,10 +179,10 @@ export default function Detalle() {
                 <div className="detalle-spec"><span className="v">{prop.banos}</span><span className="k">Baños</span></div>
               )}
               {prop.m2_cubiertos != null && (
-                <div className="detalle-spec"><span className="v">{prop.m2_cubiertos}</span><span className="k">m² cubiertos</span></div>
+                <div className="detalle-spec"><span className="v">{formatSuperficie(prop.m2_cubiertos)}</span><span className="k">m² cubiertos</span></div>
               )}
               {prop.m2_totales != null && (
-                <div className="detalle-spec"><span className="v">{prop.m2_totales}</span><span className="k">m² totales</span></div>
+                <div className="detalle-spec"><span className="v">{formatSuperficie(prop.m2_totales)}</span><span className="k">m² totales</span></div>
               )}
             </div>
           )}

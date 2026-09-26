@@ -17,14 +17,14 @@ SOLO_ADMIN = [Depends(require_role("admin"))]
 
 @router.get("", response_model=InmobiliariaOut)
 def obtener(db: Session = Depends(get_db), _: object = Depends(get_current_user)):
-    return service.obtener(db)
+    return InmobiliariaOut.desde(service.obtener(db))
 
 
 @router.put("", response_model=InmobiliariaOut, dependencies=SOLO_ADMIN)
 def actualizar(data: InmobiliariaUpdate, db: Session = Depends(get_db)):
-    return service.actualizar(db, data)
+    return InmobiliariaOut.desde(service.actualizar(db, data))
 
 
 @router.post("/logo", response_model=InmobiliariaOut, dependencies=SOLO_ADMIN)
 def subir_logo(archivo: UploadFile = File(...), db: Session = Depends(get_db)):
-    return service.subir_logo(db, archivo)
+    return InmobiliariaOut.desde(service.subir_logo(db, archivo))

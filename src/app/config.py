@@ -56,6 +56,33 @@ class Settings(BaseSettings):
         default=None, validation_alias="R2_PUBLIC_BASE_URL"
     )
 
+    # ── Email (SMTP) ──
+    # Opcional: sin estas variables el panel funciona igual, con los botones de
+    # "Enviar por email" deshabilitados. Si se define alguna hay que definirlas
+    # todas (ver `_validar_combinaciones`). `SMTP_PORT` 465 usa SSL directo;
+    # cualquier otro puerto arranca en claro y hace STARTTLS.
+    smtp_host: str | None = Field(default=None, validation_alias="SMTP_HOST")
+    smtp_port: int = Field(default=587, validation_alias="SMTP_PORT")
+    smtp_user: str | None = Field(default=None, validation_alias="SMTP_USER")
+    smtp_password: str | None = Field(default=None, validation_alias="SMTP_PASSWORD")
+    email_from: str | None = Field(default=None, validation_alias="EMAIL_FROM")
+
+    @property
+    def email_configurado(self) -> bool:
+        return bool(self.smtp_host and self.email_from)
+
+    # ── Recordatorios diarios ──
+    # Token propio para que un cron externo (GitHub Actions) dispare
+    # `POST /api/v1/alquileres/recordatorios/enviar`. Sin la variable el endpoint
+    # responde 404: no existe superficie que atacar. Generarlo con
+    # `python -c "import secrets; print(secrets.token_urlsafe(32))"`.
+    recordatorios_token: str | None = Field(default=None, validation_alias="RECORDATORIOS_TOKEN")
+
+    @property
+    def recordatorios_configurado(self) -> bool:
+        """El email diario sale solo si hay token **y** SMTP."""
+        return bool(self.recordatorios_token) and self.email_configurado
+
     # ── Autenticación (JWT en cookie httponly) ──
     # `jwt_secret` va sin default a propósito: si falta, pydantic-settings hace
     # fallar el arranque. Un default de conveniencia terminaría, tarde o temprano,
@@ -162,6 +189,19 @@ class Settings(BaseSettings):
                     "responde 401 al navegador. Usá el subdominio público del "
                     "bucket (https://pub-<hash>.r2.dev) o tu dominio propio."
                 )
+
+        # SMTP a medias: un host sin remitente, o un usuario sin contraseña, falla
+        # recién al mandar el primer recibo. Mejor que falle al arrancar.
+        smtp = {
+            "SMTP_HOST": self.smtp_host,
+            "SMTP_USER": self.smtp_user,
+            "SMTP_PASSWORD": self.smtp_password,
+            "EMAIL_FROM": self.email_from,
+        }
+        definidas = [k for k, v in smtp.items() if v]
+        if definidas and len(definidas) != len(smtp):
+            faltan = [k for k, v in smtp.items() if not v]
+            raise ValueError(f"SMTP a medias: definidas {definidas}, faltan {faltan}.")
         return self
 
     @computed_field  # type: ignore[prop-decorator]

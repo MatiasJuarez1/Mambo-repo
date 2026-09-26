@@ -136,7 +136,12 @@ export default function OperacionFormulario() {
 
   return (
     <div>
-      <div className="admin-page-header"><h1>Nueva operación</h1></div>
+      <div className="admin-page-header">
+        <div>
+          <span className="section-label">CRM</span>
+          <h1>Nueva operación</h1>
+        </div>
+      </div>
       {error && <p className="form-error" role="alert">{error}</p>}
 
       <form onSubmit={guardar} className="admin-card form">

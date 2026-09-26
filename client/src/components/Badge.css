@@ -1,19 +1,29 @@
+/* Píldora de estado. Alto fijo y no padding vertical: en una fila de tabla
+   conviven dos o tres badges de textos de largos distintos ("Depto", "Alquiler",
+   "Disponible") y con padding quedaban de alturas apenas diferentes, lo
+   suficiente para que la fila se viera desprolija. */
+
 .badge {
-  display: inline-block;
-  padding: 0.2rem 0.6rem;
+  display: inline-flex;
+  align-items: center;
+  height: 24px;
+  padding: 0 0.65rem;
   font-size: 0.7rem;
   font-weight: 600;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
-  border-radius: 999px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-pill);
   white-space: nowrap;
 }
 
-/* Escala semántica: comunica el estado del dato, nunca la marca. */
-.badge-ok     { background: var(--estado-ok-bg);     color: var(--estado-ok); }
-.badge-espera { background: var(--estado-espera-bg); color: var(--estado-espera); }
-.badge-neutro { background: var(--estado-neutro-bg); color: var(--estado-neutro); }
-.badge-baja   { background: var(--estado-baja-bg);   color: var(--estado-baja); }
+/* Escala semántica: comunica el estado del dato, nunca la marca. El borde es
+   del mismo color que el texto a baja opacidad: define la píldora contra el
+   fondo hueso de la fila alternada sin agregar un color más al sistema. */
+.badge-ok     { background: var(--estado-ok-bg);     color: var(--estado-ok);     border-color: rgba(15, 122, 90, 0.18); }
+.badge-espera { background: var(--estado-espera-bg); color: var(--estado-espera); border-color: rgba(138, 90, 0, 0.18); }
+.badge-neutro { background: var(--estado-neutro-bg); color: var(--estado-neutro); border-color: rgba(92, 92, 92, 0.16); }
+.badge-baja   { background: var(--estado-baja-bg);   color: var(--estado-baja);   border-color: rgba(179, 38, 30, 0.18); }
 
 /* Tipo de operación: no es un estado, se distingue por la etiqueta. */
 .badge-operacion { background: var(--petrol); color: var(--white); }

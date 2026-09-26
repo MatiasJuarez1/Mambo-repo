@@ -1,18 +1,15 @@
-.admin-stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 0.9rem;
-  margin-bottom: 1.25rem;
-}
+/* `.admin-stats-grid`, `.filtros-bar`, `.tabla*` y el pasaje tabla→tarjetas
+   viven en AdminLayout.css: los usa cada lista del panel. Acá queda sólo lo
+   propio de esta pantalla.
 
-/* `.filtros-bar` y `.filtros-label` viven en AdminLayout.css: los usa cada
-   lista del panel. */
+   La grilla de tiles estaba definida en este archivo y el Dashboard la usaba
+   sin importarla —funcionaba de casualidad, porque ninguna ruta es lazy y todo
+   el CSS termina en el mismo bundle—. Ahora está en la capa compartida. */
 
-/* ── Móvil: acciones de la tarjeta ────────────────────────────────
-   El resto del pasaje tabla→tarjetas (`.tabla-wrapper`, `.tabla`, los
-   `data-label`, etc.) es la regla compartida de AdminLayout.css; acá sólo
-   queda lo que le agrega esta página al mismo breakpoint. */
-
-@media (max-width: 640px) {
-  .tabla-acciones .btn { flex: 1; }
-}
+/* El ancho de la primera columna lo fija el recorte del título
+   (`.tabla-titulo`, 210px) más la miniatura. Antes tenía además
+   `th:first-child { width: 100% }`, que le pide al algoritmo de layout todo el
+   espacio libre: con ocho columnas en una sola línea no hay espacio libre que
+   repartir, y lo único que conseguía era empujar la tabla fuera de la tarjeta
+   y dejar "Acciones" del otro lado del scroll horizontal. */
+.tabla-propiedades .tabla-propiedad { max-width: 250px; }

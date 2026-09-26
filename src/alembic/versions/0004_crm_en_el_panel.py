@@ -108,9 +108,11 @@ def upgrade() -> None:
         sa.Column("honorarios_alquiler_pct", sa.Numeric(5, 2), nullable=True),
         sa.Column("actualizado_en", sa.DateTime(timezone=True), nullable=False),
     )
-    op.bulk_insert(
-        inmobiliaria,
-        [{"id": 1, "nombre": "Mambo Groups", "actualizado_en": sa.func.now()}],
+    # `insert().values()` y no `bulk_insert`: este último manda los valores como
+    # parámetros literales y psycopg2 no sabe adaptar `func.now()`; así se
+    # renderiza como `now()` dentro del SQL.
+    op.execute(
+        inmobiliaria.insert().values(id=1, nombre="Mambo Groups", actualizado_en=sa.func.now())
     )
 
     # --- pipelines base, solo si la tabla está vacía -------------------------

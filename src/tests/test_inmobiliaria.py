@@ -112,3 +112,40 @@ def test_listado_de_usuarios(client, crear_usuario, iniciar_sesion):
     assert r.status_code == 200
     assert {u["email"] for u in r.json()} == {"admin@mambo.com.ar", "staff@mambo.com.ar"}
     assert set(r.json()[0]) == {"id", "name", "email"}
+
+
+def test_put_punitorio_y_gracia_y_get_email_configurado(client, crear_usuario, iniciar_sesion):
+    crear_usuario()
+    iniciar_sesion()
+    r = client.put("/api/v1/inmobiliaria", json={"punitorio_diario_pct": "0.100", "dias_gracia": 5})
+    assert r.status_code == 200, r.text
+    assert float(r.json()["punitorio_diario_pct"]) == 0.1
+    assert r.json()["dias_gracia"] == 5
+    assert r.json()["email_configurado"] is False
+
+
+def test_dias_aviso_recordatorios_y_recordatorios_configurado(
+    client, crear_usuario, iniciar_sesion, monkeypatch
+):
+    from app.config import get_settings
+
+    crear_usuario()
+    iniciar_sesion()
+    s = get_settings()
+    monkeypatch.setattr(s, "recordatorios_token", None)
+
+    r = client.get("/api/v1/inmobiliaria")
+    assert r.json()["dias_aviso_recordatorios"] == 30
+    assert r.json()["recordatorios_configurado"] is False
+
+    r = client.put("/api/v1/inmobiliaria", json={"dias_aviso_recordatorios": 60})
+    assert r.status_code == 200, r.text
+    assert r.json()["dias_aviso_recordatorios"] == 60
+    for fuera_de_rango in (0, 181):
+        r = client.put("/api/v1/inmobiliaria", json={"dias_aviso_recordatorios": fuera_de_rango})
+        assert r.status_code == 422
+
+    monkeypatch.setattr(s, "recordatorios_token", "secreto")
+    monkeypatch.setattr(s, "smtp_host", "smtp.ejemplo.com")
+    monkeypatch.setattr(s, "email_from", "Mambo <no-reply@mambo.com.ar>")
+    assert client.get("/api/v1/inmobiliaria").json()["recordatorios_configurado"] is True

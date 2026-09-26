@@ -150,6 +150,17 @@ configurar nada a mano.
 
    El resto (`JWT_SECRET` generado, `COOKIE_SECURE=True`, `COOKIE_SAMESITE=lax`,
    `STORAGE_BACKEND=r2` y las URLs de R2) ya viene definido.
+
+   **Opcionales, para mandar recibos y liquidaciones por email:** `SMTP_HOST`,
+   `SMTP_PORT` (default 587), `SMTP_USER`, `SMTP_PASSWORD` y `EMAIL_FROM`. Se
+   cargan a mano en la pestaña *Environment* del servicio, como `DATABASE_URL`;
+   no están en `render.yaml` porque el panel funciona sin ellas (los botones
+   "Enviar por email" quedan deshabilitados y la configuración de la
+   inmobiliaria muestra "Envío de emails: no configurado"). Si se define una,
+   hay que definir las cinco: la API no arranca con SMTP a medias. Con Gmail:
+   contraseña de aplicación (no la de la cuenta), puerto 587,
+   `EMAIL_FROM=Inmobiliaria <cuenta@gmail.com>`. El puerto 465 usa SSL directo;
+   cualquier otro, STARTTLS.
 4. Deploy. Anotá la URL que queda: debería ser
    `https://mambo-api.onrender.com`.
 
@@ -198,6 +209,10 @@ En este orden, porque cada una descarta una causa distinta:
 4. **Probar el panel desde un iPhone.** Es la comprobación que valida toda la
    decisión del proxy; si algo estuviera mal armado, Safari sería el primero en
    romperse.
+5. **Si se cargaron las `SMTP_*`:** desde un contrato administrado, registrar
+   un pago y "Enviar por email". Si la API responde 202 pero el email no llega,
+   el detalle está en los logs de Render (`No se pudo enviar Pago #…`): casi
+   siempre es la contraseña de aplicación o el puerto.
 
 ---
 
@@ -286,3 +301,99 @@ propiedad es obligatoria) y recién entonces migrar.
 La misma revisión siembra los pipelines **Venta** y **Alquiler** con sus etapas,
 pero sólo si la tabla `pipelines` está vacía: si ya hay alguno cargado, no
 agrega nada.
+
+### Contratos de alquiler (migración `0005`)
+
+La revisión **`0005_alquileres_contratos`** crea tres tablas nuevas
+(`alquileres_contratos`, `alquileres_contrato_partes`, `alquileres_ajustes`) y
+cuatro enums de PostgreSQL (`indice_ajuste`, `estado_contrato`,
+`rol_parte_contrato`, `estado_ajuste`). No toca ninguna tabla existente, así que
+no hay chequeo previo: alcanza con `alembic upgrade head` contra Supabase.
+
+Dos cosas a tener en cuenta:
+
+- **Correrla antes de desplegar el frontend.** El panel nuevo (menú
+  "Alquileres", los dos tiles del dashboard, el bloque "Contrato de alquiler" en
+  la propiedad, el botón "Crear contrato" en un deal de Alquiler ganado) pide
+  `GET /api/v1/alquileres/contratos` apenas se abre; si la API ya está
+  desplegada pero la base no tiene las tablas, esas pantallas muestran un 500 en
+  vez de datos. El orden seguro es: `alembic upgrade head` → push de la API →
+  push del frontend.
+- **Dependencia nueva en la API:** `python-dateutil` (en `pyproject.toml`).
+  Render la instala solo en el build; si la API corre en otro lado, hay que
+  reinstalar con `pip install -e .`.
+
+Para volver atrás, `alembic downgrade 0004_crm_en_el_panel` borra las tres
+tablas y los cuatro enums — con los contratos cargados adentro, así que no es un
+paso que se dé a la ligera.
+
+### Cobros, recibos y liquidaciones (migración `0006`)
+
+La revisión **`0006_alquileres_cobros`** crea cuatro tablas (`alquileres_cobros`,
+`alquileres_pagos`, `alquileres_gastos`, `alquileres_liquidaciones`), cuatro
+enums (`estado_cobro`, `medio_pago`, `tipo_gasto`, `estado_liquidacion`) y
+agrega columnas con default a `inmobiliaria` (`punitorio_diario_pct`,
+`dias_gracia` y los contadores `ultimo_recibo` / `ultima_liquidacion`) y a
+`alquileres_contratos` (`punitorio_diario_pct`). No hay chequeo previo:
+`alembic upgrade head` contra Supabase alcanza.
+
+- **Mismo orden que la `0005`**: `alembic upgrade head` → push de la API → push
+  del frontend. La ficha del contrato y el dashboard piden `cobros` y
+  `/alquileres/resumen` apenas se abren.
+- **Los contratos administrados que ya existían no tienen cobros.** Los cobros
+  se materializan al crear el contrato o al pasarlo a administrado, y la
+  migración no los genera para atrás. Para cada uno de esos contratos, desde la
+  ficha: editar → `administrado` off → guardar → `administrado` on → guardar.
+  Eso genera un cobro por mes desde `fecha_inicio`; los meses que ya se cobraron
+  por fuera del sistema se anulan con "Anular mes" (motivo: "Cobrado antes del
+  sistema"), así no aparecen como vencidos. Son pocos contratos; si algún día
+  fueran muchos, es un script de diez líneas sobre `cobros.generar_cobros`.
+- **Dependencia nueva en la API:** `fpdf2` (en `pyproject.toml`), más las dos
+  fuentes DejaVu en `app/assets/fonts/` (van en el repo y en el paquete vía
+  `package-data`). Render las instala solas en el build.
+- **Los PDF van a R2** bajo `recibos/`, `liquidaciones/` y `gastos/`, con la
+  misma configuración que las fotos. Un recibo emitido con el disco local de
+  Render se pierde en el próximo deploy: en producción `STORAGE_BACKEND=r2`
+  sigue siendo obligatorio, ahora por dos razones.
+- **La numeración de recibos y liquidaciones es correlativa global** y sale de
+  los contadores de `inmobiliaria`. `alembic downgrade 0005_alquileres_contratos`
+  borra las cuatro tablas **y los contadores**: si se vuelve a subir, la
+  numeración arranca de 0001-00000001 otra vez. Con recibos ya entregados a
+  inquilinos, no es un paso que se dé.
+
+### Recordatorios (migración `0007`)
+
+La revisión **`0007_recordatorios`** agrega `inmobiliaria.dias_aviso_recordatorios`
+(default 30). Los recordatorios no se guardan: se calculan en cada request.
+`alembic upgrade head` contra Supabase alcanza; después, push de la API y del
+frontend.
+
+**El email diario lo dispara GitHub Actions**, no Render (el plan free no tiene
+cron). Tres pasos, una sola vez:
+
+1. Generar un token: `python -c "import secrets; print(secrets.token_urlsafe(32))"`.
+2. En Render, pestaña *Environment* del servicio: `RECORDATORIOS_TOKEN=<token>`.
+   Sin esta variable el endpoint `POST /api/v1/alquileres/recordatorios/enviar`
+   responde 404. Requiere además las `SMTP_*` (sin ellas responde 409).
+3. En GitHub, *Settings → Secrets and variables → Actions*: `RECORDATORIOS_TOKEN`
+   (el mismo valor) y `RECORDATORIOS_URL` (`https://<servicio>.onrender.com`,
+   sin barra final).
+
+El workflow [`.github/workflows/recordatorios.yml`](../.github/workflows/recordatorios.yml)
+corre a las 08:00 de Argentina. Para probarlo: *Actions → Recordatorios diarios →
+Run workflow*; el job queda verde si la API respondió 200 (con `items: 0` si no
+había nada, en cuyo caso no se manda email) y rojo con el `detail` en el log si
+no. Render free duerme el servicio: el primer request puede tardar ~30 s, el
+`--max-time 120` lo cubre.
+
+### Comisiones y reportes (migración `0008`)
+
+`alembic upgrade head` crea `comisiones`, `comisiones_reparto` y `deal_stage_history`, y carga en esta última una estadía abierta por cada operación viva (su etapa actual desde `stage_changed_at`): el embudo arranca con lo que se sabe y se completa con el uso. Las operaciones ganadas **antes** de esta migración no tienen comisión: la ficha muestra "Sin comisión cargada" y se carga a mano con "Cargar comisión". Sin variables nuevas. La exportación CSV usa `;` y coma decimal (Excel en español).
+
+### Documentos (migración `0009`)
+
+- `0009_documentos` (Bloque 3): una tabla nueva `documentos`, sin backfill ni variables nuevas. Usa el `STORAGE_BACKEND` ya configurado; en Render tiene que ser `r2` como el resto.
+
+### Actividades con deal_id (migración `0010`)
+
+- `0010_activities_deal_id` (Bloque 5a): una columna nullable en `activities`, sin backfill ni variables nuevas.

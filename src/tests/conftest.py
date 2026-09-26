@@ -28,9 +28,11 @@ from app.database import Base, get_db
 # `Base.metadata`, que es lo que necesita `create_all` para armar el esquema.
 from app.main import app
 from app.modules.propiedades import models as propiedades_models  # noqa: F401
+from app.platform.alquileres import models as alquileres_models  # noqa: F401
 from app.platform.auth.dependencies import COOKIE_NAME
 from app.platform.auth.models import Role, User, UserRole
 from app.platform.auth.service import hash_password
+from app.platform.documentos import models as documentos_models  # noqa: F401
 
 
 @compiles(BigInteger, "sqlite")
@@ -132,3 +134,15 @@ def iniciar_sesion(client):
         return respuesta.cookies[COOKIE_NAME]
 
     return _login
+
+
+@pytest.fixture
+def media_tmp(tmp_path, monkeypatch):
+    """Storage local apuntando a un directorio temporal: los PDF y comprobantes
+    que generan los tests quedan ahí y se borran solos. Fuerza `local` por si el
+    `.env` de quien corre los tests tiene `STORAGE_BACKEND=r2`."""
+    from app.config import get_settings
+
+    monkeypatch.setattr(get_settings(), "storage_backend", "local")
+    monkeypatch.setattr(get_settings(), "media_root", tmp_path)
+    return tmp_path
