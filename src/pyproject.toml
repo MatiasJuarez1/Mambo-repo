@@ -21,13 +21,13 @@ dependencies = [
   "pillow-heif>=0.18",     # decodifica HEIC/HEIF (fotos de iPhone) en Pillow
   "boto3>=1.34",           # cliente S3 para Cloudflare R2 (STORAGE_BACKEND=r2)
   "fpdf2>=2.7",            # recibos y liquidaciones en PDF; pura Python, sin binarios
+  "httpx>=0.27",           # baja fotos externas al publicar; también lo usa el TestClient
 ]
 
 [project.optional-dependencies]
 dev = [
   "ruff>=0.5",
   "pytest>=8.0",
-  "httpx>=0.27",          # TestClient de FastAPI/Starlette
 ]
 
 [tool.setuptools.packages.find]
