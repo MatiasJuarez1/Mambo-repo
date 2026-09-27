@@ -64,6 +64,35 @@
   box-shadow: 0 0 0 3px rgba(14, 58, 59, 0.08);
 }
 
+/* El botón de ver la contraseña va encima del input, a la derecha; el padding
+   extra del input evita que el texto tipeado quede debajo del botón. */
+.login-password {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.login-password .login-input { padding-right: 4.5rem; }
+
+.login-ver-password {
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: var(--admin-control-h);
+  padding: 0 0.8rem;
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--petrol);
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.login-ver-password:hover { color: var(--magenta-cta); }
+
 /* Fondo tenue para que el error se lea como un bloque y no como una línea más
    del formulario. El rojo va en el tono oscuro de la escala: pasa AA en 0.85rem. */
 .login-error {
@@ -111,6 +140,7 @@
   /* Los dos únicos controles de la pantalla: con el puntero táctil llegan al
      mínimo de 44px, cuatro más que el alto de control de escritorio. */
   .login-input,
+  .login-ver-password,
   .login-boton { height: var(--tap-min); }
 }
 

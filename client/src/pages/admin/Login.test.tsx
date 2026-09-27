@@ -166,4 +166,20 @@ describe('Login — credenciales incorrectas', () => {
       'No pudimos iniciar sesión. Probá de nuevo.',
     )
   })
+
+  it('muestra y vuelve a ocultar la contraseña con el botón', async () => {
+    const usuario = userEvent.setup()
+    renderLogin()
+
+    await usuario.type(await screen.findByLabelText('Contraseña'), 'secreta')
+    expect(campoContrasena()).toHaveAttribute('type', 'password')
+
+    await usuario.click(screen.getByRole('button', { name: 'Mostrar contraseña' }))
+    expect(campoContrasena()).toHaveAttribute('type', 'text')
+    expect(campoContrasena()).toHaveValue('secreta')
+
+    await usuario.click(screen.getByRole('button', { name: 'Ocultar contraseña' }))
+    expect(campoContrasena()).toHaveAttribute('type', 'password')
+    expect(loginMock).not.toHaveBeenCalled()
+  })
 })

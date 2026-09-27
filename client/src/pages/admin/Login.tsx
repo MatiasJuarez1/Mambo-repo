@@ -28,6 +28,7 @@ export default function Login() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [enviando, setEnviando] = useState(false)
+  const [verPassword, setVerPassword] = useState(false)
 
   // A dónde iba el usuario cuando lo mandaron al login (lo pone `RutaProtegida`).
   const destino = (location.state as { desde?: string } | null)?.desde ?? '/admin'
@@ -79,16 +80,29 @@ export default function Login() {
         {/* El mínimo espeja el `min_length=6` de LoginRequest en el backend: sin
             esto, una contraseña más corta vuelve 422 en vez de 401. Ninguna
             contraseña válida puede tener menos, así que no deja a nadie afuera. */}
-        <input
-          id="login-password"
-          className="login-input"
-          type="password"
-          autoComplete="current-password"
-          minLength={6}
-          value={password}
-          onChange={e => setPassword(e.target.value)}
-          required
-        />
+        <div className="login-password">
+          <input
+            id="login-password"
+            className="login-input"
+            type={verPassword ? 'text' : 'password'}
+            autoComplete="current-password"
+            minLength={6}
+            value={password}
+            onChange={e => setPassword(e.target.value)}
+            required
+          />
+          {/* type="button" para que no envíe el formulario. `aria-pressed` le
+              dice al lector de pantalla si la contraseña está a la vista. */}
+          <button
+            type="button"
+            className="login-ver-password"
+            onClick={() => setVerPassword(v => !v)}
+            aria-label={verPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+            aria-pressed={verPassword}
+          >
+            {verPassword ? 'Ocultar' : 'Ver'}
+          </button>
+        </div>
 
         {/* Estilado en Login.css y no con las clases .btn del panel: esta
             pantalla vive fuera de AdminLayout y no debe depender de su hoja. */}
