@@ -56,7 +56,10 @@ export interface PropiedadListItem {
   precio: number | null
   dormitorios: number | null
   banos: number | null
+  m2_terreno: number | null
+  m2_construidos: number | null
   m2_cubiertos: number | null
+  m2_propios: number | null
   m2_totales: number | null
   creado_en: string
   ubicacion: Ubicacion | null
@@ -86,7 +89,10 @@ export interface PropiedadCreatePayload {
   precio?: number
   dormitorios?: number
   banos?: number
+  m2_terreno?: number
+  m2_construidos?: number
   m2_cubiertos?: number
+  m2_propios?: number
   m2_totales?: number
   // `null` al editar quita el propietario; al crear no tiene sentido mandarlo.
   propietario_persona_id?: number | null

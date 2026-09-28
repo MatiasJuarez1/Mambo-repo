@@ -128,6 +128,8 @@
 .detalle-caract-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
 .detalle-caract-item { font-size: 0.85rem; color: var(--text); display: flex; align-items: center; gap: 0.5rem; }
 .detalle-caract-item::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: var(--petrol); flex-shrink: 0; }
+/* Las tildadas ya llevan ✅: el punto de viñeta sobra. */
+.detalle-caract-item--si::before { display: none; }
 @media (max-width: 640px) { .detalle-caract-grid { grid-template-columns: 1fr; } }
 
 /* Aside sticky */

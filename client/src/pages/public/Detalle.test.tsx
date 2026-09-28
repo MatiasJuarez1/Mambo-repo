@@ -22,7 +22,10 @@ function propiedad(over: Partial<Propiedad> = {}): Propiedad {
     precio: 120000,
     dormitorios: 3,
     banos: 2,
+    m2_terreno: null,
+    m2_construidos: null,
     m2_cubiertos: 140,
+    m2_propios: null,
     m2_totales: 200,
     propietario_persona_id: null,
     contrato_vigente: null,
@@ -119,5 +122,46 @@ describe('Detalle — propiedad dada de baja', () => {
     await renderDetalle({ estado_comercial: 'baja' as EstadoComercial })
 
     expect(screen.queryByRole('status')).not.toBeInTheDocument()
+  })
+})
+
+describe('Detalle — superficies', () => {
+  it('muestra solo las superficies cargadas', async () => {
+    await renderDetalle({
+      m2_terreno: 600, m2_construidos: 250, m2_cubiertos: null, m2_propios: null, m2_totales: 600,
+    })
+
+    expect(screen.getByText('m² terreno')).toBeInTheDocument()
+    expect(screen.getByText('m² construidos')).toBeInTheDocument()
+    expect(screen.getByText('m² totales')).toBeInTheDocument()
+    expect(screen.queryByText('m² cubiertos')).not.toBeInTheDocument()
+    expect(screen.queryByText('m² propios')).not.toBeInTheDocument()
+  })
+})
+
+describe('Detalle — características', () => {
+  it('las tildadas se muestran solo con el nombre y ✅', async () => {
+    await renderDetalle({
+      caracteristicas: [{ id: 1, propiedad_id: 1, clave: 'Piscina', valor: 'si', creado_en: '' }],
+    })
+
+    expect(screen.getByText('✅ Piscina')).toBeInTheDocument()
+    expect(screen.queryByText(/Piscina: si/)).not.toBeInTheDocument()
+  })
+
+  it('reconoce tildadas legacy guardadas como "Sí"', async () => {
+    await renderDetalle({
+      caracteristicas: [{ id: 3, propiedad_id: 1, clave: 'Balcón', valor: 'Sí', creado_en: '' }],
+    })
+
+    expect(screen.getByText('✅ Balcón')).toBeInTheDocument()
+  })
+
+  it('las de texto libre siguen como "clave: valor"', async () => {
+    await renderDetalle({
+      caracteristicas: [{ id: 2, propiedad_id: 1, clave: 'Orientación', valor: 'Norte', creado_en: '' }],
+    })
+
+    expect(screen.getByText('Orientación: Norte')).toBeInTheDocument()
   })
 })

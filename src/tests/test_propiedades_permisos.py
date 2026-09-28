@@ -70,6 +70,11 @@ def _escrituras_de_propiedades(propiedad_id: int) -> list[tuple[str, str, dict]]
         ),
         ("delete", f"/api/v1/propiedades/{propiedad_id}/medios/1", {}),
         (
+            "put",
+            f"/api/v1/propiedades/{propiedad_id}/medios/orden",
+            {"json": {"orden": []}},
+        ),
+        (
             "post",
             f"/api/v1/propiedades/{propiedad_id}/caracteristicas",
             {"json": {"clave": "cochera", "valor": "si"}},

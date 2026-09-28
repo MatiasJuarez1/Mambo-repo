@@ -71,6 +71,12 @@ class MedioResponse(MedioBase):
     model_config = ConfigDict(from_attributes=True)
 
 
+class ReordenarMediosRequest(BaseModel):
+    # Todos los ids de medios de la propiedad, en el orden deseado. El primero
+    # pasa a ser la foto principal.
+    orden: list[int]
+
+
 # ── Características ───────────────────────────────────────────────────────────
 
 
@@ -134,7 +140,10 @@ class PropiedadBase(BaseModel):
     precio: Decimal | None = None
     dormitorios: int | None = None
     banos: int | None = None
+    m2_terreno: Decimal | None = None
+    m2_construidos: Decimal | None = None
     m2_cubiertos: Decimal | None = None
+    m2_propios: Decimal | None = None
     m2_totales: Decimal | None = None
     propietario_persona_id: int | None = None
 
@@ -155,7 +164,10 @@ class PropiedadUpdate(BaseModel):
     precio: Decimal | None = None
     dormitorios: int | None = None
     banos: int | None = None
+    m2_terreno: Decimal | None = None
+    m2_construidos: Decimal | None = None
     m2_cubiertos: Decimal | None = None
+    m2_propios: Decimal | None = None
     m2_totales: Decimal | None = None
     propietario_persona_id: int | None = None
     ubicacion: UbicacionUpdate | None = None
@@ -186,7 +198,10 @@ class PropiedadListItem(BaseModel):
     precio: Decimal | None = None
     dormitorios: int | None = None
     banos: int | None = None
+    m2_terreno: Decimal | None = None
+    m2_construidos: Decimal | None = None
     m2_cubiertos: Decimal | None = None
+    m2_propios: Decimal | None = None
     m2_totales: Decimal | None = None
     creado_en: datetime
     ubicacion: UbicacionResponse | None = None

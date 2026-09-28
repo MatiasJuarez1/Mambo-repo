@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { propiedadesApi } from '../../../api/propiedades'
-import type { TipoPropiedad, TipoOperacion, EstadoComercial, Medio, Propiedad } from '../../../types/propiedad'
+import type { TipoPropiedad, TipoOperacion, EstadoComercial, Medio, Propiedad, Caracteristica } from '../../../types/propiedad'
 import type { PersonaBrief } from '../../../types/persona'
 import SelectorPersona from '../../../components/crm/SelectorPersona/SelectorPersona'
 import BloqueDocumentos from '../../../components/crm/BloqueDocumentos/BloqueDocumentos'
-import { etiquetaEstado, mediaUrl } from '../../../lib/propiedad'
+import { etiquetaEstado, mediaUrl, ordenarMedios, esTildada, CATALOGO_CARACTERISTICAS, VALOR_TILDADO } from '../../../lib/propiedad'
 import { formatearFecha, formatearMonto } from '../../../lib/formato'
 import { veCrm } from '../../../lib/beta'
 import { useAuth } from '../../../context/AuthContext'
@@ -24,7 +24,10 @@ interface FormState {
   // Medidas
   dormitorios:     string
   banos:           string
+  m2_terreno:      string
+  m2_construidos:  string
   m2_cubiertos:    string
+  m2_propios:      string
   m2_totales:      string
   // Ubicación
   direccion:       string
@@ -38,7 +41,8 @@ const INITIAL: FormState = {
   titulo: '', descripcion: '',
   tipo_propiedad: 'otro', tipo_operacion: 'venta', estado_comercial: 'disponible',
   moneda: 'ARS', precio: '',
-  dormitorios: '', banos: '', m2_cubiertos: '', m2_totales: '',
+  dormitorios: '', banos: '',
+  m2_terreno: '', m2_construidos: '', m2_cubiertos: '', m2_propios: '', m2_totales: '',
   direccion: '', ciudad: '', provincia: '', pais: 'AR', codigo_postal: '',
 }
 
@@ -58,6 +62,15 @@ export default function PropiedadFormulario() {
   // backend (que las procesa) y se agregan acá con la URL que devuelve.
   const [medios, setMedios]     = useState<Medio[]>([])
   const [subiendo, setSubiendo] = useState(false)
+  const [arrastrando, setArrastrando] = useState<number | null>(null)
+  const [guardandoOrden, setGuardandoOrden] = useState(false)
+
+  // Características ya guardadas de la propiedad. Igual que las fotos, cada
+  // cambio va al backend en el acto.
+  const [caracteristicas, setCaracteristicas] = useState<Caracteristica[]>([])
+  const [nuevaClave, setNuevaClave] = useState('')
+  const [nuevoValor, setNuevoValor] = useState('')
+  const [guardandoCaract, setGuardandoCaract] = useState(false)
 
   // Dueño de la propiedad. Va aparte del FormState porque no es un string
   // sino una persona elegida con el buscador.
@@ -83,7 +96,10 @@ export default function PropiedadFormulario() {
           precio:           p.precio?.toString() ?? '',
           dormitorios:      p.dormitorios?.toString() ?? '',
           banos:            p.banos?.toString() ?? '',
+          m2_terreno:       p.m2_terreno?.toString() ?? '',
+          m2_construidos:   p.m2_construidos?.toString() ?? '',
           m2_cubiertos:     p.m2_cubiertos?.toString() ?? '',
+          m2_propios:       p.m2_propios?.toString() ?? '',
           m2_totales:       p.m2_totales?.toString() ?? '',
           direccion:        p.ubicacion?.direccion ?? '',
           ciudad:           p.ubicacion?.ciudad ?? '',
@@ -91,7 +107,8 @@ export default function PropiedadFormulario() {
           pais:             p.ubicacion?.pais ?? 'AR',
           codigo_postal:    p.ubicacion?.codigo_postal ?? '',
         })
-        setMedios([...p.medios].sort((a, b) => a.orden - b.orden))
+        setMedios(ordenarMedios(p.medios))
+        setCaracteristicas(p.caracteristicas)
         setPropietario(p.propietario)
         setContratoVigente(p.contrato_vigente)
       })
@@ -131,6 +148,91 @@ export default function PropiedadFormulario() {
     }
   }
 
+  // Se guarda al soltar, sin botón aparte. Optimista, como subir y borrar: la
+  // grilla cambia en el acto y después se pisa con lo que devuelve el backend,
+  // que es quien decide cuál queda como principal.
+  const soltarSobre = async (destinoId: number) => {
+    const origenId = arrastrando
+    setArrastrando(null)
+    if (!id || origenId === null || origenId === destinoId || guardandoOrden || subiendo) return
+
+    // La foto toma el lugar del destino: hacia adelante queda después de él,
+    // hacia atrás queda antes. Así se puede mandar una foto al final o al principio.
+    const desde = medios.findIndex(m => m.id === origenId)
+    const hasta = medios.findIndex(m => m.id === destinoId)
+    const nuevo = [...medios]
+    const [movido] = nuevo.splice(desde, 1)
+    nuevo.splice(hasta, 0, movido)
+    setMedios(nuevo)
+
+    setError(null)
+    setGuardandoOrden(true)
+    try {
+      setMedios(await propiedadesApi.reordenarMedios(Number(id), nuevo.map(m => m.id)))
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'No se pudo reordenar las fotos')
+    } finally {
+      setGuardandoOrden(false)
+    }
+  }
+
+  // ── Características ──
+  // Igual que las fotos: cada cambio va al backend en el acto. `guardandoCaract`
+  // evita que un doble click mande dos pedidos antes de que el estado se
+  // actualice (el mismo defecto que tenían las fotos, corregido ahí con
+  // `guardandoOrden`).
+  const esDelCatalogo = (c: Caracteristica) =>
+    esTildada(c.valor) && (CATALOGO_CARACTERISTICAS as readonly string[]).includes(c.clave)
+
+  // Devuelve si la característica se guardó, para que quien llama decida qué
+  // hacer con su propio estado (p. ej. `agregarLibre` solo limpia los campos
+  // cuando el POST salió bien: si falla, el usuario no debería perder lo escrito).
+  const agregarCaracteristica = async (clave: string, valor: string): Promise<boolean> => {
+    if (!id || guardandoCaract) return false
+    setError(null)
+    setGuardandoCaract(true)
+    try {
+      const nueva = await propiedadesApi.agregarCaracteristica(Number(id), { clave, valor })
+      setCaracteristicas(prev => [...prev, nueva])
+      return true
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'No se pudo agregar la característica')
+      return false
+    } finally {
+      setGuardandoCaract(false)
+    }
+  }
+
+  const quitarCaracteristica = async (caracteristicaId: number) => {
+    if (!id || guardandoCaract) return
+    setError(null)
+    setGuardandoCaract(true)
+    try {
+      await propiedadesApi.eliminarCaracteristica(Number(id), caracteristicaId)
+      setCaracteristicas(prev => prev.filter(c => c.id !== caracteristicaId))
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'No se pudo quitar la característica')
+    } finally {
+      setGuardandoCaract(false)
+    }
+  }
+
+  const alternarDelCatalogo = (clave: string) => {
+    const existente = caracteristicas.find(c => c.clave === clave && esTildada(c.valor))
+    if (existente) quitarCaracteristica(existente.id)
+    else agregarCaracteristica(clave, VALOR_TILDADO)
+  }
+
+  const agregarLibre = async () => {
+    const clave = nuevaClave.trim()
+    if (!clave) return
+    const ok = await agregarCaracteristica(clave, nuevoValor.trim() || VALOR_TILDADO)
+    if (ok) {
+      setNuevaClave('')
+      setNuevoValor('')
+    }
+  }
+
   // ── Submit ──
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -147,7 +249,10 @@ export default function PropiedadFormulario() {
       precio:           num(form.precio),
       dormitorios:      num(form.dormitorios),
       banos:            num(form.banos),
+      m2_terreno:       num(form.m2_terreno),
+      m2_construidos:   num(form.m2_construidos),
       m2_cubiertos:     num(form.m2_cubiertos),
+      m2_propios:       num(form.m2_propios),
       m2_totales:       num(form.m2_totales),
       // `null` (y no `undefined`) para que al editar el backend borre el
       // propietario que había; `undefined` lo dejaría como estaba. Sin CRM el
@@ -322,21 +427,28 @@ export default function PropiedadFormulario() {
           <h2 className="form-section-title">Medidas y ambientes</h2>
           <div className="form-row">
             <div className="form-field">
-              <label>Dormitorios</label>
-              <input type="number" min="0" value={form.dormitorios} onChange={e => set('dormitorios', e.target.value)} placeholder="—" />
+              <label htmlFor="dormitorios">Dormitorios</label>
+              <input id="dormitorios" type="number" min="0" value={form.dormitorios} onChange={e => set('dormitorios', e.target.value)} placeholder="—" />
             </div>
             <div className="form-field">
-              <label>Baños</label>
-              <input type="number" min="0" value={form.banos} onChange={e => set('banos', e.target.value)} placeholder="—" />
+              <label htmlFor="banos">Baños</label>
+              <input id="banos" type="number" min="0" value={form.banos} onChange={e => set('banos', e.target.value)} placeholder="—" />
             </div>
-            <div className="form-field">
-              <label>m² cubiertos</label>
-              <input type="number" min="0" value={form.m2_cubiertos} onChange={e => set('m2_cubiertos', e.target.value)} placeholder="—" />
-            </div>
-            <div className="form-field">
-              <label>m² totales</label>
-              <input type="number" min="0" value={form.m2_totales} onChange={e => set('m2_totales', e.target.value)} placeholder="—" />
-            </div>
+          </div>
+          {/* Todas opcionales: se carga solo la que aplica a la propiedad. */}
+          <div className="form-row">
+            {([
+              ['m2_terreno',     'm² terreno'],
+              ['m2_construidos', 'm² construidos'],
+              ['m2_cubiertos',   'm² cubiertos'],
+              ['m2_propios',     'm² propios'],
+              ['m2_totales',     'm² totales'],
+            ] as const).map(([campo, etiqueta]) => (
+              <div className="form-field" key={campo}>
+                <label htmlFor={campo}>{etiqueta}</label>
+                <input id={campo} type="number" min="0" step="0.01" value={form[campo]} onChange={e => set(campo, e.target.value)} placeholder="—" />
+              </div>
+            ))}
           </div>
         </div>
 
@@ -363,12 +475,85 @@ export default function PropiedadFormulario() {
           </div>
         </div>
 
+        {/* ── Características ── */}
+        {esEdicion && (
+          <div className="admin-card form-section">
+            <h2 className="form-section-title">Características</h2>
+            <p className="form-hint">Se guardan al instante al tildarlas.</p>
+
+            <div className="caract-grid">
+              {CATALOGO_CARACTERISTICAS.map(item => (
+                <label key={item} className="caract-check">
+                  <input
+                    type="checkbox"
+                    checked={caracteristicas.some(c => c.clave === item && esTildada(c.valor))}
+                    onChange={() => alternarDelCatalogo(item)}
+                    disabled={guardandoCaract}
+                  />
+                  {item}
+                </label>
+              ))}
+            </div>
+
+            {caracteristicas.some(c => !esDelCatalogo(c)) && (
+              <div className="caract-libres">
+                {caracteristicas.filter(c => !esDelCatalogo(c)).map(c => (
+                  <span key={c.id} className="caract-chip">
+                    {esTildada(c.valor) ? c.clave : `${c.clave}: ${c.valor}`}
+                    <button
+                      type="button"
+                      onClick={() => quitarCaracteristica(c.id)}
+                      aria-label={`Quitar ${c.clave}`}
+                      disabled={guardandoCaract}
+                    >
+                      ×
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
+
+            <div className="form-row">
+              <div className="form-field">
+                <label htmlFor="caract-clave">Otra característica</label>
+                <input
+                  id="caract-clave"
+                  value={nuevaClave}
+                  onChange={e => setNuevaClave(e.target.value)}
+                  onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); agregarLibre() } }}
+                  placeholder="Ej: Orientación"
+                />
+              </div>
+              <div className="form-field">
+                <label htmlFor="caract-valor">Valor</label>
+                <input
+                  id="caract-valor"
+                  value={nuevoValor}
+                  onChange={e => setNuevoValor(e.target.value)}
+                  onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); agregarLibre() } }}
+                  placeholder="Ej: Norte (opcional)"
+                />
+              </div>
+              <div className="form-field caract-agregar">
+                <button
+                  type="button"
+                  className="btn btn-outline"
+                  onClick={agregarLibre}
+                  disabled={!nuevaClave.trim() || guardandoCaract}
+                >
+                  Agregar
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* ── Fotos ── */}
         <div className="admin-card form-section">
           <h2 className="form-section-title">Fotos</h2>
           {esEdicion ? (
             <p className="form-hint">
-              La primera foto se usa como principal. Se suben al instante al seleccionarlas.
+              La primera foto se usa como principal. Arrastralas para cambiar el orden; se guarda al soltar.
             </p>
           ) : (
             <p className="form-hint">
@@ -380,7 +565,21 @@ export default function PropiedadFormulario() {
             <div className="fotos-grid">
               {/* Fotos ya guardadas, servidas por el backend */}
               {medios.map(m => (
-                <div key={m.id} className="foto-item">
+                <div
+                  key={m.id}
+                  className={`foto-item${arrastrando === m.id ? ' arrastrando' : ''}`}
+                  draggable={!guardandoOrden && !subiendo}
+                  onDragStart={e => {
+                    e.dataTransfer?.setData('text/plain', String(m.id))
+                    setArrastrando(m.id)
+                  }}
+                  onDragOver={e => e.preventDefault()}
+                  onDrop={e => {
+                    e.preventDefault()
+                    soltarSobre(m.id)
+                  }}
+                  onDragEnd={() => setArrastrando(null)}
+                >
                   <img src={mediaUrl(m.url)} alt={m.descripcion ?? 'Foto de la propiedad'} />
                   {m.es_principal && <span className="foto-principal">Principal</span>}
                   <button
@@ -388,6 +587,7 @@ export default function PropiedadFormulario() {
                     className="foto-quitar"
                     onClick={() => borrarMedio(m.id)}
                     aria-label="Borrar foto"
+                    disabled={guardandoOrden}
                   >
                     ×
                   </button>
@@ -401,7 +601,7 @@ export default function PropiedadFormulario() {
                   accept="image/*"
                   multiple
                   hidden
-                  disabled={subiendo}
+                  disabled={subiendo || guardandoOrden}
                   onChange={e => {
                     subirArchivos(e.target.files)
                     e.target.value = ''

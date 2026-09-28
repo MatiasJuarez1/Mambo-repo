@@ -92,7 +92,13 @@ class Propiedad(Base):
     precio = Column(Numeric(14, 2), nullable=True)
     dormitorios = Column(Integer, nullable=True)
     banos = Column(Integer, nullable=True)
+    # Cinco superficies distintas, todas opcionales: no todas aplican a cualquier
+    # tipo de propiedad (un depto no tiene terreno). "Construidos" y "cubiertos"
+    # no son sinónimos: cubierto es lo que está bajo techo.
+    m2_terreno = Column(Numeric(10, 2), nullable=True)
+    m2_construidos = Column(Numeric(10, 2), nullable=True)
     m2_cubiertos = Column(Numeric(10, 2), nullable=True)
+    m2_propios = Column(Numeric(10, 2), nullable=True)
     m2_totales = Column(Numeric(10, 2), nullable=True)
     # Sin FK: la tabla de usuarios (users) usa BIGINT UNSIGNED y MySQL no permite
     # FK entre tipos signed/unsigned. Se deja como referencia lógica nullable.

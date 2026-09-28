@@ -167,3 +167,56 @@ export function etiquetaEstado(estado: EstadoComercial, operacion: TipoOperacion
 export function medioPrincipal(p: PropiedadListItem): Medio | undefined {
   return p.medios.find(m => m.es_principal) ?? p.medios[0]
 }
+
+/** Valor con el que se guarda una característica tildada (sin dato extra). */
+export const VALOR_TILDADO = 'si'
+
+/**
+ * True si `valor` es una tildada, sin importar mayúsculas, espacios o acentos.
+ * Hace falta porque los datos de siembra y las propiedades cargadas antes del
+ * catálogo guardan "Sí" en vez de "si": comparar con `=== VALOR_TILDADO` las
+ * deja afuera y aparecen como chip libre ("Balcón: Sí") en lugar de tildada.
+ */
+export function esTildada(valor: string): boolean {
+  return valor.trim().toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, '') === 'si'
+}
+
+/**
+ * Orden de los medios tal como los ve el público (ver `Detalle.tsx`): la foto
+ * marcada como principal primero, el resto por `orden`. Se reutiliza acá y en
+ * el formulario para que la grilla del panel coincida con el sitio público
+ * también con datos viejos, donde la principal no siempre es la de `orden` más bajo.
+ */
+export function ordenarMedios(medios: Medio[]): Medio[] {
+  return [...medios].sort((a, b) => {
+    if (a.es_principal && !b.es_principal) return -1
+    if (!a.es_principal && b.es_principal) return 1
+    return a.orden - b.orden
+  })
+}
+
+/**
+ * Amenities que se ofrecen como checkbox en el formulario. Cada una tildada se
+ * guarda como `{ clave: <ítem>, valor: 'si' }`. Dormitorios y baños no van acá:
+ * son campos numéricos propios de la propiedad.
+ */
+export const CATALOGO_CARACTERISTICAS = [
+  'Suite principal con vestidor',
+  'Escritorio',
+  'Sala de juegos',
+  'Dependencia de servicio con baño',
+  'Galería techada y quincho',
+  'Asador',
+  'Piscina',
+  'Terraza',
+  'Cochera',
+  'Balcón',
+  'Jardín',
+  'Lavadero',
+  'Placards empotrados',
+  'Cocina equipada',
+  'Aire acondicionado',
+  'Calefacción central',
+  'Portón eléctrico',
+  'Living comedor',
+] as const

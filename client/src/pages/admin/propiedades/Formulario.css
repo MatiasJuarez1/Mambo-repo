@@ -10,6 +10,47 @@
    `.form-field`, `.form-actions`, `.form-error`, `.form-hint`, etc.) vive en
    AdminLayout.css: la usa cualquier formulario del panel. */
 
+/* ── Características ──────────────────────────────────────── */
+
+.caract-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr));
+  gap: 0.5rem 1rem;
+}
+
+.caract-check {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.88rem;
+  cursor: pointer;
+}
+
+.caract-libres { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+
+.caract-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.25rem 0.35rem 0.25rem 0.7rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-size: 0.82rem;
+}
+
+.caract-chip button {
+  border: none;
+  background: none;
+  color: var(--text-muted);
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.caract-chip button:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.caract-agregar { justify-content: flex-end; }
+
 /* ── Fotos ────────────────────────────────────────────────── */
 
 /* `min(100%, 120px)` y no `120px` a secas: cuando el contenedor mide menos que
@@ -36,6 +77,9 @@
   object-fit: cover;
   display: block;
 }
+
+.foto-item[draggable='true'] { cursor: grab; }
+.foto-item.arrastrando { opacity: 0.4; }
 
 .foto-principal {
   position: absolute;

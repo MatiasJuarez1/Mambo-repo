@@ -266,7 +266,10 @@ def crear_propiedad(db: Session, data: PropiedadCreate) -> Propiedad:
         precio=data.precio,
         dormitorios=data.dormitorios,
         banos=data.banos,
+        m2_terreno=data.m2_terreno,
+        m2_construidos=data.m2_construidos,
         m2_cubiertos=data.m2_cubiertos,
+        m2_propios=data.m2_propios,
         m2_totales=data.m2_totales,
         propietario_persona_id=data.propietario_persona_id,
     )
@@ -563,6 +566,31 @@ def eliminar_medio(db: Session, propiedad_id: int, medio_id: int) -> None:
 
     db.delete(medio)
     db.commit()
+
+
+def reordenar_medios(db: Session, propiedad_id: int, orden: list[int]) -> list[PropiedadMedio]:
+    """Asigna `orden` según la posición en la lista y marca la primera como principal.
+
+    Exige la lista completa y sin repetidos: con un subconjunto no quedaría claro
+    dónde van los medios que no se nombran.
+    """
+    obtener_propiedad(db, propiedad_id)
+
+    medios = db.query(PropiedadMedio).filter(PropiedadMedio.propiedad_id == propiedad_id).all()
+    por_id = {m.id: m for m in medios}
+
+    if len(orden) != len(set(orden)) or set(orden) != set(por_id):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="La lista de ids no coincide con los medios de la propiedad",
+        )
+
+    for posicion, medio_id in enumerate(orden):
+        por_id[medio_id].orden = posicion
+        por_id[medio_id].es_principal = posicion == 0
+
+    db.commit()
+    return [por_id[medio_id] for medio_id in orden]
 
 
 def agregar_caracteristica(

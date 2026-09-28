@@ -15,6 +15,7 @@ from app.modules.propiedades.schemas import (
     PropiedadListItem,
     PropiedadResponse,
     PropiedadUpdate,
+    ReordenarMediosRequest,
 )
 from app.platform.auth.dependencies import require_role
 
@@ -91,14 +92,13 @@ def actualizar_propiedad(propiedad_id: int, data: PropiedadUpdate, db: Session =
     return service.actualizar_propiedad(db, propiedad_id, data)
 
 
-@router.delete(
-    "/{propiedad_id}", status_code=status.HTTP_204_NO_CONTENT, dependencies=SOLO_STAFF
-)
+@router.delete("/{propiedad_id}", status_code=status.HTTP_204_NO_CONTENT, dependencies=SOLO_STAFF)
 def eliminar_propiedad(propiedad_id: int, db: Session = Depends(get_db)):
     service.eliminar_propiedad(db, propiedad_id)
 
 
 # ── Medios ────────────────────────────────────────────────────────────────────
+
 
 @router.post(
     "/{propiedad_id}/medios",
@@ -127,6 +127,18 @@ def subir_medio(
     return service.subir_medio(db, propiedad_id, archivo, descripcion, es_principal)
 
 
+@router.put(
+    "/{propiedad_id}/medios/orden",
+    response_model=list[MedioResponse],
+    dependencies=SOLO_STAFF,
+)
+def reordenar_medios(
+    propiedad_id: int, data: ReordenarMediosRequest, db: Session = Depends(get_db)
+):
+    """Guarda el orden de las fotos; la primera de la lista queda como principal."""
+    return service.reordenar_medios(db, propiedad_id, data.orden)
+
+
 @router.delete(
     "/{propiedad_id}/medios/{medio_id}",
     status_code=status.HTTP_204_NO_CONTENT,
@@ -137,6 +149,7 @@ def eliminar_medio(propiedad_id: int, medio_id: int, db: Session = Depends(get_d
 
 
 # ── Características ───────────────────────────────────────────────────────────
+
 
 @router.post(
     "/{propiedad_id}/caracteristicas",

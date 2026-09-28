@@ -77,6 +77,10 @@ export const propiedadesApi = {
   eliminarMedio: (propiedadId: number, medioId: number) =>
     api.delete<void>(`${BASE}/${propiedadId}/medios/${medioId}`),
 
+  // Manda todos los ids en el orden nuevo; la primera foto queda como principal.
+  reordenarMedios: (propiedadId: number, orden: number[]) =>
+    api.put<Medio[]>(`${BASE}/${propiedadId}/medios/orden`, { orden }),
+
   // Características
   agregarCaracteristica: (propiedadId: number, data: { clave: string; valor: string }) =>
     api.post<Caracteristica>(`${BASE}/${propiedadId}/caracteristicas`, data),

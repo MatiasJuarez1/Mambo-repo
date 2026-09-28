@@ -3,12 +3,14 @@ import { useParams, Link } from 'react-router-dom'
 import { propiedadesApi } from '../../api/propiedades'
 import type { Propiedad } from '../../types/propiedad'
 import {
+  esTildada,
   etiquetaCierre,
   formatPrecio,
   formatSuperficie,
   LABEL_OPERACION,
   LABEL_TIPO,
   mediaUrl,
+  ordenarMedios,
 } from '../../lib/propiedad'
 import { srcSetDeMedio } from '../../lib/imagen'
 import { EMAIL_CONTACTO, linkWhatsApp } from '../../config/contacto'
@@ -43,14 +45,7 @@ export default function Detalle() {
     if (!id) return
     setLoading(true)
     propiedadesApi.obtener(Number(id))
-      .then(p => {
-        p.medios.sort((a, b) => {
-          if (a.es_principal && !b.es_principal) return -1
-          if (!a.es_principal && b.es_principal) return 1
-          return a.orden - b.orden
-        })
-        setProp(p)
-      })
+      .then(p => setProp({ ...p, medios: ordenarMedios(p.medios) }))
       .catch(e => setError(e.message))
       .finally(() => setLoading(false))
   }, [id])
@@ -169,23 +164,29 @@ export default function Detalle() {
           <h1 className="detalle-titulo">{prop.titulo}</h1>
           {ubicStr && <p className="detalle-ubicacion">{ubicStr}</p>}
 
-          {(prop.dormitorios != null || prop.banos != null ||
-            prop.m2_cubiertos != null || prop.m2_totales != null) && (
-            <div className="detalle-specs">
-              {prop.dormitorios != null && (
-                <div className="detalle-spec"><span className="v">{prop.dormitorios}</span><span className="k">Dormitorios</span></div>
-              )}
-              {prop.banos != null && (
-                <div className="detalle-spec"><span className="v">{prop.banos}</span><span className="k">Baños</span></div>
-              )}
-              {prop.m2_cubiertos != null && (
-                <div className="detalle-spec"><span className="v">{formatSuperficie(prop.m2_cubiertos)}</span><span className="k">m² cubiertos</span></div>
-              )}
-              {prop.m2_totales != null && (
-                <div className="detalle-spec"><span className="v">{formatSuperficie(prop.m2_totales)}</span><span className="k">m² totales</span></div>
-              )}
-            </div>
-          )}
+          {(() => {
+            const superficies = ([
+              [prop.m2_terreno,     'm² terreno'],
+              [prop.m2_construidos, 'm² construidos'],
+              [prop.m2_cubiertos,   'm² cubiertos'],
+              [prop.m2_propios,     'm² propios'],
+              [prop.m2_totales,     'm² totales'],
+            ] as const).filter(([valor]) => valor != null)
+            if (prop.dormitorios == null && prop.banos == null && superficies.length === 0) return null
+            return (
+              <div className="detalle-specs">
+                {prop.dormitorios != null && (
+                  <div className="detalle-spec"><span className="v">{prop.dormitorios}</span><span className="k">Dormitorios</span></div>
+                )}
+                {prop.banos != null && (
+                  <div className="detalle-spec"><span className="v">{prop.banos}</span><span className="k">Baños</span></div>
+                )}
+                {superficies.map(([valor, etiqueta]) => (
+                  <div key={etiqueta} className="detalle-spec"><span className="v">{formatSuperficie(valor!)}</span><span className="k">{etiqueta}</span></div>
+                ))}
+              </div>
+            )
+          })()}
 
           {prop.descripcion && (
             <div className="detalle-seccion">
@@ -198,9 +199,10 @@ export default function Detalle() {
             <div className="detalle-seccion">
               <h2 className="detalle-seccion-titulo">Características</h2>
               <div className="detalle-caract-grid">
-                {prop.caracteristicas.map(c => (
-                  <span key={c.id} className="detalle-caract-item">{c.clave}: {c.valor}</span>
-                ))}
+                {prop.caracteristicas.map(c => esTildada(c.valor)
+                  ? <span key={c.id} className="detalle-caract-item detalle-caract-item--si">{`✅ ${c.clave}`}</span>
+                  : <span key={c.id} className="detalle-caract-item">{`${c.clave}: ${c.valor}`}</span>,
+                )}
               </div>
             </div>
           )}
