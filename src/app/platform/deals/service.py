@@ -5,6 +5,7 @@ from datetime import UTC, datetime
 
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session as DBSession
+from sqlalchemy.orm import joinedload, selectinload
 
 from app.modules.propiedades.service import EventoOperacion, aplicar_evento_de_operacion
 from app.platform.deals import comisiones, historial
@@ -203,7 +204,16 @@ def list_deals(
     elif is_closed is False:
         q = q.filter(Deal.is_won.is_(False), Deal.is_lost.is_(False))
     total = q.count()
-    items = q.order_by(Deal.created_at.desc()).offset(skip).limit(limit).all()
+    items = (
+        q.options(
+            joinedload(Deal.propiedad),
+            selectinload(Deal.parties).joinedload(DealParty.person),
+        )
+        .order_by(Deal.created_at.desc())
+        .offset(skip)
+        .limit(limit)
+        .all()
+    )
     return total, items
 
 

@@ -6,6 +6,7 @@ from datetime import UTC, datetime
 from fastapi import HTTPException, status
 from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session as DBSession
+from sqlalchemy.orm import contains_eager, joinedload, selectinload
 
 from app.modules.propiedades.models import Propiedad
 from app.modules.propiedades.schemas import PropiedadBrief
@@ -334,12 +335,14 @@ def get_person_links(db: DBSession, person_id: int) -> PersonLinksOut:
     propiedades = (
         db.query(Propiedad)
         .filter(Propiedad.propietario_persona_id == person_id, Propiedad.eliminado_en.is_(None))
+        .options(selectinload(Propiedad.medios))
         .order_by(Propiedad.creado_en.desc())
         .all()
     )
     reservas = (
         db.query(Reservation)
         .filter(Reservation.person_id == person_id)
+        .options(joinedload(Reservation.propiedad))
         .order_by(Reservation.created_at.desc())
         .all()
     )
@@ -347,6 +350,12 @@ def get_person_links(db: DBSession, person_id: int) -> PersonLinksOut:
         db.query(DealParty)
         .join(Deal, Deal.id == DealParty.deal_id)
         .filter(DealParty.person_id == person_id, Deal.deleted_at.is_(None))
+        # El JOIN ya está por el filtro: se reusa para cargar el deal.
+        .options(
+            contains_eager(DealParty.deal).options(
+                joinedload(Deal.pipeline), joinedload(Deal.stage), joinedload(Deal.propiedad)
+            )
+        )
         .order_by(Deal.created_at.desc())
         .all()
     )
@@ -361,6 +370,12 @@ def get_person_links(db: DBSession, person_id: int) -> PersonLinksOut:
         db.query(ContratoParte)
         .join(Contrato, Contrato.id == ContratoParte.contrato_id)
         .filter(ContratoParte.person_id == person_id)
+        # `monto_vigente` recorre los ajustes de cada contrato.
+        .options(
+            contains_eager(ContratoParte.contrato).options(
+                joinedload(Contrato.propiedad), selectinload(Contrato.ajustes)
+            )
+        )
         .order_by(Contrato.fecha_fin.desc(), Contrato.id.desc(), ContratoParte.id)
         .all()
     )

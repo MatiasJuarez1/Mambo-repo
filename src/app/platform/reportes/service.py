@@ -13,6 +13,7 @@ from decimal import Decimal
 
 from dateutil.relativedelta import relativedelta
 from fastapi import HTTPException, status
+from sqlalchemy import func
 from sqlalchemy.orm import Session, joinedload
 
 from app.formato import redondear
@@ -301,6 +302,12 @@ def embudo(db: Session, desde: date, hasta: date, pipeline_id: int) -> ReporteEm
             por_deal[e.deal_id].append(e)
     posicion = {s.id: s.position for s in pipeline.stages}
     perdida = {s.id: s.is_lost for s in pipeline.stages}
+    actuales_por_etapa = dict(
+        db.query(Deal.stage_id, func.count(Deal.id))
+        .filter(Deal.stage_id.in_(posicion), Deal.deleted_at.is_(None))
+        .group_by(Deal.stage_id)
+        .all()
+    )
 
     etapas = []
     for s in pipeline.stages:
@@ -319,7 +326,6 @@ def embudo(db: Session, desde: date, hasta: date, pipeline_id: int) -> ReporteEm
                 ):
                     avanzaron += 1
             conversion = _porcentaje(avanzaron, len(ingresaron))
-        actuales = db.query(Deal).filter(Deal.stage_id == s.id, Deal.deleted_at.is_(None)).count()
         etapas.append(
             FilaEmbudo(
                 stage_id=s.id,
@@ -328,7 +334,7 @@ def embudo(db: Session, desde: date, hasta: date, pipeline_id: int) -> ReporteEm
                 is_won=s.is_won,
                 is_lost=s.is_lost,
                 ingresaron=len(ingresaron),
-                actuales=actuales,
+                actuales=actuales_por_etapa.get(s.id, 0),
                 dias_promedio=_promedio_dias(
                     [(e.entered_at, e.left_at) for e in propias if e.left_at is not None]
                 ),

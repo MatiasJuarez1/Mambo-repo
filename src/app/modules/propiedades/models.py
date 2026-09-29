@@ -162,7 +162,10 @@ class PropiedadMedio(Base):
 
     id = Column(BigInteger, primary_key=True, autoincrement=True)
     propiedad_id = Column(
-        BigInteger, ForeignKey("propiedades.id", ondelete="CASCADE"), nullable=False
+        BigInteger,
+        ForeignKey("propiedades.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
     )
     tipo_medio = Column(
         SAEnum(TipoMedio, name="tipo_medio"),
@@ -205,7 +208,10 @@ class PropiedadCaracteristica(Base):
 
     id = Column(BigInteger, primary_key=True, autoincrement=True)
     propiedad_id = Column(
-        BigInteger, ForeignKey("propiedades.id", ondelete="CASCADE"), nullable=False
+        BigInteger,
+        ForeignKey("propiedades.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
     )
     clave = Column(String(80), nullable=False)
     valor = Column(String(255), nullable=False)

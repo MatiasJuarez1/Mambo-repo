@@ -33,6 +33,18 @@ const FOTO_LLENA: CSSProperties = {
   borderRadius: 'inherit',
 }
 
+/**
+ * Hoy en formato `AAAA-MM-DD`, para el `min` del calendario de visitas.
+ * No sale de `toISOString()`: esa fecha es UTC y de noche en Argentina ya
+ * daría mañana, bloqueando el propio día.
+ */
+function hoyISO(): string {
+  const d = new Date()
+  const mm = String(d.getMonth() + 1).padStart(2, '0')
+  const dd = String(d.getDate()).padStart(2, '0')
+  return `${d.getFullYear()}-${mm}-${dd}`
+}
+
 export default function Detalle() {
   const { id } = useParams()
   const [prop, setProp]       = useState<Propiedad | null>(null)
@@ -250,14 +262,20 @@ export default function Detalle() {
               onSubmit={e => {
                 e.preventDefault()
                 const fd = new FormData(e.currentTarget)
-                const cuerpo = `Nombre: ${fd.get('nombre')}\nTeléfono: ${fd.get('telefono')}\nMensaje: ${fd.get('mensaje')}\n\nPropiedad: ${prop.titulo} (${window.location.href})`
+                const [anio, mes, dia] = String(fd.get('fecha')).split('-')
+                const cuerpo = `Nombre: ${fd.get('nombre')}\nTeléfono: ${fd.get('telefono')}\nDía preferido: ${dia}/${mes}/${anio}\n\nPropiedad: ${prop.titulo} (${window.location.href})`
                 window.location.href =
                   `mailto:${EMAIL_CONTACTO}?subject=${encodeURIComponent('Solicitud de visita: ' + prop.titulo)}&body=${encodeURIComponent(cuerpo)}`
               }}
             >
               <input name="nombre" placeholder="Tu nombre" required />
               <input name="telefono" placeholder="Teléfono" required />
-              <textarea name="mensaje" placeholder="¿Cuándo te gustaría visitarla?" rows={3} />
+              {/* Un calendario en vez de texto libre: la oficina recibe siempre una
+                  fecha válida y no se ofrecen días que ya pasaron. */}
+              <label className="detalle-form-label">
+                ¿Qué día te gustaría visitarla?
+                <input name="fecha" type="date" min={hoyISO()} required />
+              </label>
               <button type="submit" className="detalle-btn-enviar">Enviar solicitud</button>
             </form>
           )}

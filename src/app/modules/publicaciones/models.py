@@ -20,7 +20,10 @@ class Publicacion(Base):
 
     id = Column(BigInteger, primary_key=True, autoincrement=True)
     propiedad_id = Column(
-        BigInteger, ForeignKey("propiedades.id", ondelete="CASCADE"), nullable=False
+        BigInteger,
+        ForeignKey("propiedades.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
     )
     titulo = Column(String(255), nullable=False)
     descripcion = Column(Text, nullable=True)

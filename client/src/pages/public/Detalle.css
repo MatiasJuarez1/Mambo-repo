@@ -175,6 +175,11 @@
   border: 1px solid var(--line); border-radius: var(--radius-sm); outline: none;
   color: var(--text); resize: vertical;
 }
+.detalle-form-label {
+  display: flex; flex-direction: column; gap: 0.35rem;
+  font-size: 0.8rem; color: var(--text-muted);
+}
+.detalle-form input[type='date'] { cursor: pointer; }
 .detalle-form input:focus, .detalle-form textarea:focus { border-color: var(--petrol); }
 .detalle-btn-enviar { background: var(--petrol); color: var(--white); border: none; }
 .detalle-btn-enviar:hover { background: var(--petrol-deep); }

@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react'
-import type { FormEvent, ReactNode } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import type { FormEvent, MouseEvent, ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { propiedadesApi } from '../api/propiedades'
 import { OPCIONES_OPERACION, OPCIONES_TIPO } from '../lib/propiedad'
@@ -75,12 +75,30 @@ interface CampoProps {
 
 /** Un campo de la barra: ícono + rótulo + desplegable (el caret es el `::after`). */
 function CampoBuscador({ icono, caption, vacia, opciones, valor, onChange, ancho = false }: CampoProps) {
+  const selectRef = useRef<HTMLSelectElement>(null)
+
+  // Tocar el <label> solo le da foco al select: el navegador no lo despliega.
+  // Como el caret (y el ícono) quedan fuera del select, sin esto la flecha no
+  // hacía nada. `showPicker` lo abre a mano; donde no existe, queda el foco.
+  function abrir(e: MouseEvent<HTMLLabelElement>) {
+    const select = selectRef.current
+    if (!select || e.target === select) return
+    e.preventDefault()
+    select.focus()
+    try {
+      select.showPicker()
+    } catch {
+      // Navegador sin showPicker para <select>: el foco ya permite elegir con el teclado.
+    }
+  }
+
   return (
-    <label className={ancho ? 'qs-field qs-field--ancho' : 'qs-field'}>
+    <label className={ancho ? 'qs-field qs-field--ancho' : 'qs-field'} onClick={abrir}>
       {icono}
       <span className="qs-text">
         <span className="qs-cap">{caption}</span>
         <select
+          ref={selectRef}
           className="qs-select"
           aria-label={caption}
           value={valor}

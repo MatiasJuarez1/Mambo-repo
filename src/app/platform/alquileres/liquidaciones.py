@@ -9,7 +9,7 @@ from decimal import ROUND_HALF_UP, Decimal
 
 from dateutil.relativedelta import relativedelta
 from fastapi import BackgroundTasks, HTTPException, status
-from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.orm import Session, joinedload, selectinload
 
 from app.platform.alquileres import recibos
 from app.platform.alquileres.cobros import conflicto, email_configurado_o_409, siguiente_numero
@@ -122,7 +122,21 @@ def obtener(db: Session, contrato_id: int, liq_id: int) -> Liquidacion:
 
 
 def listar_de_contrato(db: Session, contrato_id: int) -> list[Liquidacion]:
-    return obtener_contrato(db, contrato_id).liquidaciones
+    # Se consulta aparte y no con `contrato.liquidaciones`: la relación no deja
+    # precargar los pagos y gastos de cada una, que `LiquidacionDetalle` serializa.
+    obtener_contrato(db, contrato_id)
+    return (
+        db.query(Liquidacion)
+        .filter(Liquidacion.contrato_id == contrato_id)
+        .options(
+            selectinload(Liquidacion.pagos).options(
+                joinedload(Pago.cobro), joinedload(Pago.registrado_por)
+            ),
+            selectinload(Liquidacion.gastos),
+        )
+        .order_by(Liquidacion.periodo.desc())
+        .all()
+    )
 
 
 def listar(

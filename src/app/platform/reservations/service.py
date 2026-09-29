@@ -5,6 +5,7 @@ from datetime import UTC, datetime
 
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session as DBSession
+from sqlalchemy.orm import joinedload
 
 from app.modules.propiedades.service import EventoOperacion, aplicar_evento_de_operacion
 from app.platform.reservations.models import Reservation
@@ -42,7 +43,17 @@ def list_reservations(
         q = q.filter(Reservation.status == res_status)
 
     total = q.count()
-    items = q.order_by(Reservation.created_at.desc()).offset(skip).limit(limit).all()
+    items = (
+        q.options(
+            joinedload(Reservation.person),
+            joinedload(Reservation.propiedad),
+            joinedload(Reservation.created_by),
+        )
+        .order_by(Reservation.created_at.desc())
+        .offset(skip)
+        .limit(limit)
+        .all()
+    )
     return total, items
 
 

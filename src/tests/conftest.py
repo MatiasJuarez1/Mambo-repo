@@ -16,8 +16,10 @@ La base vive en memoria y se comparte con el TestClient mediante `StaticPool` +
 insertó el test (con un pool normal cada conexión sería una base vacía distinta).
 """
 
+from contextlib import contextmanager
+
 import pytest
-from sqlalchemy import BigInteger, create_engine
+from sqlalchemy import BigInteger, create_engine, event
 from sqlalchemy.ext.compiler import compiles
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import StaticPool
@@ -52,6 +54,29 @@ def engine():
     yield motor
     Base.metadata.drop_all(motor)
     motor.dispose()
+
+
+@pytest.fixture
+def contar_queries(engine):
+    """Context manager que junta las sentencias SQL ejecutadas mientras está abierto.
+
+    `with contar_queries() as sentencias: ...` y después `len(sentencias)`.
+    """
+
+    @contextmanager
+    def _contar():
+        sentencias: list[str] = []
+
+        def _anotar(conn, cursor, statement, parameters, context, executemany):
+            sentencias.append(statement)
+
+        event.listen(engine, "before_cursor_execute", _anotar)
+        try:
+            yield sentencias
+        finally:
+            event.remove(engine, "before_cursor_execute", _anotar)
+
+    return _contar
 
 
 @pytest.fixture

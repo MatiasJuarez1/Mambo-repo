@@ -14,7 +14,7 @@ from dateutil.relativedelta import relativedelta
 from fastapi import HTTPException, UploadFile, status
 from pydantic import ValidationError
 from sqlalchemy import and_, or_
-from sqlalchemy.orm import Session, selectinload
+from sqlalchemy.orm import Session, joinedload, selectinload
 
 from app.modules.propiedades.models import Propiedad
 from app.modules.propiedades.service import (
@@ -168,7 +168,14 @@ def listar_contratos(
 
     total = consulta.count()
     items = (
-        consulta.options(selectinload(Contrato.cobros).selectinload(Cobro.pagos))
+        # Todo lo que lee `ContratoEnLista`: `vencidos` sale de cobros/pagos y
+        # `monto_vigente`/`proximo_ajuste` de los ajustes.
+        consulta.options(
+            joinedload(Contrato.propiedad),
+            selectinload(Contrato.partes).joinedload(ContratoParte.person),
+            selectinload(Contrato.ajustes),
+            selectinload(Contrato.cobros).selectinload(Cobro.pagos),
+        )
         .order_by(Contrato.fecha_fin.asc(), Contrato.id.asc())
         .offset(skip)
         .limit(limit)

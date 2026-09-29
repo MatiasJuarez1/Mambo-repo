@@ -6,6 +6,7 @@ from datetime import UTC, datetime
 
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session as DBSession
+from sqlalchemy.orm import joinedload
 
 from app.modules.propiedades.service import obtener_propiedad
 from app.platform.activities.models import Activity
@@ -59,7 +60,14 @@ def list_activities(
 
     total = q.count()
     items = (
-        q.order_by(Activity.due_at.asc().nullslast(), Activity.created_at.desc())
+        q.options(
+            joinedload(Activity.assigned_to),
+            joinedload(Activity.created_by),
+            joinedload(Activity.person),
+            joinedload(Activity.propiedad),
+            joinedload(Activity.deal),
+        )
+        .order_by(Activity.due_at.asc().nullslast(), Activity.created_at.desc())
         .offset(skip)
         .limit(limit)
         .all()

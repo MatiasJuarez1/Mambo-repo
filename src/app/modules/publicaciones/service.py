@@ -7,10 +7,10 @@ from zipfile import ZipFile
 
 import httpx
 from fastapi import HTTPException, status
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 from app import storage
-from app.modules.propiedades.models import TipoMedio
+from app.modules.propiedades.models import Propiedad, TipoMedio
 from app.modules.publicaciones.models import EstadoPublicacion, Publicacion
 from app.modules.publicaciones.schemas import PublicacionCreate, PublicacionUpdate
 
@@ -35,7 +35,19 @@ def listar_publicaciones(
     if propiedad_id:
         query = query.filter(Publicacion.propiedad_id == propiedad_id)
 
-    return query.order_by(Publicacion.publicada_en.desc()).offset(skip).limit(limit).all()
+    # `PublicacionListItem` anida un `PropiedadListItem` entero.
+    propiedad = joinedload(Publicacion.propiedad)
+    return (
+        query.options(
+            propiedad.joinedload(Propiedad.ubicacion),
+            propiedad.joinedload(Propiedad.propietario),
+            propiedad.selectinload(Propiedad.medios),
+        )
+        .order_by(Publicacion.publicada_en.desc())
+        .offset(skip)
+        .limit(limit)
+        .all()
+    )
 
 
 def listar_publicaciones_activas(

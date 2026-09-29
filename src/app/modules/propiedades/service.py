@@ -7,7 +7,7 @@ from enum import StrEnum
 from fastapi import HTTPException, UploadFile, status
 from PIL import Image, ImageOps, UnidentifiedImageError
 from sqlalchemy import case
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload, selectinload
 
 # Registra el decodificador HEIC/HEIF (fotos de iPhone) en Pillow. Es opcional:
 # si la librería no está instalada, el resto de los formatos sigue funcionando.
@@ -110,7 +110,15 @@ def listar_propiedades(
     )
 
     return (
-        query.order_by(prioridad_estado, Propiedad.creado_en.desc(), Propiedad.id.desc())
+        # Lo que serializa `PropiedadListItem`. Los to-one van por JOIN (no
+        # multiplican filas, así que no rompen el LIMIT); `medios` es una colección
+        # y va en una segunda consulta.
+        query.options(
+            joinedload(Propiedad.ubicacion),
+            joinedload(Propiedad.propietario),
+            selectinload(Propiedad.medios),
+        )
+        .order_by(prioridad_estado, Propiedad.creado_en.desc(), Propiedad.id.desc())
         .offset(skip)
         .limit(limit)
         .all()
