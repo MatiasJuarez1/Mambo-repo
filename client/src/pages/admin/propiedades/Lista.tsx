@@ -240,6 +240,14 @@ export default function PropiedadesLista() {
                             >
                               Editar
                             </button>
+                            <a
+                              className="btn btn-outline"
+                              href={propiedadesApi.urlFicha(p.id)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              Ficha PDF
+                            </a>
                             <button
                               className="btn btn-danger"
                               onClick={() => handleEliminar(p.id, p.titulo)}

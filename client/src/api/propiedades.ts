@@ -1,4 +1,4 @@
-import { api } from './client'
+import { api, BASE_URL } from './client'
 import type {
   Propiedad,
   PropiedadListItem,
@@ -56,6 +56,13 @@ export const propiedadesApi = {
 
   eliminar: (id: number) =>
     api.delete<void>(`${BASE}/${id}`),
+
+  /**
+   * URL absoluta de la ficha en PDF. Se abre con un `<a>` y no con `fetch`, como
+   * la descarga de publicaciones: la cookie viaja igual y el navegador muestra el
+   * PDF con sus propios botones de descargar y compartir.
+   */
+  urlFicha: (id: number) => `${BASE_URL}${BASE}/${id}/ficha.pdf`,
 
   // Medios
   // `variantes` se omite junto con los campos que asigna la base: las genera el

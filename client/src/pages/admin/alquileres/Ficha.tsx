@@ -15,6 +15,8 @@ import TablaGastos from '../../../components/crm/TablaGastos/TablaGastos'
 import BloqueLiquidaciones from '../../../components/crm/BloqueLiquidaciones/BloqueLiquidaciones'
 import ModalLiquidar from '../../../components/crm/ModalLiquidar/ModalLiquidar'
 import BloqueDocumentos from '../../../components/crm/BloqueDocumentos/BloqueDocumentos'
+import HistorialCambios from '../../../components/crm/HistorialCambios/HistorialCambios'
+import { useAuth } from '../../../context/AuthContext'
 import { formatearFecha, formatearMonto } from '../../../lib/formato'
 import {
   LABEL_ESTADO_CONTRATO, LABEL_INDICE, LABEL_ROL_CONTRATO, ROLES_CONTRATO, hoyIso,
@@ -27,6 +29,7 @@ const MAX_PDF_BYTES = 10 * 1024 * 1024
 export default function ContratoFicha() {
   const { id } = useParams()
   const contratoId = Number(id)
+  const esAdmin = useAuth().usuario?.roles.includes('admin') ?? false
 
   const [contrato, setContrato]   = useState<Contrato | null>(null)
   const [error, setError]         = useState<string | null>(null)
@@ -355,6 +358,9 @@ export default function ContratoFicha() {
         )}
 
       <BloqueDocumentos entidad={{ contratoId: contrato.id }} />
+
+      {/* Quién cambió montos, fechas o el estado del contrato. Solo admin. */}
+      {esAdmin && <HistorialCambios entidad="contrato" entidadId={contrato.id} />}
 
       {pagando && (
         <ModalRegistrarPago

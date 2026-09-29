@@ -9,12 +9,15 @@ from app.database import engine
 # Módulos de inventario / publicaciones (rama agustin)
 from app.modules.propiedades.router import router as propiedades_router
 from app.modules.publicaciones.router import router as publicaciones_router
+from app.modules.sitio.router import router as sitio_router
 
 # Módulos de plataforma / CRM (rama matias-platform)
 from app.platform.activities.router import router as activities_router
 from app.platform.alquileres.router import router as alquileres_router
 from app.platform.audit.router import router as audit_router
 from app.platform.auth.router import router as auth_router
+from app.platform.busquedas.router import router as busquedas_router
+from app.platform.consultas.router import router as consultas_router
 from app.platform.deals.router import router as deals_router
 from app.platform.documentos.router import router as documentos_router
 from app.platform.inmobiliaria.router import router as inmobiliaria_router
@@ -55,6 +58,7 @@ app.mount(
 # Inventario y publicaciones (bajo /api/v1)
 app.include_router(propiedades_router, prefix="/api/v1")
 app.include_router(publicaciones_router, prefix="/api/v1")
+app.include_router(sitio_router, prefix="/api/v1")
 
 # Plataforma / CRM. Bajo /api/v1 como el catálogo: `client/vercel.json` solo
 # reenvía `/api/*` y `/auth/*` a Render, así que cualquier router montado en la
@@ -70,6 +74,8 @@ app.include_router(inmobiliaria_router, prefix="/api/v1")
 app.include_router(alquileres_router, prefix="/api/v1")
 app.include_router(reportes_router, prefix="/api/v1")
 app.include_router(documentos_router, prefix="/api/v1")
+app.include_router(consultas_router, prefix="/api/v1")
+app.include_router(busquedas_router, prefix="/api/v1")
 
 
 @app.get("/health")

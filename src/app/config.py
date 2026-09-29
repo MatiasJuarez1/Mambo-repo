@@ -110,6 +110,12 @@ class Settings(BaseSettings):
     # hace falta tocarlo: `main.py` acepta cualquier puerto de localhost por regex.
     cors_origins: str = Field(default="", validation_alias="CORS_ORIGINS")
 
+    # URL pública del sitio (la de Vercel o el dominio propio), sin barra final. La
+    # usan el sitemap, el robots.txt y las vistas previas al compartir una propiedad,
+    # que necesitan URLs absolutas. Sin definir se deduce del request (`X-Forwarded-*`
+    # que agrega el proxy de Vercel), que alcanza mientras haya un solo dominio.
+    sitio_url: str | None = Field(default=None, validation_alias="SITIO_URL")
+
     @property
     def cors_origins_lista(self) -> list[str]:
         """`CORS_ORIGINS` como lista.

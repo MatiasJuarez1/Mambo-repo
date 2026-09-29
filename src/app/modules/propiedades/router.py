@@ -1,10 +1,11 @@
 from decimal import Decimal
 
-from fastapi import APIRouter, Depends, File, Form, Query, UploadFile, status
+from fastapi import APIRouter, Depends, File, Form, Query, Response, UploadFile, status
 from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.modules.propiedades import service
+from app.modules.propiedades.ficha import generar_ficha
 from app.modules.propiedades.models import EstadoComercial, TipoOperacion, TipoPropiedad
 from app.modules.propiedades.schemas import (
     CaracteristicaCreate,
@@ -18,6 +19,7 @@ from app.modules.propiedades.schemas import (
     ReordenarMediosRequest,
 )
 from app.platform.auth.dependencies import require_role
+from app.platform.busquedas.service import avisar_coincidencias
 
 router = APIRouter(prefix="/propiedades", tags=["Propiedades"])
 
@@ -77,6 +79,18 @@ def obtener_propiedad(propiedad_id: int, db: Session = Depends(get_db)):
     return service.obtener_propiedad(db, propiedad_id)
 
 
+@router.get("/{propiedad_id}/ficha.pdf", dependencies=SOLO_STAFF)
+def descargar_ficha(propiedad_id: int, db: Session = Depends(get_db)):
+    """Ficha para mandarle a un interesado. Detrás de `SOLO_STAFF` como el resto
+    del material de trabajo del panel, aunque no incluya datos internos."""
+    prop = service.obtener_propiedad(db, propiedad_id)
+    return Response(
+        content=generar_ficha(db, prop),
+        media_type="application/pdf",
+        headers={"Content-Disposition": f'inline; filename="ficha-propiedad-{propiedad_id}.pdf"'},
+    )
+
+
 @router.post(
     "",
     response_model=PropiedadResponse,
@@ -84,12 +98,19 @@ def obtener_propiedad(propiedad_id: int, db: Session = Depends(get_db)):
     dependencies=SOLO_STAFF,
 )
 def crear_propiedad(data: PropiedadCreate, db: Session = Depends(get_db)):
-    return service.crear_propiedad(db, data)
+    prop = service.crear_propiedad(db, data)
+    avisar_coincidencias(db, prop)
+    return prop
 
 
 @router.put("/{propiedad_id}", response_model=PropiedadResponse, dependencies=SOLO_STAFF)
 def actualizar_propiedad(propiedad_id: int, data: PropiedadUpdate, db: Session = Depends(get_db)):
-    return service.actualizar_propiedad(db, propiedad_id, data)
+    # Una edición puede volverla interesante para alguien (bajó el precio, volvió
+    # a estar disponible): se revisan las búsquedas guardadas cada vez. Las que ya
+    # recibieron aviso por esta propiedad no se repiten.
+    prop = service.actualizar_propiedad(db, propiedad_id, data)
+    avisar_coincidencias(db, prop)
+    return prop
 
 
 @router.delete("/{propiedad_id}", status_code=status.HTTP_204_NO_CONTENT, dependencies=SOLO_STAFF)

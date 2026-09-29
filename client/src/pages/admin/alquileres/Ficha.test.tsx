@@ -22,6 +22,10 @@ vi.mock('../../../api/inmobiliaria', () => ({ inmobiliariaApi: { obtener: vi.fn(
 vi.mock('../../../api/documentos', () => ({
   documentosApi: { listar: vi.fn().mockResolvedValue([]), subir: vi.fn(), eliminar: vi.fn() },
 }))
+// Sin rol admin: el historial de cambios tiene su propio test y acá solo haría ruido.
+vi.mock('../../../context/AuthContext', () => ({
+  useAuth: () => ({ usuario: { id: 1, email: 's@mambo.com.ar', is_active: true, roles: ['staff'], person_id: null } }),
+}))
 
 const CONTRATO: Contrato = {
   id: 3, property_id: 7, propiedad: { id: 7, titulo: 'Depto en La Plata', estado_comercial: 'cerrada' },

@@ -1,4 +1,4 @@
-import { useEffect, useState, type CSSProperties } from 'react'
+import { useEffect, useState, type CSSProperties, type FormEvent } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { propiedadesApi } from '../../api/propiedades'
 import type { Propiedad } from '../../types/propiedad'
@@ -13,7 +13,8 @@ import {
   ordenarMedios,
 } from '../../lib/propiedad'
 import { srcSetDeMedio } from '../../lib/imagen'
-import { EMAIL_CONTACTO, linkWhatsApp } from '../../config/contacto'
+import { consultasApi } from '../../api/consultas'
+import { linkWhatsApp } from '../../config/contacto'
 import './Detalle.css'
 
 /**
@@ -45,6 +46,77 @@ function hoyISO(): string {
   return `${d.getFullYear()}-${mm}-${dd}`
 }
 
+/** Texto opcional del formulario: vacío viaja como ausente, no como "". */
+function opcional(fd: FormData, campo: string): string | undefined {
+  const valor = String(fd.get(campo) ?? '').trim()
+  return valor || undefined
+}
+
+/**
+ * Pedido de visita que queda cargado en el CRM: la persona (nueva o ya existente)
+ * y una actividad pendiente para que alguien del equipo la tome. Antes armaba un
+ * `mailto:`, que dependía de que el visitante tuviera un cliente de correo
+ * configurado y dejaba la consulta fuera del sistema.
+ */
+function FormularioVisita({ propiedadId }: { propiedadId: number }) {
+  const [enviando, setEnviando] = useState(false)
+  const [enviado, setEnviado]   = useState<string | null>(null)
+  const [error, setError]       = useState<string | null>(null)
+
+  async function enviar(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    const fd = new FormData(e.currentTarget)
+    setEnviando(true)
+    setError(null)
+    try {
+      const r = await consultasApi.enviar({
+        propiedad_id: propiedadId,
+        nombre: String(fd.get('nombre')).trim(),
+        apellido: String(fd.get('apellido')).trim(),
+        telefono: String(fd.get('telefono')).trim(),
+        email: opcional(fd, 'email'),
+        fecha_preferida: opcional(fd, 'fecha'),
+        mensaje: opcional(fd, 'mensaje'),
+        sitio_web: opcional(fd, 'sitio_web'),
+      })
+      setEnviado(r.mensaje)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'No se pudo enviar la solicitud.')
+    } finally {
+      setEnviando(false)
+    }
+  }
+
+  if (enviado) {
+    return <p className="detalle-form-ok" role="status">{enviado}</p>
+  }
+
+  return (
+    <form className="detalle-form" onSubmit={enviar}>
+      <div className="detalle-form-fila">
+        <input name="nombre" placeholder="Nombre" aria-label="Nombre" autoComplete="given-name" required maxLength={100} />
+        <input name="apellido" placeholder="Apellido" aria-label="Apellido" autoComplete="family-name" required maxLength={100} />
+      </div>
+      <input name="telefono" type="tel" placeholder="Teléfono / WhatsApp" aria-label="Teléfono" autoComplete="tel" required minLength={6} maxLength={50} />
+      <input name="email" type="email" placeholder="Email (opcional)" aria-label="Email" autoComplete="email" />
+      {/* Un calendario en vez de texto libre: la oficina recibe siempre una
+          fecha válida y no se ofrecen días que ya pasaron. */}
+      <label className="detalle-form-label">
+        ¿Qué día te gustaría visitarla?
+        <input name="fecha" type="date" min={hoyISO()} required />
+      </label>
+      <textarea name="mensaje" placeholder="¿Algo que quieras contarnos? (opcional)" aria-label="Mensaje" rows={3} maxLength={2000} />
+      {/* Trampa para bots: fuera de la vista y del orden de tabulación. Una
+          persona nunca lo llena; si viene con algo, la API no guarda nada. */}
+      <input name="sitio_web" className="detalle-form-trampa" tabIndex={-1} autoComplete="off" aria-hidden="true" />
+      {error && <p className="detalle-form-error" role="alert">{error}</p>}
+      <button type="submit" className="detalle-btn-enviar" disabled={enviando}>
+        {enviando ? 'Enviando…' : 'Enviar solicitud'}
+      </button>
+    </form>
+  )
+}
+
 export default function Detalle() {
   const { id } = useParams()
   const [prop, setProp]       = useState<Propiedad | null>(null)
@@ -61,6 +133,16 @@ export default function Detalle() {
       .catch(e => setError(e.message))
       .finally(() => setLoading(false))
   }, [id])
+
+  // El título de la pestaña es el que Google muestra en el resultado: con el de
+  // `index.html` todas las fichas se veían iguales. Se restaura al salir.
+  const titulo = prop?.titulo
+  useEffect(() => {
+    if (!titulo) return
+    const anterior = document.title
+    document.title = `${titulo} | ${anterior}`
+    return () => { document.title = anterior }
+  }, [titulo])
 
   if (loading) {
     return <main className="detalle-page"><p className="detalle-estado">Cargando...</p></main>
@@ -256,29 +338,7 @@ export default function Detalle() {
             </button>
           )}
 
-          {mostrarForm && !operacionCerrada && (
-            <form
-              className="detalle-form"
-              onSubmit={e => {
-                e.preventDefault()
-                const fd = new FormData(e.currentTarget)
-                const [anio, mes, dia] = String(fd.get('fecha')).split('-')
-                const cuerpo = `Nombre: ${fd.get('nombre')}\nTeléfono: ${fd.get('telefono')}\nDía preferido: ${dia}/${mes}/${anio}\n\nPropiedad: ${prop.titulo} (${window.location.href})`
-                window.location.href =
-                  `mailto:${EMAIL_CONTACTO}?subject=${encodeURIComponent('Solicitud de visita: ' + prop.titulo)}&body=${encodeURIComponent(cuerpo)}`
-              }}
-            >
-              <input name="nombre" placeholder="Tu nombre" required />
-              <input name="telefono" placeholder="Teléfono" required />
-              {/* Un calendario en vez de texto libre: la oficina recibe siempre una
-                  fecha válida y no se ofrecen días que ya pasaron. */}
-              <label className="detalle-form-label">
-                ¿Qué día te gustaría visitarla?
-                <input name="fecha" type="date" min={hoyISO()} required />
-              </label>
-              <button type="submit" className="detalle-btn-enviar">Enviar solicitud</button>
-            </form>
-          )}
+          {mostrarForm && !operacionCerrada && <FormularioVisita propiedadId={prop.id} />}
         </aside>
       </div>
     </main>

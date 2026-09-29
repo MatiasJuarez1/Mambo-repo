@@ -20,6 +20,13 @@ vi.mock('../../../api/documentos', () => ({
   documentosApi: { listar: vi.fn().mockResolvedValue([]), subir: vi.fn(), eliminar: vi.fn() },
 }))
 vi.mock('../../../context/AuthContext', () => ({ useAuth: vi.fn() }))
+// El historial de cambios tiene su propio test: acá solo se evita que salga a la red.
+vi.mock('../../../api/auditoria', () => ({
+  auditoriaApi: { listar: vi.fn().mockResolvedValue({ total: 0, items: [] }) },
+}))
+vi.mock('../../../api/busquedas', () => ({
+  busquedasApi: { listar: vi.fn().mockResolvedValue([]), interesados: vi.fn().mockResolvedValue([]) },
+}))
 
 function sesionCon(roles: string[]) {
   vi.mocked(useAuth).mockReturnValue({

@@ -3,6 +3,19 @@
   "rewrites": [
     { "source": "/api/:path*", "destination": "https://mambo-api-qpo0.onrender.com/api/:path*" },
     { "source": "/auth/:path*", "destination": "https://mambo-api-qpo0.onrender.com/auth/:path*" },
+    { "source": "/sitemap.xml", "destination": "https://mambo-api-qpo0.onrender.com/api/v1/sitio/sitemap.xml" },
+    { "source": "/robots.txt", "destination": "https://mambo-api-qpo0.onrender.com/api/v1/sitio/robots.txt" },
+    {
+      "source": "/propiedades/:id(\\d+)",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": ".*(WhatsApp|facebookexternalhit|Facebot|Twitterbot|TelegramBot|LinkedInBot|Slackbot|Discordbot|Pinterest|SkypeUriPreview).*"
+        }
+      ],
+      "destination": "https://mambo-api-qpo0.onrender.com/api/v1/sitio/propiedades/:id"
+    },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }

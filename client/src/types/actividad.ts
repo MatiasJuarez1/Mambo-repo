@@ -39,7 +39,8 @@ export interface Actividad {
   due_at: string | null
   done_at: string | null
   assigned_to: UsuarioBrief | null
-  created_by: UsuarioBrief
+  /** `null` en las que llegan desde el sitio público (consultas web). */
+  created_by: UsuarioBrief | null
   person: PersonaBrief | null
   propiedad: PropiedadBrief | null
   deal: OperacionBrief | null

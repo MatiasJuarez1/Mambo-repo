@@ -22,6 +22,13 @@ vi.mock('../../../context/AuthContext', () => ({
     usuario: { id: 1, email: 'paulo@admin.com', is_active: true, roles: ['admin', 'beta'], person_id: null },
   }),
 }))
+// El historial de cambios tiene su propio test: acá solo se evita que salga a la red.
+vi.mock('../../../api/auditoria', () => ({
+  auditoriaApi: { listar: vi.fn().mockResolvedValue({ total: 0, items: [] }) },
+}))
+vi.mock('../../../api/busquedas', () => ({
+  busquedasApi: { listar: vi.fn().mockResolvedValue([]), interesados: vi.fn().mockResolvedValue([]) },
+}))
 
 const PROPIEDAD = {
   id: 7, titulo: 'Casa', descripcion: null,

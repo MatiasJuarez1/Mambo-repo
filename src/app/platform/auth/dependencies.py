@@ -13,6 +13,8 @@ from app.platform.auth.models import User
 from app.platform.auth.service import decodificar_access_token, get_valid_session
 
 COOKIE_NAME = "session_token"
+# Dónde queda el usuario del request dentro de `session.info`; la lee `audit.service`.
+CLAVE_USUARIO_AUDITORIA = "usuario_id"
 
 
 def get_current_user(
@@ -51,6 +53,9 @@ def get_current_user(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Usuario inactivo",
         )
+    # Para el registro de auditoría: FastAPI entrega esta misma sesión al endpoint,
+    # así que todo lo que se guarde en el request queda a nombre de este usuario.
+    db.info[CLAVE_USUARIO_AUDITORIA] = user.id
     return user
 
 

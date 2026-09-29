@@ -10,6 +10,9 @@ vi.mock('../../../api/personas', () => ({
 vi.mock('../../../api/documentos', () => ({
   documentosApi: { listar: vi.fn(), subir: vi.fn(), eliminar: vi.fn() },
 }))
+vi.mock('../../../api/busquedas', () => ({
+  busquedasApi: { listar: vi.fn().mockResolvedValue([]), interesados: vi.fn().mockResolvedValue([]) },
+}))
 
 const PERSONA = {
   id: 1, full_name: 'Ana Pérez', first_name: 'Ana', last_name: 'Pérez', document_type: 'DNI',

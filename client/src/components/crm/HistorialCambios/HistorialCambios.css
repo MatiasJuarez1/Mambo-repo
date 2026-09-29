@@ -1,0 +1,9 @@
+.historial-cambios { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-3); }
+.historial-cambios > li { padding-bottom: var(--space-3); border-bottom: 1px solid var(--line); }
+.historial-cambios > li:last-child { border-bottom: none; padding-bottom: 0; }
+.historial-cambios-cabecera { display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: baseline; font-size: 0.9rem; }
+.historial-cambios-cabecera time { color: var(--text-muted); }
+.historial-cambios-accion { font-weight: 600; }
+.historial-cambios-campos { margin: var(--space-2) 0 0; padding-left: 1.1rem; font-size: 0.88rem; }
+/* Un valor largo (una URL, un título) no puede ensanchar la tarjeta en móvil. */
+.historial-cambios-campos li { overflow-wrap: anywhere; }

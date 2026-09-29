@@ -40,6 +40,14 @@ services:
       - key: COOKIE_SAMESITE
         value: lax
 
+      # ── Sitio público ──
+      # URL del front (la de Vercel o el dominio propio), sin barra final. La usan
+      # el sitemap y las vistas previas de WhatsApp. Opcional: sin ella se deduce
+      # del host que reenvía el proxy de Vercel. Conviene fijarla el día que haya
+      # dominio propio, para que Google no indexe la URL *.vercel.app.
+      - key: SITIO_URL
+        sync: false
+
       # ── Fotos (Cloudflare R2) ──
       # Obligatorio en Render: su disco es efímero y se borra en cada deploy.
       - key: STORAGE_BACKEND

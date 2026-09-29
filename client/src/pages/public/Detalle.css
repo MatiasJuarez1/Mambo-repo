@@ -183,6 +183,19 @@
 .detalle-form input:focus, .detalle-form textarea:focus { border-color: var(--petrol); }
 .detalle-btn-enviar { background: var(--petrol); color: var(--white); border: none; }
 .detalle-btn-enviar:hover { background: var(--petrol-deep); }
+.detalle-btn-enviar:disabled { opacity: 0.6; cursor: wait; }
+/* Nombre y apellido lado a lado; `min-width: 0` deja que los inputs se achiquen
+   en vez de desbordar la columna angosta del aside. */
+.detalle-form-fila { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+.detalle-form-fila input { min-width: 0; }
+.detalle-form-error { margin: 0; font-size: 0.8rem; color: var(--estado-baja); }
+.detalle-form-ok {
+  margin-top: var(--space-4); padding: var(--space-4); border-radius: var(--radius-sm);
+  background: var(--line); color: var(--text); font-size: 0.9rem; text-align: center;
+}
+/* El campo trampa para bots: fuera de la vista pero presente en el DOM. No va con
+   `display: none` porque algunos bots saltean justamente esos campos. */
+.detalle-form-trampa { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
 
 /* ── Targets táctiles ─────────────────────────────────────────── */
 

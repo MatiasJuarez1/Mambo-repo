@@ -1,14 +1,21 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
+import userEvent from '@testing-library/user-event'
 import Detalle from './Detalle'
 import { propiedadesApi } from '../../api/propiedades'
+import { consultasApi } from '../../api/consultas'
 import type { EstadoComercial, Propiedad, TipoOperacion } from '../../types/propiedad'
 
 vi.mock('../../api/propiedades', () => ({
   propiedadesApi: { obtener: vi.fn() },
 }))
 
+vi.mock('../../api/consultas', () => ({
+  consultasApi: { enviar: vi.fn() },
+}))
+
 const obtenerMock = vi.mocked(propiedadesApi.obtener)
+const enviarMock = vi.mocked(consultasApi.enviar)
 
 function propiedad(over: Partial<Propiedad> = {}): Propiedad {
   return {
@@ -163,5 +170,71 @@ describe('Detalle — características', () => {
     })
 
     expect(screen.getByText('Orientación: Norte')).toBeInTheDocument()
+  })
+})
+
+describe('Detalle — solicitar visita', () => {
+  async function completarFormulario() {
+    const user = userEvent.setup()
+    await user.click(screen.getByText('Solicitar visita'))
+    await user.type(screen.getByLabelText('Nombre'), 'Laura')
+    await user.type(screen.getByLabelText('Apellido'), 'Gómez')
+    await user.type(screen.getByLabelText('Teléfono'), '11 5555-1234')
+    await user.type(screen.getByLabelText('Mensaje'), '  ¿Acepta mascotas?  ')
+    // El input de fecha no admite tipeo en jsdom: se le asigna el valor directo.
+    const fecha = screen.getByLabelText('¿Qué día te gustaría visitarla?') as HTMLInputElement
+    fecha.value = '2099-10-15'
+    return user
+  }
+
+  it('manda la consulta a la API y muestra la confirmación', async () => {
+    enviarMock.mockResolvedValue({ mensaje: '¡Gracias! Te vamos a contactar.' })
+    await renderDetalle()
+
+    const user = await completarFormulario()
+    await user.click(screen.getByText('Enviar solicitud'))
+
+    expect(enviarMock).toHaveBeenCalledWith({
+      propiedad_id: 1,
+      nombre: 'Laura',
+      apellido: 'Gómez',
+      telefono: '11 5555-1234',
+      email: undefined,
+      fecha_preferida: '2099-10-15',
+      mensaje: '¿Acepta mascotas?',
+      sitio_web: undefined,
+    })
+    expect(await screen.findByText('¡Gracias! Te vamos a contactar.')).toBeInTheDocument()
+    expect(screen.queryByText('Enviar solicitud')).not.toBeInTheDocument()
+  })
+
+  it('si la API falla, muestra el error y deja reintentar', async () => {
+    enviarMock.mockRejectedValue(new Error('Recibimos varias consultas seguidas.'))
+    await renderDetalle()
+
+    const user = await completarFormulario()
+    await user.click(screen.getByText('Enviar solicitud'))
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('Recibimos varias consultas seguidas.')
+    expect(screen.getByText('Enviar solicitud')).toBeEnabled()
+  })
+})
+
+describe('Detalle — título de la pestaña', () => {
+  it('lo antepone mientras la ficha está abierta y lo restaura al salir', async () => {
+    document.title = 'Mambo Propiedades'
+    obtenerMock.mockResolvedValue(propiedad())
+    const { unmount } = render(
+      <MemoryRouter initialEntries={['/propiedades/1']}>
+        <Routes>
+          <Route path="/propiedades/:id" element={<Detalle />} />
+        </Routes>
+      </MemoryRouter>,
+    )
+    await waitFor(() => expect(document.title).toBe('Casa en el centro | Mambo Propiedades'))
+
+    unmount()
+
+    expect(document.title).toBe('Mambo Propiedades')
   })
 })

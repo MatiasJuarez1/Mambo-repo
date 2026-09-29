@@ -5,6 +5,8 @@ import type { TipoPropiedad, TipoOperacion, EstadoComercial, Medio, Propiedad, C
 import type { PersonaBrief } from '../../../types/persona'
 import SelectorPersona from '../../../components/crm/SelectorPersona/SelectorPersona'
 import BloqueDocumentos from '../../../components/crm/BloqueDocumentos/BloqueDocumentos'
+import HistorialCambios from '../../../components/crm/HistorialCambios/HistorialCambios'
+import BloqueInteresados from '../../../components/crm/BloqueInteresados/BloqueInteresados'
 import { etiquetaEstado, mediaUrl, ordenarMedios, esTildada, CATALOGO_CARACTERISTICAS, VALOR_TILDADO } from '../../../lib/propiedad'
 import { formatearFecha, formatearMonto } from '../../../lib/formato'
 import { veCrm } from '../../../lib/beta'
@@ -75,7 +77,9 @@ export default function PropiedadFormulario() {
   // Dueño de la propiedad. Va aparte del FormState porque no es un string
   // sino una persona elegida con el buscador.
   const [propietario, setPropietario] = useState<PersonaBrief | null>(null)
-  const crm = veCrm(useAuth().usuario)
+  const { usuario } = useAuth()
+  const crm = veCrm(usuario)
+  const esAdmin = usuario?.roles.includes('admin') ?? false
 
   // Contrato de alquiler activo, si lo hay: solo se muestra, lo maneja Alquileres.
   const [contratoVigente, setContratoVigente] = useState<Propiedad['contrato_vigente']>(null)
@@ -616,6 +620,12 @@ export default function PropiedadFormulario() {
 
         {/* ── Documentos ── */}
         {crm && esEdicion && <BloqueDocumentos entidad={{ propiedadId: Number(id) }} />}
+
+        {/* ── A quién ofrecérsela: búsquedas guardadas que la cumplen ── */}
+        {crm && esEdicion && <BloqueInteresados propiedadId={Number(id)} />}
+
+        {/* ── Historial: quién cambió precio, estado, etc. Solo admin. ── */}
+        {esAdmin && esEdicion && <HistorialCambios entidad="propiedad" entidadId={Number(id)} />}
 
         {/* ── Acciones ── */}
         <div className="form-actions">

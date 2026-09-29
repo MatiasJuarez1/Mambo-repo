@@ -72,7 +72,8 @@ class ActivityOut(BaseModel):
     due_at: datetime | None
     done_at: datetime | None
     assigned_to: UserBrief | None
-    created_by: UserBrief
+    # None en las que llegan desde el sitio público (consultas web).
+    created_by: UserBrief | None
     person: PersonBrief | None
     propiedad: PropiedadBrief | None
     deal: DealBrief | None

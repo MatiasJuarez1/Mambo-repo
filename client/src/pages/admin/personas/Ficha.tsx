@@ -5,6 +5,7 @@ import type { Contacto, Persona, Vinculos } from '../../../types/persona'
 import ChipsRol from '../../../components/crm/ChipsRol/ChipsRol'
 import BloqueVinculos from '../../../components/crm/BloqueVinculos/BloqueVinculos'
 import BloqueDocumentos from '../../../components/crm/BloqueDocumentos/BloqueDocumentos'
+import BloqueBusquedas from '../../../components/crm/BloqueBusquedas/BloqueBusquedas'
 import Badge from '../../../components/Badge'
 import { formatearFecha, formatearMonto } from '../../../lib/formato'
 import { LABEL_ESTADO_RESERVA, LABEL_ROL_PARTE } from '../../../lib/crm'
@@ -117,6 +118,8 @@ export default function PersonaFicha() {
           ))}
         </BloqueVinculos>
       </div>
+
+      <BloqueBusquedas personaId={persona.id} />
 
       <BloqueDocumentos entidad={{ personaId: persona.id }} />
     </div>

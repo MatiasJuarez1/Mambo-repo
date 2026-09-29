@@ -31,9 +31,10 @@ class Activity(Base):
     assigned_to_user_id: Mapped[int | None] = mapped_column(
         Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True
     )
-    # Usuario que creó la actividad
-    created_by_user_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("users.id", ondelete="RESTRICT"), nullable=False
+    # Usuario que creó la actividad. NULL = la creó el sistema, no una persona del
+    # equipo: hoy, solo las consultas que llegan desde el sitio público.
+    created_by_user_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("users.id", ondelete="RESTRICT"), nullable=True
     )
 
     # FKs opcionales a otras entidades del dominio
@@ -61,7 +62,7 @@ class Activity(Base):
     )
 
     assigned_to: Mapped[object | None] = relationship("User", foreign_keys=[assigned_to_user_id])
-    created_by: Mapped[object] = relationship("User", foreign_keys=[created_by_user_id])
+    created_by: Mapped[object | None] = relationship("User", foreign_keys=[created_by_user_id])
     person: Mapped[object | None] = relationship("Person", foreign_keys=[person_id])
     deal: Mapped[object | None] = relationship("Deal", foreign_keys=[deal_id])
     propiedad: Mapped[object | None] = relationship("Propiedad", foreign_keys=[property_id])
