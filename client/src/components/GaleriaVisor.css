@@ -1,0 +1,141 @@
+/* Visor de fotos a pantalla completa. Fondo oscuro fijo, sin importar el tema:
+   las fotos se leen mejor sobre negro y es lo que el visitante espera de una galería. */
+.visor {
+  /* Anula el recuadro por defecto del <dialog> (margen, borde, tope de tamaño). */
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: rgba(5, 14, 14, 0.97);
+  color: var(--white);
+  overflow: hidden;
+}
+.visor[open] { display: flex; flex-direction: column; }
+.visor::backdrop { background: rgba(5, 14, 14, 0.97); }
+
+.visor-barra {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0.75rem 0.5rem 1.25rem;
+  flex-shrink: 0;
+}
+.visor-contador {
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+  opacity: 0.85;
+}
+.visor-cerrar {
+  width: var(--tap-min);
+  height: var(--tap-min);
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: inherit;
+  font-size: 1.35rem;
+  cursor: pointer;
+}
+.visor-cerrar:hover { background: rgba(255, 255, 255, 0.12); }
+
+/* El escenario ocupa todo el alto libre; la foto se achica para entrar entera
+   (nunca se recorta: en una ficha importa ver el ambiente completo). */
+.visor-escenario {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4.5rem;
+  /* El navegador no desplaza ni navega hacia atrás con el dedo: el gesto
+     lateral es de la galería. El pellizco para ampliar sigue funcionando. */
+  touch-action: pinch-zoom;
+  user-select: none;
+}
+.visor-foto {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  transition: transform 0.2s ease-out, opacity 0.2s ease-out;
+}
+
+.visor-flecha {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 48px;
+  height: 48px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.14);
+  color: var(--white);
+  font-size: 2rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.visor-flecha:hover { background: rgba(255, 255, 255, 0.28); }
+.visor-flecha--ant { left: 1rem; }
+.visor-flecha--sig { right: 1rem; }
+
+.visor-descripcion {
+  margin: 0;
+  padding: 0.5rem 1.25rem 0;
+  text-align: center;
+  font-size: 0.85rem;
+  opacity: 0.85;
+  flex-shrink: 0;
+}
+
+.visor-tira {
+  display: flex;
+  gap: 0.4rem;
+  padding: 0.75rem 1rem;
+  overflow-x: auto;
+  flex-shrink: 0;
+  scrollbar-width: none;
+}
+.visor-tira::-webkit-scrollbar { display: none; }
+.visor-mini {
+  flex: 0 0 auto;
+  width: 80px;
+  height: 56px;
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+  cursor: pointer;
+  opacity: 0.5;
+  transition: opacity 0.2s, border-color 0.2s;
+}
+.visor-mini:hover { opacity: 0.85; }
+.visor-mini--activa { opacity: 1; border-color: var(--white); }
+.visor-mini img { display: block; width: 100%; height: 100%; object-fit: cover; }
+
+/* Celular: la foto usa todo el ancho y las flechas quedan encima, más discretas;
+   el gesto principal es deslizar. */
+@media (max-width: 860px) {
+  .visor-escenario { padding: 0; }
+  .visor-flecha {
+    width: 40px;
+    height: 40px;
+    font-size: 1.6rem;
+    background: rgba(0, 0, 0, 0.35);
+  }
+  .visor-flecha--ant { left: 0.4rem; }
+  .visor-flecha--sig { right: 0.4rem; }
+  .visor-mini { width: 60px; height: 44px; }
+}
+
+/* Celular acostado: el alto no alcanza para foto y tira a la vez. Gana la foto. */
+@media (max-height: 500px) {
+  .visor-tira, .visor-descripcion { display: none; }
+}

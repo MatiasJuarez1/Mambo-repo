@@ -14,6 +14,7 @@ import {
 } from '../../lib/propiedad'
 import { srcSetDeMedio } from '../../lib/imagen'
 import { consultasApi } from '../../api/consultas'
+import GaleriaVisor from '../../components/GaleriaVisor'
 import { linkWhatsApp } from '../../config/contacto'
 import './Detalle.css'
 
@@ -122,7 +123,8 @@ export default function Detalle() {
   const [prop, setProp]       = useState<Propiedad | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError]     = useState<string | null>(null)
-  const [imgIdx, setImgIdx]   = useState(0)
+  // Foto con la que está abierto el visor; `null` es visor cerrado.
+  const [visor, setVisor]     = useState<number | null>(null)
   const [mostrarForm, setMostrarForm] = useState(false)
 
   useEffect(() => {
@@ -160,8 +162,7 @@ export default function Detalle() {
   }
 
   const imagenes = prop.medios.filter(m => m.tipo_medio === 'imagen')
-  // La que se ve grande: la elegida con las miniaturas, o la primera.
-  const principal = imagenes[imgIdx] ?? imagenes[0]
+  const principal = imagenes[0]
   const ubicStr = [prop.ubicacion?.direccion, prop.ubicacion?.ciudad, prop.ubicacion?.provincia]
     .filter(Boolean).join(' · ')
 
@@ -188,14 +189,17 @@ export default function Detalle() {
         </div>
       </div>
 
-      {/* Galería mosaico */}
+      {/* Galería mosaico: muestra las primeras cinco; cualquiera abre el visor
+          a pantalla completa, que es donde se ven todas. */}
       <div className="section-container">
         {imagenes.length > 0 ? (
           <div className="detalle-galeria">
             <button
               className="detalle-gal-principal"
-              onClick={() => setImgIdx(0)}
-              aria-label={`Foto principal de ${prop.titulo}`}
+              onClick={() => setVisor(0)}
+              aria-label={imagenes.length > 1
+                ? `Ver las ${imagenes.length} fotos de ${prop.titulo}`
+                : `Ver la foto de ${prop.titulo}`}
             >
               <img
                 src={mediaUrl(principal.url)}
@@ -215,16 +219,23 @@ export default function Detalle() {
               />
               <span className="detalle-badge">{LABEL_OPERACION[prop.tipo_operacion]}</span>
               {cierre && <span className="detalle-faja">{cierre}</span>}
+              {imagenes.length > 1 && (
+                <span className="detalle-gal-contador" aria-hidden="true">Ver {imagenes.length} fotos</span>
+              )}
             </button>
             <div className="detalle-gal-thumbs">
               {imagenes.slice(1, 5).map((m, i) => {
                 const esUltima = i === 3 && imagenes.length > 5
+                const restantes = imagenes.length - 5
                 return (
                   <button
                     key={m.id}
                     className="detalle-gal-thumb"
-                    onClick={() => setImgIdx(i + 1)}
-                    aria-label={`Foto ${i + 2} de ${prop.titulo}`}
+                    /* El "+N fotos" abre en la primera que no se ve en el mosaico. */
+                    onClick={() => setVisor(esUltima ? 5 : i + 1)}
+                    aria-label={esUltima
+                      ? `Ver ${restantes} fotos más de ${prop.titulo}`
+                      : `Foto ${i + 2} de ${prop.titulo}`}
                   >
                     <img
                       src={mediaUrl(m.url)}
@@ -240,7 +251,7 @@ export default function Detalle() {
                       height={200}
                       style={FOTO_LLENA}
                     />
-                    {esUltima && <span className="detalle-gal-mas">+{imagenes.length - 5} fotos</span>}
+                    {esUltima && <span className="detalle-gal-mas">+{restantes} fotos</span>}
                   </button>
                 )
               })}
@@ -250,6 +261,15 @@ export default function Detalle() {
           <div className="detalle-galeria"><div className="detalle-img-empty" /></div>
         )}
       </div>
+
+      {visor !== null && (
+        <GaleriaVisor
+          imagenes={imagenes}
+          inicial={visor}
+          titulo={prop.titulo}
+          onCerrar={() => setVisor(null)}
+        />
+      )}
 
       {/* Cuerpo 2 columnas */}
       <div className="section-container detalle-layout">

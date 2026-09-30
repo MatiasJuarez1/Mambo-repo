@@ -1,10 +1,10 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import userEvent from '@testing-library/user-event'
 import Detalle from './Detalle'
 import { propiedadesApi } from '../../api/propiedades'
 import { consultasApi } from '../../api/consultas'
-import type { EstadoComercial, Propiedad, TipoOperacion } from '../../types/propiedad'
+import type { EstadoComercial, Medio, Propiedad, TipoOperacion } from '../../types/propiedad'
 
 vi.mock('../../api/propiedades', () => ({
   propiedadesApi: { obtener: vi.fn() },
@@ -236,5 +236,102 @@ describe('Detalle — título de la pestaña', () => {
     unmount()
 
     expect(document.title).toBe('Mambo Propiedades')
+  })
+})
+
+describe('Detalle — visor de fotos', () => {
+  // 16 fotos: el mosaico muestra 5 y el "+11 fotos" tapa el resto, que es el
+  // caso que motivó el visor.
+  const fotos: Medio[] = Array.from({ length: 16 }, (_, i) => ({
+    id: i + 1,
+    propiedad_id: 1,
+    tipo_medio: 'imagen',
+    url: `/media/foto-${i + 1}.jpg`,
+    descripcion: null,
+    orden: i,
+    es_principal: i === 0,
+    variantes: null,
+    creado_en: '',
+  }))
+
+  const contador = () => within(screen.getByRole('dialog')).getByText(/^\d+ \/ 16$/)
+  const fotoVisible = () =>
+    within(screen.getByRole('dialog')).getByRole('img', { name: /^Foto \d+ de Casa en el centro$/ })
+
+  it('el "+11 fotos" abre el visor en la primera que no entra en el mosaico', async () => {
+    await renderDetalle({ medios: fotos })
+
+    await userEvent.click(screen.getByRole('button', { name: /Ver 11 fotos más/ }))
+
+    expect(contador()).toHaveTextContent('6 / 16')
+    expect(fotoVisible()).toHaveAttribute('src', expect.stringContaining('foto-6.jpg'))
+  })
+
+  it('llega a todas las fotos, con flechas, teclado y la tira de miniaturas', async () => {
+    const user = userEvent.setup()
+    await renderDetalle({ medios: fotos })
+    await user.click(screen.getByRole('button', { name: /Ver las 16 fotos/ }))
+    expect(contador()).toHaveTextContent('1 / 16')
+
+    await user.click(screen.getByRole('button', { name: 'Foto siguiente' }))
+    expect(contador()).toHaveTextContent('2 / 16')
+
+    fireEvent.keyDown(screen.getByRole('dialog'), { key: 'ArrowLeft' })
+    expect(contador()).toHaveTextContent('1 / 16')
+
+    await user.click(screen.getByRole('button', { name: 'Foto 16 de 16' }))
+    expect(fotoVisible()).toHaveAttribute('src', expect.stringContaining('foto-16.jpg'))
+
+    // Circular: después de la última vuelve a la primera.
+    fireEvent.keyDown(screen.getByRole('dialog'), { key: 'ArrowRight' })
+    expect(contador()).toHaveTextContent('1 / 16')
+  })
+
+  it('en el celular se pasa de foto deslizando el dedo', async () => {
+    await renderDetalle({ medios: fotos })
+    await userEvent.click(screen.getByRole('button', { name: /Ver las 16 fotos/ }))
+    const foto = fotoVisible()
+
+    fireEvent.touchStart(foto, { touches: [{ clientX: 300, clientY: 200 }] })
+    fireEvent.touchMove(foto, { touches: [{ clientX: 150, clientY: 210 }] })
+    fireEvent.touchEnd(foto, { touches: [] })
+
+    expect(contador()).toHaveTextContent('2 / 16')
+  })
+
+  it('un toque sin desplazamiento no cambia de foto', async () => {
+    await renderDetalle({ medios: fotos })
+    await userEvent.click(screen.getByRole('button', { name: /Ver las 16 fotos/ }))
+    const foto = fotoVisible()
+
+    fireEvent.touchStart(foto, { touches: [{ clientX: 300, clientY: 200 }] })
+    fireEvent.touchEnd(foto, { touches: [] })
+
+    expect(contador()).toHaveTextContent('1 / 16')
+  })
+
+  it('se cierra con Escape y con el botón, y devuelve el scroll a la página', async () => {
+    const user = userEvent.setup()
+    await renderDetalle({ medios: fotos })
+
+    await user.click(screen.getByRole('button', { name: /Ver las 16 fotos/ }))
+    expect(document.body.style.overflow).toBe('hidden')
+    fireEvent.keyDown(screen.getByRole('dialog'), { key: 'Escape' })
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    expect(document.body.style.overflow).toBe('')
+
+    await user.click(screen.getByRole('button', { name: 'Foto 2 de Casa en el centro' }))
+    expect(contador()).toHaveTextContent('2 / 16')
+    await user.click(screen.getByRole('button', { name: 'Cerrar fotos' }))
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+  })
+
+  it('con una sola foto no ofrece flechas ni miniaturas', async () => {
+    await renderDetalle({ medios: fotos.slice(0, 1) })
+
+    await userEvent.click(screen.getByRole('button', { name: /Ver la foto de/ }))
+
+    expect(screen.queryByRole('button', { name: 'Foto siguiente' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /^Foto 1 de 1$/ })).not.toBeInTheDocument()
   })
 })
